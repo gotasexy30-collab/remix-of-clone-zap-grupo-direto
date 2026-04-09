@@ -1,0 +1,7 @@
+import { ChatDashboard } from '../components/chat/ChatDashboard';
+
+const Dashboard = () => {
+  return <ChatDashboard />;
+};
+
+export default Dashboard;
