@@ -133,7 +133,6 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
         ref={audioRef}
         src={src}
         preload="auto"
-        crossOrigin="anonymous"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
       />
