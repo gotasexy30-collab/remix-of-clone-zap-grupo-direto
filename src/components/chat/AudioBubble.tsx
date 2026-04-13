@@ -114,7 +114,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   };
 
   const displayTime = isThisPlaying || currentTime > 0 ? formatTime(currentTime) : formatTime(duration);
-  const progressBarIndex = Math.floor((progressPercent / 100) * BAR_COUNT);
+  const progressBarIndex = Math.min(BAR_COUNT - 1, Math.floor((progressPercent / 100) * BAR_COUNT));
 
   // Colors matching WhatsApp exactly
   const playedColor = '#34B7F1';
