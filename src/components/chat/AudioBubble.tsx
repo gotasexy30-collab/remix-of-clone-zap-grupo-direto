@@ -8,7 +8,6 @@ interface AudioBubbleProps {
   setPlayingAudioId: (id: string | null) => void;
 }
 
-// Generate a deterministic pseudo-random waveform based on id
 function generateWaveform(id: string, barCount: number): number[] {
   let seed = 0;
   for (let i = 0; i < id.length; i++) {
@@ -17,10 +16,9 @@ function generateWaveform(id: string, barCount: number): number[] {
   const bars: number[] = [];
   for (let i = 0; i < barCount; i++) {
     seed = (seed * 16807 + 12345) & 0x7fffffff;
-    const base = 0.15 + ((seed % 1000) / 1000) * 0.85;
-    // Add some wave-like pattern
-    const wave = Math.sin(i * 0.3) * 0.15 + Math.sin(i * 0.7) * 0.1;
-    bars.push(Math.min(1, Math.max(0.08, base + wave)));
+    const base = 0.2 + ((seed % 1000) / 1000) * 0.8;
+    const wave = Math.sin(i * 0.4) * 0.15 + Math.sin(i * 0.9) * 0.1;
+    bars.push(Math.min(1, Math.max(0.12, base + wave)));
   }
   return bars;
 }
@@ -41,7 +39,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   const isThisPlaying = id === playingAudioId;
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  const BAR_COUNT = 40;
+  const BAR_COUNT = 50;
   const waveform = useMemo(() => generateWaveform(id, BAR_COUNT), [id]);
 
   useEffect(() => {
@@ -71,26 +69,19 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   }, [isThisPlaying, setPlayingAudioId]);
 
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
+    if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
   };
 
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       const dur = audioRef.current.duration;
-      if (dur !== Infinity && !isNaN(dur)) {
-        setDuration(dur);
-      }
+      if (dur !== Infinity && !isNaN(dur)) setDuration(dur);
     }
   };
 
   const togglePlay = () => {
-    if (isThisPlaying) {
-      setPlayingAudioId(null);
-    } else {
-      setPlayingAudioId(id);
-    }
+    if (isThisPlaying) setPlayingAudioId(null);
+    else setPlayingAudioId(id);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -106,12 +97,15 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   };
 
   const displayTime = isThisPlaying || currentTime > 0 ? formatTime(currentTime) : formatTime(duration);
-
-  // Determine bar that the progress thumb sits on
   const progressBarIndex = Math.floor((progressPercent / 100) * BAR_COUNT);
 
+  // Colors matching WhatsApp exactly
+  const playedColor = '#34B7F1';
+  const unplayedColor = hasPlayed ? '#8696A0' : '#5DB37E';
+
   return (
-    <div className="flex w-full items-center relative bg-[#202C33] rounded-[7.5px] shadow-[0_1px_0.5px_rgba(0,0,0,0.13)] pl-1 pr-2 py-[5px] box-border select-none max-w-full">
+    <div className="flex w-full items-center relative rounded-[7.5px] shadow-[0_1px_0.5px_rgba(0,0,0,0.13)] pl-1 pr-2 py-[5px] box-border select-none max-w-full"
+      style={{ backgroundColor: '#202C33' }}>
       {/* Tail */}
       <div className="absolute left-[-8px] top-0 w-0 h-0" style={{
         borderTop: '0px solid transparent',
@@ -127,14 +121,13 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
         onLoadedMetadata={handleLoadedMetadata}
       />
 
-      {/* Avatar with play overlay */}
+      {/* Avatar */}
       <div className="relative shrink-0 w-[46px] h-[46px] mr-1">
         <img
           src="https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp"
           alt="Avatar"
           className="w-[46px] h-[46px] rounded-full object-cover"
         />
-        {/* Microphone badge */}
         <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center"
           style={{ backgroundColor: hasPlayed ? '#34B7F1' : '#25D366' }}>
           <svg viewBox="0 0 19 26" width="10" height="10">
@@ -144,7 +137,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
         </div>
       </div>
 
-      {/* Play/Pause button */}
+      {/* Play/Pause */}
       <button
         onClick={togglePlay}
         className="shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-transparent border-none p-0 cursor-pointer ml-0.5"
@@ -161,22 +154,26 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
         )}
       </button>
 
-      {/* Waveform + seek area */}
+      {/* Waveform - centered vertically like WhatsApp */}
       <div className="flex flex-col flex-grow ml-2 mr-1 justify-center min-w-0">
         <div
-          className="relative w-full h-[26px] flex items-end gap-[1.5px] cursor-pointer"
+          className="relative w-full h-[30px] flex items-center gap-[1px] cursor-pointer"
           onClick={handleSeek}
         >
           {waveform.map((h, i) => {
             const isPast = i < progressBarIndex;
+            const barHeight = Math.max(4, h * 28);
             return (
               <div
                 key={i}
-                className="flex-1 rounded-full min-w-[2px] max-w-[3px] transition-colors duration-100"
+                className="flex-1 rounded-full"
                 style={{
-                  height: `${Math.max(8, h * 100)}%`,
-                  backgroundColor: isPast ? '#34B7F1' : '#687781',
-                  opacity: isPast ? 1 : 0.6,
+                  height: `${barHeight}px`,
+                  minWidth: '2.5px',
+                  maxWidth: '3.5px',
+                  backgroundColor: isPast ? playedColor : unplayedColor,
+                  opacity: isPast ? 1 : 0.85,
+                  transition: 'background-color 0.15s',
                 }}
               />
             );
@@ -184,16 +181,17 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
           {/* Seek thumb */}
           {duration > 0 && (
             <div
-              className="absolute top-1/2 w-[12px] h-[12px] bg-[#D9DEE0] rounded-full shadow-sm pointer-events-none z-10"
+              className="absolute top-1/2 w-[11px] h-[11px] rounded-full shadow-sm pointer-events-none z-10"
               style={{
                 left: `${progressPercent}%`,
                 transform: 'translate(-50%, -50%)',
+                backgroundColor: playedColor,
               }}
             />
           )}
         </div>
-        <div className="flex justify-between items-center mt-[2px]">
-          <span className="text-[11px] text-[#8696A0] leading-none tabular-nums">{displayTime}</span>
+        <div className="flex justify-between items-center mt-[1px]">
+          <span className="text-[11px] leading-none tabular-nums" style={{ color: '#8696A0' }}>{displayTime}</span>
         </div>
       </div>
     </div>
