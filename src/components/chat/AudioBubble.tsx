@@ -157,7 +157,6 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       <div className="flex flex-col flex-grow ml-3 mr-2 justify-center min-w-0 z-10 h-full relative">
         <div className="relative w-full h-[28px] flex items-center">
           <AudioSpectrum
-            audioElement={audioRef.current}
             isPlaying={isThisPlaying}
             barCount={32}
             height={28}
