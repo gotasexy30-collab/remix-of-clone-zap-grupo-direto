@@ -50,9 +50,26 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       setCurrentTime(0);
       if (audioRef.current) audioRef.current.currentTime = 0;
     };
+    const onDurationChange = () => {
+      if (audio.duration && audio.duration !== Infinity && !isNaN(audio.duration)) {
+        setDuration(audio.duration);
+      }
+    };
+    const onTimeUpdateForDuration = () => {
+      // Fallback: some streams only reveal duration during playback
+      if (duration === 0 && audio.duration && audio.duration !== Infinity && !isNaN(audio.duration)) {
+        setDuration(audio.duration);
+      }
+    };
     audio.addEventListener('ended', onEnded);
-    return () => audio.removeEventListener('ended', onEnded);
-  }, [setPlayingAudioId]);
+    audio.addEventListener('durationchange', onDurationChange);
+    audio.addEventListener('timeupdate', onTimeUpdateForDuration);
+    return () => {
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('durationchange', onDurationChange);
+      audio.removeEventListener('timeupdate', onTimeUpdateForDuration);
+    };
+  }, [setPlayingAudioId, duration]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -178,17 +195,16 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
               />
             );
           })}
-          {/* Seek thumb - positioned using same percentage as bars */}
-          {duration > 0 && (
-            <div
-              className="absolute top-1/2 w-[11px] h-[11px] rounded-full shadow-sm pointer-events-none z-10"
-              style={{
-                left: `calc(${(progressBarIndex / BAR_COUNT) * 100}% + 1.5px)`,
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: playedColor,
-              }}
-            />
-          )}
+          {/* Seek thumb */}
+          <div
+            className="absolute top-1/2 w-[12px] h-[12px] rounded-full pointer-events-none z-10"
+            style={{
+              left: `calc(${(progressBarIndex / BAR_COUNT) * 100}%)`,
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: '#D9DEE0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+          />
         </div>
         <div className="flex justify-between items-center mt-[1px]">
           <span className="text-[11px] leading-none tabular-nums" style={{ color: '#8696A0' }}>{displayTime}</span>
