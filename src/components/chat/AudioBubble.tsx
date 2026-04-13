@@ -157,11 +157,11 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       {/* Waveform - centered vertically like WhatsApp */}
       <div className="flex flex-col flex-grow ml-2 mr-1 justify-center min-w-0">
         <div
-          className="relative w-full h-[30px] flex items-center gap-[1px] cursor-pointer"
+          className="relative w-full h-[30px] flex items-center gap-[1px] cursor-pointer overflow-visible"
           onClick={handleSeek}
         >
           {waveform.map((h, i) => {
-            const isPast = i < progressBarIndex;
+            const isPast = i <= progressBarIndex;
             const barHeight = Math.max(4, h * 28);
             return (
               <div
@@ -178,12 +178,12 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
               />
             );
           })}
-          {/* Seek thumb */}
+          {/* Seek thumb - positioned using same percentage as bars */}
           {duration > 0 && (
             <div
               className="absolute top-1/2 w-[11px] h-[11px] rounded-full shadow-sm pointer-events-none z-10"
               style={{
-                left: `${progressPercent}%`,
+                left: `calc(${(progressBarIndex / BAR_COUNT) * 100}% + 1.5px)`,
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: playedColor,
               }}
