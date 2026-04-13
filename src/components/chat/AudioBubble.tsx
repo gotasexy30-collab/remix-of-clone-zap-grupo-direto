@@ -195,17 +195,16 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
               />
             );
           })}
-          {/* Seek thumb - positioned using same percentage as bars */}
-          {duration > 0 && (
-            <div
-              className="absolute top-1/2 w-[11px] h-[11px] rounded-full shadow-sm pointer-events-none z-10"
-              style={{
-                left: `calc(${(progressBarIndex / BAR_COUNT) * 100}% + 1.5px)`,
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: playedColor,
-              }}
-            />
-          )}
+          {/* Seek thumb */}
+          <div
+            className="absolute top-1/2 w-[12px] h-[12px] rounded-full pointer-events-none z-10"
+            style={{
+              left: `calc(${(progressBarIndex / BAR_COUNT) * 100}%)`,
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: '#D9DEE0',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+          />
         </div>
         <div className="flex justify-between items-center mt-[1px]">
           <span className="text-[11px] leading-none tabular-nums" style={{ color: '#8696A0' }}>{displayTime}</span>
