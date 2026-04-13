@@ -30,8 +30,37 @@ function formatTime(seconds: number) {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
+const ThumbOverlay: React.FC<{ waveformRef: React.RefObject<HTMLDivElement>; barIndex: number }> = ({ waveformRef, barIndex }) => {
+  const [leftPx, setLeftPx] = useState(0);
+
+  useEffect(() => {
+    const container = waveformRef.current;
+    if (!container) return;
+    const bars = container.querySelectorAll<HTMLDivElement>('[data-bar-index]');
+    const bar = bars[barIndex];
+    if (bar) {
+      const containerRect = container.getBoundingClientRect();
+      const barRect = bar.getBoundingClientRect();
+      setLeftPx(barRect.left - containerRect.left + barRect.width / 2);
+    }
+  }, [barIndex, waveformRef]);
+
+  return (
+    <div
+      className="absolute top-1/2 w-[12px] h-[12px] rounded-full pointer-events-none z-10"
+      style={{
+        left: `${leftPx}px`,
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: '#D9DEE0',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      }}
+    />
+  );
+};
+
 export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playingAudioId, setPlayingAudioId }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const waveformRef = useRef<HTMLDivElement | null>(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -114,7 +143,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   };
 
   const displayTime = isThisPlaying || currentTime > 0 ? formatTime(currentTime) : formatTime(duration);
-  const progressBarIndex = Math.floor((progressPercent / 100) * BAR_COUNT);
+  const progressBarIndex = Math.min(BAR_COUNT - 1, Math.floor((progressPercent / 100) * BAR_COUNT));
 
   // Colors matching WhatsApp exactly
   const playedColor = '#34B7F1';
@@ -174,7 +203,8 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       {/* Waveform - centered vertically like WhatsApp */}
       <div className="flex flex-col flex-grow ml-2 mr-1 justify-center min-w-0">
         <div
-          className="relative w-full h-[30px] flex items-center gap-[1px] cursor-pointer overflow-visible"
+          ref={waveformRef}
+          className="relative w-full h-[30px] flex items-center gap-[1px] cursor-pointer"
           onClick={handleSeek}
         >
           {waveform.map((h, i) => {
@@ -184,6 +214,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
               <div
                 key={i}
                 className="flex-1 rounded-full"
+                data-bar-index={i}
                 style={{
                   height: `${barHeight}px`,
                   minWidth: '2.5px',
@@ -195,16 +226,8 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
               />
             );
           })}
-          {/* Seek thumb */}
-          <div
-            className="absolute top-1/2 w-[12px] h-[12px] rounded-full pointer-events-none z-10"
-            style={{
-              left: `calc(${(progressBarIndex / BAR_COUNT) * 100}%)`,
-              transform: 'translate(-50%, -50%)',
-              backgroundColor: '#D9DEE0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-            }}
-          />
+          {/* Seek thumb - stays on top of the current bar */}
+          <ThumbOverlay waveformRef={waveformRef} barIndex={progressBarIndex} />
         </div>
         <div className="flex justify-between items-center mt-[1px]">
           <span className="text-[11px] leading-none tabular-nums" style={{ color: '#8696A0' }}>{displayTime}</span>
