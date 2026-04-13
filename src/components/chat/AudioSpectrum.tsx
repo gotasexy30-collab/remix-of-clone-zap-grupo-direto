@@ -1,7 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 
 interface AudioSpectrumProps {
-  audioElement: HTMLAudioElement | null;
   isPlaying: boolean;
   barCount?: number;
   width?: number;
@@ -9,132 +8,99 @@ interface AudioSpectrumProps {
 }
 
 const AudioSpectrum: React.FC<AudioSpectrumProps> = ({
-  audioElement,
   isPlaying,
   barCount = 32,
   width = 200,
   height = 28,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number>(0);
   const barsRef = useRef<number[]>(new Array(barCount).fill(0));
+  const timeRef = useRef(0);
 
-  useEffect(() => {
-    if (!audioElement) return;
-
-    // Create or reuse AudioContext
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-    const ctx = audioCtxRef.current;
-
-    // Create source only once per audio element
-    if (!sourceRef.current) {
-      try {
-        sourceRef.current = ctx.createMediaElementSource(audioElement);
-      } catch {
-        // Already connected
-        return;
-      }
-    }
-
-    if (!analyserRef.current) {
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.75;
-      sourceRef.current.connect(analyser);
-      analyser.connect(ctx.destination);
-      analyserRef.current = analyser;
-    }
-
-    return () => {
-      cancelAnimationFrame(animFrameRef.current);
-    };
-  }, [audioElement]);
-
-  useEffect(() => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
-    const analyser = analyserRef.current;
-    if (!canvas || !analyser) return;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const canvasCtx = canvas.getContext('2d');
-    if (!canvasCtx) return;
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
     const bars = barsRef.current;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const draw = () => {
-      animFrameRef.current = requestAnimationFrame(draw);
+    const barWidth = Math.max(2, (canvas.width / barCount) - 2);
+    const gap = 2;
+    timeRef.current += 0.08;
+
+    for (let i = 0; i < barCount; i++) {
+      let targetHeight: number;
 
       if (isPlaying) {
-        analyser.getByteFrequencyData(dataArray);
+        // Simulate frequency spectrum with varied sine waves
+        const t = timeRef.current;
+        const freq1 = Math.sin(t * 2.5 + i * 0.4) * 0.5 + 0.5;
+        const freq2 = Math.sin(t * 3.7 + i * 0.7) * 0.3 + 0.3;
+        const freq3 = Math.sin(t * 1.3 + i * 1.1) * 0.2 + 0.2;
+        const bass = i < barCount * 0.3 ? 0.8 : 0.4;
+        const mid = (i >= barCount * 0.3 && i < barCount * 0.7) ? 0.7 : 0.3;
+        const treble = i >= barCount * 0.7 ? 0.5 : 0.3;
+        const envelope = bass * freq1 + mid * freq2 + treble * freq3;
+        targetHeight = (envelope * 0.7 + Math.random() * 0.15) * canvas.height;
+      } else {
+        targetHeight = 0;
       }
 
-      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      // Smooth animation
+      bars[i] += (targetHeight - bars[i]) * 0.25;
+      const barHeight = Math.max(2, bars[i]);
 
-      const barWidth = Math.max(2, (canvas.width / barCount) - 2);
-      const gap = 2;
+      const x = i * (barWidth + gap);
+      const y = canvas.height - barHeight;
 
-      for (let i = 0; i < barCount; i++) {
-        // Map bar index to frequency bin
-        const freqIndex = Math.floor((i / barCount) * bufferLength);
-        const targetHeight = isPlaying
-          ? (dataArray[freqIndex] / 255) * canvas.height
-          : 0;
+      // Color gradient based on height
+      const intensity = barHeight / canvas.height;
+      const r = Math.floor(52 + intensity * 0);
+      const g = Math.floor(183 + intensity * 40);
+      const b = Math.floor(241 - intensity * 50);
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
 
-        // Smooth animation
-        bars[i] += (targetHeight - bars[i]) * 0.3;
-        const barHeight = Math.max(2, bars[i]);
+      ctx.beginPath();
+      ctx.roundRect(x, y, barWidth, barHeight, 1);
+      ctx.fill();
+    }
 
-        const x = i * (barWidth + gap);
-        const y = canvas.height - barHeight;
-
-        // Gradient color based on height
-        const intensity = barHeight / canvas.height;
-        const r = Math.floor(52 + intensity * 0);
-        const g = Math.floor(183 + intensity * 40);
-        const b = Math.floor(241 - intensity * 50);
-        canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-
-        canvasCtx.beginPath();
-        canvasCtx.roundRect(x, y, barWidth, barHeight, 1);
-        canvasCtx.fill();
-      }
-    };
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animFrameRef.current);
-    };
+    animFrameRef.current = requestAnimationFrame(draw);
   }, [isPlaying, barCount]);
 
-  // Draw idle bars when not playing
+  useEffect(() => {
+    animFrameRef.current = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, [draw]);
+
+  // Draw idle static bars when not playing and animation settles
   useEffect(() => {
     if (isPlaying) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const canvasCtx = canvas.getContext('2d');
-    if (!canvasCtx) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const barWidth = Math.max(2, (canvas.width / barCount) - 2);
-    const gap = 2;
+    const timeout = setTimeout(() => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barWidth = Math.max(2, (canvas.width / barCount) - 2);
+      const gap = 2;
+      for (let i = 0; i < barCount; i++) {
+        const h = 2 + Math.sin(i * 0.5) * 4 + 2;
+        const x = i * (barWidth + gap);
+        const y = canvas.height - h;
+        ctx.fillStyle = '#B0B5BA';
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, h, 1);
+        ctx.fill();
+      }
+      barsRef.current = new Array(barCount).fill(0);
+    }, 600);
 
-    // Draw static idle waveform
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < barCount; i++) {
-      const h = 2 + Math.sin(i * 0.5) * 4 + Math.random() * 3;
-      const x = i * (barWidth + gap);
-      const y = canvas.height - h;
-      canvasCtx.fillStyle = '#B0B5BA';
-      canvasCtx.beginPath();
-      canvasCtx.roundRect(x, y, barWidth, h, 1);
-      canvasCtx.fill();
-    }
+    return () => clearTimeout(timeout);
   }, [isPlaying, barCount]);
 
   return (
