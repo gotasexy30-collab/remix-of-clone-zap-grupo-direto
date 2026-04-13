@@ -50,9 +50,26 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       setCurrentTime(0);
       if (audioRef.current) audioRef.current.currentTime = 0;
     };
+    const onDurationChange = () => {
+      if (audio.duration && audio.duration !== Infinity && !isNaN(audio.duration)) {
+        setDuration(audio.duration);
+      }
+    };
+    const onTimeUpdateForDuration = () => {
+      // Fallback: some streams only reveal duration during playback
+      if (duration === 0 && audio.duration && audio.duration !== Infinity && !isNaN(audio.duration)) {
+        setDuration(audio.duration);
+      }
+    };
     audio.addEventListener('ended', onEnded);
-    return () => audio.removeEventListener('ended', onEnded);
-  }, [setPlayingAudioId]);
+    audio.addEventListener('durationchange', onDurationChange);
+    audio.addEventListener('timeupdate', onTimeUpdateForDuration);
+    return () => {
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('durationchange', onDurationChange);
+      audio.removeEventListener('timeupdate', onTimeUpdateForDuration);
+    };
+  }, [setPlayingAudioId, duration]);
 
   useEffect(() => {
     const audio = audioRef.current;
