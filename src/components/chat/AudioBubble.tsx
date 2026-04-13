@@ -30,6 +30,34 @@ function formatTime(seconds: number) {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
+const ThumbOverlay: React.FC<{ waveformRef: React.RefObject<HTMLDivElement>; barIndex: number }> = ({ waveformRef, barIndex }) => {
+  const [leftPx, setLeftPx] = useState(0);
+
+  useEffect(() => {
+    const container = waveformRef.current;
+    if (!container) return;
+    const bars = container.querySelectorAll<HTMLDivElement>('[data-bar-index]');
+    const bar = bars[barIndex];
+    if (bar) {
+      const containerRect = container.getBoundingClientRect();
+      const barRect = bar.getBoundingClientRect();
+      setLeftPx(barRect.left - containerRect.left + barRect.width / 2);
+    }
+  }, [barIndex, waveformRef]);
+
+  return (
+    <div
+      className="absolute top-1/2 w-[12px] h-[12px] rounded-full pointer-events-none z-10"
+      style={{
+        left: `${leftPx}px`,
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: '#D9DEE0',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      }}
+    />
+  );
+};
+
 export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playingAudioId, setPlayingAudioId }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const waveformRef = useRef<HTMLDivElement | null>(null);
