@@ -32,6 +32,7 @@ function formatTime(seconds: number) {
 
 export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playingAudioId, setPlayingAudioId }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const waveformRef = useRef<HTMLDivElement | null>(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
