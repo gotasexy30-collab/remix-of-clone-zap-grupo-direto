@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import WaveSurfer from 'wavesurfer.js';
+import AudioSpectrum from './AudioSpectrum';
 
 interface AudioBubbleProps {
   id: string;
@@ -41,9 +41,7 @@ function formatTime(seconds: number) {
 }
 
 export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playingAudioId, setPlayingAudioId }) => {
-  const waveformRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
 
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -53,37 +51,19 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
   const isThisPlaying = id === playingAudioId;
 
   useEffect(() => {
-    if (waveformRef.current && audioRef.current && !wavesurferRef.current) {
-      const wavesurfer = WaveSurfer.create({
-        container: waveformRef.current,
-        media: audioRef.current,
-        waveColor: '#B0B5BA',
-        progressColor: '#34B7F1',
-        barWidth: 2,
-        barGap: 2,
-        barRadius: 2,
-        height: 28,
-        cursorWidth: 0,
-        normalize: true,
-        interact: false,
-      });
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      wavesurferRef.current = wavesurfer;
+    const onEnded = () => {
+      setPlayingAudioId(null);
+      setMicColor('#0cd464');
+      setCurrentTime(0);
+      setProgressPercent(0);
+    };
 
-      wavesurfer.on('finish', () => {
-        setPlayingAudioId(null);
-        setMicColor('#0cd464');
-        setCurrentTime(0);
-        setProgressPercent(0);
-        if (audioRef.current) audioRef.current.currentTime = 0;
-      });
-
-      return () => {
-        wavesurfer.destroy();
-        wavesurferRef.current = null;
-      };
-    }
-  }, [src, setPlayingAudioId]);
+    audio.addEventListener('ended', onEnded);
+    return () => audio.removeEventListener('ended', onEnded);
+  }, [setPlayingAudioId]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -153,6 +133,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
         ref={audioRef}
         src={src}
         preload="auto"
+        crossOrigin="anonymous"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
       />
@@ -176,7 +157,12 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
 
       <div className="flex flex-col flex-grow ml-3 mr-2 justify-center min-w-0 z-10 h-full relative">
         <div className="relative w-full h-[28px] flex items-center">
-          <div ref={waveformRef} className="w-full h-full opacity-80 pointer-events-none" />
+          <AudioSpectrum
+            audioElement={audioRef.current}
+            isPlaying={isThisPlaying}
+            barCount={32}
+            height={28}
+          />
           <input
             type="range"
             min="0"
