@@ -54,6 +54,7 @@ export const DIALOGUE: DialogueMap = {
       { type: 'audio', content: BASE_URL + '/audios/audio10.mp3', delay: 6000 },
       { type: 'audio', content: BASE_URL + '/audios/audio13.mp3', delay: 6500 },
       { type: 'image', content: 'https://midia.jdfnu287h7dujn2jndjsifd.com/oi6gtpxvamkpw9g2661pohgv.jpeg', delay: 5000 },
+      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/clube-secreto-preview.png', delay: 4000 },
     ],
     response: {
       type: 'buttons',
