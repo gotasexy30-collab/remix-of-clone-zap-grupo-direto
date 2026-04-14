@@ -119,7 +119,7 @@ const Index = () => {
         setMessages(prev => [...prev, newMsg]);
 
 
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
       if (step.response) {
