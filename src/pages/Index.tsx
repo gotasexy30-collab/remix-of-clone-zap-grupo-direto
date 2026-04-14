@@ -221,39 +221,35 @@ const Index = () => {
               </div>
             </div>
           )}
-          {isInputVisible && (
-            <div className="w-full mt-2 mb-4 animate-slideIn shrink-0">
-              {inputType === 'buttons' && activeOptions && (
-                <div className="flex flex-col w-full gap-2 px-1">
-                  {activeOptions.map((opt, idx) => (
-                    <button key={idx} onClick={() => handleOptionClick(opt)} className="w-full bg-[#005c4b] text-[#e9edef] py-3.5 rounded-lg font-semibold text-[15px] shadow-md active:scale-[0.99] transition-all">
-                      {opt.text}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {inputType === 'text' && (
-                <div className="bg-[#202c33] p-2 flex items-center gap-2 rounded-xl shadow-lg">
-                  <div className="flex-1 bg-[#2a3942] rounded-lg flex items-center px-4 py-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      placeholder="Mensagem"
-                      className="w-full bg-transparent outline-none text-[#d1d7db]"
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    />
-                  </div>
-                  <button onClick={handleSendMessage} className="w-10 h-10 rounded-full bg-[#005c4b] flex items-center justify-center">
-                    <Send size={20} className="text-[#e9edef]" />
-                  </button>
-                </div>
-              )}
+          {inputType === 'buttons' && activeOptions && (
+            <div className="flex flex-col w-full gap-2 px-1 mt-2 mb-4 animate-slideIn shrink-0">
+              {activeOptions.map((opt, idx) => (
+                <button key={idx} onClick={() => handleOptionClick(opt)} className="w-full bg-[#005c4b] text-[#e9edef] py-3.5 rounded-lg font-semibold text-[15px] shadow-md active:scale-[0.99] transition-all">
+                  {opt.text}
+                </button>
+              ))}
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
+        {inputType === 'text' && (
+          <div className="bg-[#202c33] p-2 flex items-center gap-2 shrink-0">
+            <div className="flex-1 bg-[#2a3942] rounded-lg flex items-center px-4 py-2">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Mensagem"
+                className="w-full bg-transparent outline-none text-[#d1d7db]"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+            </div>
+            <button onClick={handleSendMessage} className="w-10 h-10 rounded-full bg-[#005c4b] flex items-center justify-center">
+              <Send size={20} className="text-[#e9edef]" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
