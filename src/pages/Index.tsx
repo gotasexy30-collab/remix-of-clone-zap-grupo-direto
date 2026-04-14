@@ -134,7 +134,7 @@ const Index = () => {
       }
     };
     processMessages();
-  }, [currentStepId, locationData.city, leadTracked]);
+  }, [currentStepId, locationData.city]);
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
