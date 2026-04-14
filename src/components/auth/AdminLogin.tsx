@@ -14,8 +14,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [checked, setChecked] = useState(false);
 
   React.useEffect(() => {
     getSetting('admin_password').then(pwd => {
