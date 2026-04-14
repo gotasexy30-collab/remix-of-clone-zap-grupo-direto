@@ -142,17 +142,6 @@ export const ChatDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-[#202c33] p-4 rounded-2xl border border-white/5 shadow-lg">
-            <div className="text-[#8696a0] text-[10px] font-black uppercase mb-1">Visitas Totais</div>
-            <div className="text-2xl font-bold text-white">{stats.visits}</div>
-          </div>
-          <div className="bg-[#202c33] p-4 rounded-2xl border border-white/5 shadow-lg">
-            <div className="text-[#8696a0] text-[10px] font-black uppercase mb-1">Iniciaram Chat</div>
-            <div className="text-2xl font-bold text-white">{stats.chat}</div>
-            <div className="text-[10px] text-[#00a884] font-bold">Retenção: {calcPct(stats.chat, stats.visits)}%</div>
-          </div>
-        </div>
 
         <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
           <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
