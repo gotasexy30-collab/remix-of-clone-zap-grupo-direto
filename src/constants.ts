@@ -64,9 +64,7 @@ export const DIALOGUE: DialogueMap = {
   AWAITING_COMBINED: {
     messages: [
       { type: 'audio', content: BASE_URL + '/audios/audio15.mp3', delay: 7000 },
-      { type: 'audio', content: BASE_URL + '/audios/audio16.mp3', delay: 7000 },
-      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-1.png', delay: 5000 },
-      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-2.png', delay: 4500 }
+      { type: 'audio', content: BASE_URL + '/audios/audio16.mp3', delay: 7000 }
     ],
     response: {
       type: 'buttons',
@@ -80,6 +78,8 @@ export const DIALOGUE: DialogueMap = {
       { type: 'audio', content: BASE_URL + '/audios/audio19.mp3', delay: 5000 },
       { type: 'gif', content: 'https://midia.jdfnu287h7dujn2jndjsifd.com/ohjlvxht3us81l3l5c6sckxx.gif', delay: 5000 },
       { type: 'audio', content: BASE_URL + '/audios/audio20.mp3', delay: 7000 },
+      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-1.png', delay: 5000 },
+      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-2.png', delay: 4500 },
       { type: 'audio', content: BASE_URL + '/audios/audio21.mp3', delay: 7000 },
       { type: 'audio', content: BASE_URL + '/audios/audio22.mp3', delay: 5000 },
       { type: 'audio', content: BASE_URL + '/audios/audio23.mp3', delay: 10000 }
