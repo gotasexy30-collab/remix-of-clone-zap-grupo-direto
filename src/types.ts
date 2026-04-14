@@ -41,8 +41,3 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-declare global {
-  interface Window {
-    fbq: (event: string, eventName: string, params?: Record<string, unknown>) => void;
-  }
-}

@@ -67,13 +67,6 @@ const Index = () => {
         setTimeout(() => {
           setShowPayment(true);
           trackEvent('h3');
-          if (window.fbq) {
-            window.fbq('track', 'InitiateCheckout', {
-              value: 18.80,
-              currency: 'BRL',
-              content_name: getSlug()
-            });
-          }
         }, 500);
         return;
       }
@@ -125,10 +118,6 @@ const Index = () => {
 
         setMessages(prev => [...prev, newMsg]);
 
-        if (!leadTracked && window.fbq) {
-          window.fbq('track', 'Lead', { content_name: getSlug() });
-          setLeadTracked(true);
-        }
 
         await new Promise(resolve => setTimeout(resolve, 800));
       }
