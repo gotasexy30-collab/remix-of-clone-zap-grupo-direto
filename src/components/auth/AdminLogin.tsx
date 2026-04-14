@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, KeyRound, Loader2 } from 'lucide-react';
+import { Lock, KeyRound, Loader2, Eye, EyeOff } from 'lucide-react';
 import { getSetting, setSetting } from '../../services/settings';
 
 interface AdminLoginProps {
@@ -11,6 +11,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isFirstAccess, setIsFirstAccess] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [checked, setChecked] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [checked, setChecked] = useState(false);
 
@@ -81,13 +84,16 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             <div className="flex items-center gap-3">
               <KeyRound size={16} className="text-[#8696a0]" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full bg-transparent text-[#e9edef] text-sm outline-none placeholder:text-[#8696a0]/50"
               />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-[#8696a0] hover:text-[#e9edef] transition-colors">
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
             {isFirstAccess && (
               <>
@@ -95,7 +101,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 <div className="flex items-center gap-3">
                   <KeyRound size={16} className="text-[#8696a0]" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Confirmar senha"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
