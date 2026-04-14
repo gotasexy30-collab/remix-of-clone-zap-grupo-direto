@@ -183,7 +183,7 @@ const Index = () => {
   const isInputVisible = inputType !== 'none';
 
   return (
-    <div className="flex justify-center items-center min-h-[100dvh] bg-[#111b21]">
+    <div className="flex justify-center items-center h-[100dvh] bg-[#111b21] overflow-hidden fixed inset-0">
       <div className="w-full sm:max-w-[480px] h-[100dvh] sm:h-[90vh] bg-[#0b141a] relative flex flex-col shadow-2xl sm:rounded-xl overflow-hidden">
         <ChatHeader status={typingStatus || "online"} />
         <div

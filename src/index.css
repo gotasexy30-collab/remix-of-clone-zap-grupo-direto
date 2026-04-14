@@ -99,8 +99,12 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
+    height: 100dvh;
   }
 }
 
