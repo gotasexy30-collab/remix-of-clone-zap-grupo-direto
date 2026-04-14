@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Target, RefreshCw, TrendingUp, Link2, Save } from 'lucide-react';
+import { DollarSign, Target, RefreshCw, TrendingUp, Link2, Save, User, Image } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 
 export const ChatDashboard: React.FC = () => {
@@ -7,6 +7,9 @@ export const ChatDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
   const [linkSaved, setLinkSaved] = useState(false);
+  const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
+  const [profileSaved, setProfileSaved] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
