@@ -6,7 +6,8 @@ interface HeaderProps {
 }
 
 export const ChatHeader: React.FC<HeaderProps> = ({ status }) => {
-  const imageUrl = "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp";
+  const profileName = localStorage.getItem('chat_profile_name') || 'Thaisinha';
+  const imageUrl = localStorage.getItem('chat_profile_photo') || "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp";
 
   return (
     <div className="bg-[#005E54] text-white p-2.5 flex items-center justify-between z-20 shadow-sm shrink-0">
@@ -19,7 +20,7 @@ export const ChatHeader: React.FC<HeaderProps> = ({ status }) => {
         </div>
         <div className="flex flex-col ml-1 justify-center">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-[17px] leading-tight">Thaisinha</span>
+            <span className="font-bold text-[17px] leading-tight">{profileName}</span>
             <img
               src="https://i.imgur.com/BwSw5kR.png"
               alt="Verificado"
