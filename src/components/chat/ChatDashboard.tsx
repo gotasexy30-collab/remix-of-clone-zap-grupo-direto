@@ -25,18 +25,15 @@ export const ChatDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSaveLink = () => {
-    localStorage.setItem('payment_redirect_link', redirectLink);
-    setLinkSaved(true);
-    setTimeout(() => setLinkSaved(false), 2000);
-  };
+  const [allSaved, setAllSaved] = useState(false);
 
-  const handleSaveProfile = () => {
+  const handleSaveAll = () => {
+    localStorage.setItem('payment_redirect_link', redirectLink);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2000);
+    setAllSaved(true);
+    setTimeout(() => setAllSaved(false), 2000);
   };
 
   const calcPct = (part: number, total: number) => {
