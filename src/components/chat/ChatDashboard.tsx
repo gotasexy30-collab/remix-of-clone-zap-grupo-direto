@@ -119,6 +119,17 @@ export const ChatDashboard: React.FC = () => {
                 className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
               />
             </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da imagem com localização (base)</label>
+              <input
+                type="url"
+                placeholder="https://exemplo.com/imagem-base.jpg"
+                value={locationImage}
+                onChange={(e) => setLocationImage(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">A cidade do usuário será sobreposta automaticamente nesta imagem</p>
+            </div>
             {profilePhoto && (
               <div className="flex items-center gap-3">
                 <img src={profilePhoto} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-[#00a884]/30" />
