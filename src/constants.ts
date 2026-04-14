@@ -4,7 +4,7 @@ export const BASE_URL = 'https://whatsapp-backend-vott.onrender.com';
 
 export const DIALOGUE: DialogueMap = {
   START: {
-    messages: [ { type: 'audio', content: BASE_URL + '/audios/audio01.mp3', delay: 500 } ],
+    messages: [ { type: 'audio', content: BASE_URL + '/audios/audio01.mp3', delay: 3000 } ],
     response: { type: 'text', next: 'AWAITING_CITY' }
   },
   AWAITING_CITY: {
