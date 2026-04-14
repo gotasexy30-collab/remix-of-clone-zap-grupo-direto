@@ -8,6 +8,7 @@ import { ChatHeader } from '../components/chat/ChatHeader';
 import { PaymentPanel } from '../components/chat/PaymentPanel';
 import { trackEvent } from '../services/tracking';
 import { generateImageWithCity } from '../services/imageOverlay';
+import { getSetting } from '../services/settings';
 
 const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4cf04952ad45a2c.jpg';
 
