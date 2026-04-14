@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Target, RefreshCw, TrendingUp } from 'lucide-react';
+import { DollarSign, Target, RefreshCw, TrendingUp, Link2, Save } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
   const [loading, setLoading] = useState(true);
+  const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
+  const [linkSaved, setLinkSaved] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -19,12 +21,18 @@ export const ChatDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleSaveLink = () => {
+    localStorage.setItem('payment_redirect_link', redirectLink);
+    setLinkSaved(true);
+    setTimeout(() => setLinkSaved(false), 2000);
+  };
+
   const calcPct = (part: number, total: number) => {
     if (!total || total === 0) return "0.0";
     return ((part / total) * 100).toFixed(1);
   };
 
-  const totalRevenue = (stats.sale1 * 8.90) + (stats.sale2 * 9.90);
+  const totalRevenue = (stats.sale1 * 19.00) + (stats.sale2 * 9.90);
   const convVenda1 = calcPct(stats.sale1, stats.visits);
   const convVenda2 = calcPct(stats.sale2, stats.sale1);
   const convFinal = calcPct(stats.sale2, stats.visits);
@@ -46,6 +54,30 @@ export const ChatDashboard: React.FC = () => {
           >
             <RefreshCw size={20} className="text-[#00a884]" />
           </button>
+        </div>
+
+        {/* Link de Redirecionamento */}
+        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Link2 size={16} className="text-[#00a884]" />
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Link do Botão "Liberar Acesso"</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              placeholder="https://seu-link-de-pagamento.com"
+              value={redirectLink}
+              onChange={(e) => setRedirectLink(e.target.value)}
+              className="flex-1 bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+            />
+            <button
+              onClick={handleSaveLink}
+              className={`px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${linkSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'}`}
+            >
+              <Save size={16} />
+              {linkSaved ? 'Salvo!' : 'Salvar'}
+            </button>
+          </div>
         </div>
 
         <div className="bg-gradient-to-br from-[#00a884] to-[#008a6d] p-6 rounded-3xl shadow-2xl mb-6 relative overflow-hidden">
@@ -110,7 +142,7 @@ export const ChatDashboard: React.FC = () => {
             <div className="flex items-start gap-4">
               <div className="w-8 h-8 rounded-full bg-[#16A349]/20 text-[#16A349] flex items-center justify-center shrink-0 font-bold text-xs">4</div>
               <div className="flex-1">
-                <div className="flex justify-between text-sm font-bold mb-1 text-[#16A349]"><span>Venda R$ 8,90 Concluída</span><span>{convVenda1}%</span></div>
+                <div className="flex justify-between text-sm font-bold mb-1 text-[#16A349]"><span>Venda R$ 19,00 Concluída</span><span>{convVenda1}%</span></div>
                 <div className="w-full bg-[#2a3942] h-2 rounded-full">
                   <div className="bg-[#16A349] h-full rounded-full" style={{ width: `${convVenda1}%` }}></div>
                 </div>
