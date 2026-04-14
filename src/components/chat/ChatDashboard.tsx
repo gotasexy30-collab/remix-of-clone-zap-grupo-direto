@@ -9,7 +9,7 @@ export const ChatDashboard: React.FC = () => {
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
-  const [profileSaved, setProfileSaved] = useState(false);
+  
 
   const loadData = async () => {
     setLoading(true);
