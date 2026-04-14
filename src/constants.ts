@@ -64,7 +64,9 @@ export const DIALOGUE: DialogueMap = {
   AWAITING_COMBINED: {
     messages: [
       { type: 'audio', content: BASE_URL + '/audios/audio15.mp3', delay: 7000 },
-      { type: 'audio', content: BASE_URL + '/audios/audio16.mp3', delay: 7000 }
+      { type: 'audio', content: BASE_URL + '/audios/audio16.mp3', delay: 7000 },
+      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-1.png', delay: 5000 },
+      { type: 'image', content: 'https://dimukzjiyqzdndqrbwkf.supabase.co/storage/v1/object/public/chat-assets/chat-group-2.png', delay: 4500 }
     ],
     response: {
       type: 'buttons',
