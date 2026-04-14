@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck } from 'lucide-react';
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
+import { getSetting } from '../../services/settings';
 
 interface PaymentPanelProps {
   userCity: string;
