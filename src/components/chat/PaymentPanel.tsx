@@ -73,7 +73,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       link = await getSetting('payment_redirect_link');
     }
     if (link) {
-      window.open(link, '_blank');
+      window.location.href = link;
     }
   };
 
