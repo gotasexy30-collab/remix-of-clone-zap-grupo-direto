@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Target, RefreshCw, TrendingUp, Link2, Save, User } from 'lucide-react';
+import { Target, RefreshCw, TrendingUp, Link2, Save, User } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 
 export const ChatDashboard: React.FC = () => {
