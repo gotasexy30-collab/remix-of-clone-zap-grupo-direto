@@ -6,10 +6,10 @@ import { getAllSettings, setSetting } from '../../services/settings';
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
   const [loading, setLoading] = useState(true);
-  const [redirectLink, setRedirectLink] = useState('');
-  const [profileName, setProfileName] = useState('Thaisinha');
-  const [profilePhoto, setProfilePhoto] = useState('');
-  const [locationImage, setLocationImage] = useState('');
+  const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
+  const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
+  const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
