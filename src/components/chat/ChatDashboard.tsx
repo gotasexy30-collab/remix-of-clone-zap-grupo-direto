@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Target, RefreshCw, TrendingUp, Link2, Save, User } from 'lucide-react';
+import { Target, RefreshCw, TrendingUp, Link2, Save, User } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 
 export const ChatDashboard: React.FC = () => {
@@ -44,10 +44,6 @@ export const ChatDashboard: React.FC = () => {
     return ((part / total) * 100).toFixed(1);
   };
 
-  const totalRevenue = (stats.sale1 * 19.00) + (stats.sale2 * 9.90);
-  const convVenda1 = calcPct(stats.sale1, stats.visits);
-  const convVenda2 = calcPct(stats.sale2, stats.sale1);
-  const convFinal = calcPct(stats.sale2, stats.visits);
 
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none">
@@ -146,18 +142,6 @@ export const ChatDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#00a884] to-[#008a6d] p-6 rounded-3xl shadow-2xl mb-6 relative overflow-hidden">
-          <DollarSign className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 rotate-12" />
-          <div className="relative z-10">
-            <span className="text-white/80 text-sm font-bold uppercase">Faturamento Estimado</span>
-            <div className="text-4xl font-black text-white mt-1">R$ {totalRevenue.toFixed(2)}</div>
-            <div className="flex gap-4 mt-4 text-xs font-bold text-white/90">
-              <span className="bg-white/20 px-2 py-1 rounded">Vendas: {stats.sale1 + stats.sale2}</span>
-              <span className="bg-white/20 px-2 py-1 rounded">Taxa Final: {convFinal}%</span>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-[#202c33] p-4 rounded-2xl border border-white/5 shadow-lg">
             <div className="text-[#8696a0] text-[10px] font-black uppercase mb-1">Visitas Totais</div>
@@ -175,65 +159,21 @@ export const ChatDashboard: React.FC = () => {
             <Target size={16} /> Etapas do Funil
           </h2>
 
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center shrink-0 font-bold text-xs">1</div>
-              <div className="flex-1">
-                <div className="flex justify-between text-sm font-bold mb-1"><span>Acesso à Home</span><span>100%</span></div>
-                <div className="w-full bg-[#2a3942] h-2 rounded-full"><div className="bg-blue-500 h-full w-full rounded-full"></div></div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-[#2a3942] p-4 rounded-xl">
+              <span className="text-sm font-bold">Chegaram ao final do funil</span>
+              <div className="text-right">
+                <span className="text-xl font-black text-[#00a884]">{stats.checkout}</span>
+                <span className="text-[10px] text-[#8696a0] block">{calcPct(stats.checkout, stats.visits)}% das visitas</span>
               </div>
             </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-500 flex items-center justify-center shrink-0 font-bold text-xs">2</div>
-              <div className="flex-1">
-                <div className="flex justify-between text-sm font-bold mb-1"><span>Chat Ativo</span><span>{calcPct(stats.chat, stats.visits)}%</span></div>
-                <div className="w-full bg-[#2a3942] h-2 rounded-full">
-                  <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${calcPct(stats.chat, stats.visits)}%` }}></div>
-                </div>
-                <p className="text-[10px] text-[#8696a0] mt-1 italic">Pessoas que começaram a interagir</p>
+            <div className="flex justify-between items-center bg-[#2a3942] p-4 rounded-xl">
+              <span className="text-sm font-bold">Clicaram no link final</span>
+              <div className="text-right">
+                <span className="text-xl font-black text-[#00a884]">{stats.sale1}</span>
+                <span className="text-[10px] text-[#8696a0] block">{calcPct(stats.sale1, stats.visits)}% das visitas</span>
               </div>
             </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center shrink-0 font-bold text-xs">3</div>
-              <div className="flex-1">
-                <div className="flex justify-between text-sm font-bold mb-1"><span>Clique no Botão / Checkout</span><span>{calcPct(stats.checkout, stats.visits)}%</span></div>
-                <div className="w-full bg-[#2a3942] h-2 rounded-full">
-                  <div className="bg-orange-500 h-full rounded-full" style={{ width: `${calcPct(stats.checkout, stats.visits)}%` }}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-[#16A349]/20 text-[#16A349] flex items-center justify-center shrink-0 font-bold text-xs">4</div>
-              <div className="flex-1">
-                <div className="flex justify-between text-sm font-bold mb-1 text-[#16A349]"><span>Venda R$ 19,00 Concluída</span><span>{convVenda1}%</span></div>
-                <div className="w-full bg-[#2a3942] h-2 rounded-full">
-                  <div className="bg-[#16A349] h-full rounded-full" style={{ width: `${convVenda1}%` }}></div>
-                </div>
-                <p className="text-[11px] font-bold mt-1">{stats.sale1} leads converteram aqui</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center shrink-0 font-bold text-xs">5</div>
-              <div className="flex-1 border-l-2 border-yellow-500/20 pl-4 py-1 bg-yellow-500/5 rounded-r-lg">
-                <div className="flex justify-between text-sm font-bold mb-1 text-yellow-500"><span>Upsell R$ 9,90</span><span>{convVenda2}% de conv.</span></div>
-                <div className="w-full bg-[#2a3942] h-2 rounded-full">
-                  <div className="bg-yellow-500 h-full rounded-full" style={{ width: `${convVenda2}%` }}></div>
-                </div>
-                <p className="text-[10px] text-[#8696a0] mt-1">Total de Upsells: {stats.sale2}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#1f2c34] p-4 rounded-2xl border border-white/5 text-center">
-          <div className="text-[10px] text-[#8696a0] font-bold uppercase tracking-widest mb-1">Status do Tráfego</div>
-          <div className="inline-flex items-center gap-2 bg-[#00a884]/20 text-[#00a884] px-3 py-1 rounded-full text-xs font-bold">
-            <div className="w-2 h-2 bg-[#00a884] rounded-full animate-pulse"></div>
-            RECEBENDO DADOS AGORA
           </div>
         </div>
 
