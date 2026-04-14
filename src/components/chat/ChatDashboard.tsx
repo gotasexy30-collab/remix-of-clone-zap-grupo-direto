@@ -30,6 +30,13 @@ export const ChatDashboard: React.FC = () => {
     setTimeout(() => setLinkSaved(false), 2000);
   };
 
+  const handleSaveProfile = () => {
+    localStorage.setItem('chat_profile_name', profileName);
+    localStorage.setItem('chat_profile_photo', profilePhoto);
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 2000);
+  };
+
   const calcPct = (part: number, total: number) => {
     if (!total || total === 0) return "0.0";
     return ((part / total) * 100).toFixed(1);
