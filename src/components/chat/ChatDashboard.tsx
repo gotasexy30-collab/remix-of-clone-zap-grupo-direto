@@ -133,6 +133,7 @@ export const ChatDashboard: React.FC = () => {
           </div>
         </div>
 
+        <div className="bg-gradient-to-br from-[#00a884] to-[#008a6d] p-6 rounded-3xl shadow-2xl mb-6 relative overflow-hidden">
           <DollarSign className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 rotate-12" />
           <div className="relative z-10">
             <span className="text-white/80 text-sm font-bold uppercase">Faturamento Estimado</span>
