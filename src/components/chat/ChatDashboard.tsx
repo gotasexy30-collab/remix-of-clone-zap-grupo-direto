@@ -60,11 +60,19 @@ export const ChatDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none">
       <div className="max-w-xl mx-auto pb-20">
-        <div className="mb-6 pt-4">
-          <h1 className="text-2xl font-black text-white flex items-center gap-2">
-            <TrendingUp className="text-[#00a884]" /> DASHBOARD
-          </h1>
-          <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
+        <div className="mb-6 pt-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-white flex items-center gap-2">
+              <TrendingUp className="text-[#00a884]" /> DASHBOARD
+            </h1>
+            <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
+          >
+            <LogOut size={16} /> Sair
+          </button>
         </div>
 
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
