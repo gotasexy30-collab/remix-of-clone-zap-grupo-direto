@@ -66,9 +66,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [displayedMessages, isTyping]);
 
-  const handleAccessClick = () => {
+  const handleAccessClick = async () => {
     trackEvent('h3');
-    const link = localStorage.getItem('payment_redirect_link');
+    let link = localStorage.getItem('payment_redirect_link');
+    if (!link) {
+      link = await getSetting('payment_redirect_link');
+    }
     if (link) {
       window.open(link, '_blank');
     }
