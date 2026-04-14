@@ -34,6 +34,7 @@ export const ChatDashboard: React.FC = () => {
   const handleSaveProfile = () => {
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
+    localStorage.setItem('chat_location_image', locationImage);
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2000);
   };
