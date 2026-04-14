@@ -8,6 +8,7 @@ import { ChatHeader } from '../components/chat/ChatHeader';
 import { PaymentPanel } from '../components/chat/PaymentPanel';
 import { trackEvent } from '../services/tracking';
 import { generateImageWithCity } from '../services/imageOverlay';
+import { getSetting } from '../services/settings';
 
 const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4cf04952ad45a2c.jpg';
 
@@ -99,8 +100,11 @@ const Index = () => {
         }
         if (type === 'image_with_location') {
           const city = locationData.city || 'Sua Cidade';
-          const baseImage = localStorage.getItem('chat_location_image') || `${BASE_URL}/generate-image-with-city?cidade=${encodeURIComponent(city)}`;
-          if (localStorage.getItem('chat_location_image')) {
+          let baseImage = localStorage.getItem('chat_location_image');
+          if (!baseImage) {
+            baseImage = await getSetting('chat_location_image');
+          }
+          if (baseImage) {
             content = await generateImageWithCity(baseImage, city);
           } else {
             content = `${BASE_URL}/generate-image-with-city?cidade=${encodeURIComponent(city)}`;

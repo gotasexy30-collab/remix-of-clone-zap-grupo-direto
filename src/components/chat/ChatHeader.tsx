@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, Video, Phone, MoreVertical } from 'lucide-react';
+import { getSetting } from '../../services/settings';
 
 interface HeaderProps {
   status: string;
 }
 
 export const ChatHeader: React.FC<HeaderProps> = ({ status }) => {
-  const profileName = localStorage.getItem('chat_profile_name') || 'Thaisinha';
-  const imageUrl = localStorage.getItem('chat_profile_photo') || "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp";
+  const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
+  const [imageUrl, setImageUrl] = useState(localStorage.getItem('chat_profile_photo') || "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp");
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const [name, photo] = await Promise.all([
+        getSetting('chat_profile_name'),
+        getSetting('chat_profile_photo'),
+      ]);
+      if (name) { setProfileName(name); localStorage.setItem('chat_profile_name', name); }
+      if (photo) { setImageUrl(photo); localStorage.setItem('chat_profile_photo', photo); }
+    };
+    loadSettings();
+  }, []);
 
   return (
     <div className="bg-[#005E54] text-white p-2.5 flex items-center justify-between z-20 shadow-sm shrink-0">
