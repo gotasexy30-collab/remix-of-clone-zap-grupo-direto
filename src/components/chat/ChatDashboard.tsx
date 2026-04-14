@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Target, RefreshCw, TrendingUp, Link2, Save, User } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
-  const [linkSaved, setLinkSaved] = useState(false);
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
-  const [profileSaved, setProfileSaved] = useState(false);
+  
 
   const loadData = async () => {
     setLoading(true);
@@ -25,18 +24,15 @@ export const ChatDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSaveLink = () => {
-    localStorage.setItem('payment_redirect_link', redirectLink);
-    setLinkSaved(true);
-    setTimeout(() => setLinkSaved(false), 2000);
-  };
+  const [allSaved, setAllSaved] = useState(false);
 
-  const handleSaveProfile = () => {
+  const handleSaveAll = () => {
+    localStorage.setItem('payment_redirect_link', redirectLink);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2000);
+    setAllSaved(true);
+    setTimeout(() => setAllSaved(false), 2000);
   };
 
   const calcPct = (part: number, total: number) => {
@@ -49,19 +45,11 @@ export const ChatDashboard: React.FC = () => {
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none">
       <div className="max-w-xl mx-auto pb-20">
 
-        <div className="flex justify-between items-center mb-6 pt-4">
-          <div>
-            <h1 className="text-2xl font-black text-white flex items-center gap-2">
-              <TrendingUp className="text-[#00a884]" /> DASHBOARD
-            </h1>
-            <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
-          </div>
-          <button
-            onClick={loadData}
-            className={`p-3 rounded-xl bg-[#202c33] border border-white/10 active:scale-95 transition-all ${loading ? 'animate-spin' : ''}`}
-          >
-            <RefreshCw size={20} className="text-[#00a884]" />
-          </button>
+        <div className="mb-6 pt-4">
+          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+            <TrendingUp className="text-[#00a884]" /> DASHBOARD
+          </h1>
+          <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
         </div>
 
         {/* Link de Redirecionamento */}
@@ -70,22 +58,13 @@ export const ChatDashboard: React.FC = () => {
             <Link2 size={16} className="text-[#00a884]" />
             <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Link do Botão "Liberar Acesso"</span>
           </div>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              placeholder="https://seu-link-de-pagamento.com"
-              value={redirectLink}
-              onChange={(e) => setRedirectLink(e.target.value)}
-              className="flex-1 bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-            />
-            <button
-              onClick={handleSaveLink}
-              className={`px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${linkSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'}`}
-            >
-              <Save size={16} />
-              {linkSaved ? 'Salvo!' : 'Salvar'}
-            </button>
-          </div>
+          <input
+            type="url"
+            placeholder="https://seu-link-de-pagamento.com"
+            value={redirectLink}
+            onChange={(e) => setRedirectLink(e.target.value)}
+            className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+          />
         </div>
 
         {/* Configuração do Perfil */}
@@ -132,15 +111,17 @@ export const ChatDashboard: React.FC = () => {
                 <span className="text-[11px] text-[#8696a0]">Preview da foto</span>
               </div>
             )}
-            <button
-              onClick={handleSaveProfile}
-              className={`w-full px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${profileSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'}`}
-            >
-              <Save size={16} />
-              {profileSaved ? 'Salvo!' : 'Salvar Perfil'}
-            </button>
           </div>
         </div>
+
+        {/* Botão único de salvar */}
+        <button
+          onClick={handleSaveAll}
+          className={`w-full px-4 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all mb-6 ${allSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'}`}
+        >
+          <Save size={18} />
+          {allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
+        </button>
 
 
         <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
