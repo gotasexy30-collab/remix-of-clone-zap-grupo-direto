@@ -59,7 +59,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
 
   return (
     <div className="flex mb-2 items-end justify-start animate-fadeIn">
-      <img src="https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp" className="w-[30px] h-[30px] rounded-full mr-2" />
+      <img src={localStorage.getItem('chat_profile_photo') || "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp"} className="w-[30px] h-[30px] rounded-full mr-2" />
       <div className={`relative max-w-[80%] bg-[#262d31] rounded-[18px] rounded-tl-none shadow-sm ${isMedia ? 'p-1' : 'p-2 px-3'}`}>
         {isMedia ? (
           <img src={displayContent} className="w-full max-w-[300px] rounded-lg" alt="media" loading="lazy" />
