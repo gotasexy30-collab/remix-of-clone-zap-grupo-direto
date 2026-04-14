@@ -170,7 +170,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ id, src, isUser, playi
       {/* Avatar */}
       <div className="relative shrink-0 w-[46px] h-[46px] mr-1">
         <img
-          src="https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp"
+          src={localStorage.getItem('chat_profile_photo') || "https://midia.jdfnu287h7dujn2jndjsifd.com/perfil.webp"}
           alt="Avatar"
           className="w-[46px] h-[46px] rounded-full object-cover"
         />
