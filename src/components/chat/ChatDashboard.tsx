@@ -9,6 +9,7 @@ export const ChatDashboard: React.FC = () => {
   const [linkSaved, setLinkSaved] = useState(false);
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
+  const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [profileSaved, setProfileSaved] = useState(false);
 
   const loadData = async () => {
@@ -33,6 +34,7 @@ export const ChatDashboard: React.FC = () => {
   const handleSaveProfile = () => {
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
+    localStorage.setItem('chat_location_image', locationImage);
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2000);
   };
@@ -116,6 +118,17 @@ export const ChatDashboard: React.FC = () => {
                 onChange={(e) => setProfilePhoto(e.target.value)}
                 className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
               />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da imagem com localização (base)</label>
+              <input
+                type="url"
+                placeholder="https://exemplo.com/imagem-base.jpg"
+                value={locationImage}
+                onChange={(e) => setLocationImage(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">A cidade do usuário será sobreposta automaticamente nesta imagem</p>
             </div>
             {profilePhoto && (
               <div className="flex items-center gap-3">
