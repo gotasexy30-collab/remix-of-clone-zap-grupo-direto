@@ -44,10 +44,6 @@ export const ChatDashboard: React.FC = () => {
     return ((part / total) * 100).toFixed(1);
   };
 
-  const totalRevenue = (stats.sale1 * 19.00) + (stats.sale2 * 9.90);
-  const convVenda1 = calcPct(stats.sale1, stats.visits);
-  const convVenda2 = calcPct(stats.sale2, stats.sale1);
-  const convFinal = calcPct(stats.sale2, stats.visits);
 
   return (
     <div className="min-h-screen bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none">
