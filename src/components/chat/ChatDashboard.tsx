@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
-import { supabase } from '@/integrations/supabase/client';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
@@ -68,7 +67,7 @@ export const ChatDashboard: React.FC = () => {
             <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
           </div>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload(); }}
             className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
           >
             <LogOut size={16} /> Sair
