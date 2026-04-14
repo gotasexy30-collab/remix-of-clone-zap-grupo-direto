@@ -90,7 +90,49 @@ export const ChatDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#00a884] to-[#008a6d] p-6 rounded-3xl shadow-2xl mb-6 relative overflow-hidden">
+        {/* Configuração do Perfil */}
+        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <User size={16} className="text-[#00a884]" />
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Nome e Foto do Perfil</span>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Nome exibido no chat</label>
+              <input
+                type="text"
+                placeholder="Ex: Thaisinha"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da foto de perfil</label>
+              <input
+                type="url"
+                placeholder="https://exemplo.com/foto.jpg"
+                value={profilePhoto}
+                onChange={(e) => setProfilePhoto(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+            </div>
+            {profilePhoto && (
+              <div className="flex items-center gap-3">
+                <img src={profilePhoto} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-[#00a884]/30" />
+                <span className="text-[11px] text-[#8696a0]">Preview da foto</span>
+              </div>
+            )}
+            <button
+              onClick={handleSaveProfile}
+              className={`w-full px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${profileSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'}`}
+            >
+              <Save size={16} />
+              {profileSaved ? 'Salvo!' : 'Salvar Perfil'}
+            </button>
+          </div>
+        </div>
+
           <DollarSign className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 rotate-12" />
           <div className="relative z-10">
             <span className="text-white/80 text-sm font-bold uppercase">Faturamento Estimado</span>
