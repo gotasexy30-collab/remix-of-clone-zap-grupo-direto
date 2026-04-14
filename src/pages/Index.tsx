@@ -20,7 +20,7 @@ const Index = () => {
   const [activeOptions, setActiveOptions] = useState<ButtonOption[] | null>(null);
   const [inputText, setInputText] = useState<string>('');
   const [inputType, setInputType] = useState<'text' | 'buttons' | 'none'>('none');
-  const [leadTracked, setLeadTracked] = useState<boolean>(false);
+  
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState<boolean>(false);
 
@@ -67,13 +67,6 @@ const Index = () => {
         setTimeout(() => {
           setShowPayment(true);
           trackEvent('h3');
-          if (window.fbq) {
-            window.fbq('track', 'InitiateCheckout', {
-              value: 18.80,
-              currency: 'BRL',
-              content_name: getSlug()
-            });
-          }
         }, 500);
         return;
       }
@@ -125,10 +118,6 @@ const Index = () => {
 
         setMessages(prev => [...prev, newMsg]);
 
-        if (!leadTracked && window.fbq) {
-          window.fbq('track', 'Lead', { content_name: getSlug() });
-          setLeadTracked(true);
-        }
 
         await new Promise(resolve => setTimeout(resolve, 800));
       }
@@ -145,7 +134,7 @@ const Index = () => {
       }
     };
     processMessages();
-  }, [currentStepId, locationData.city, leadTracked]);
+  }, [currentStepId, locationData.city]);
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
