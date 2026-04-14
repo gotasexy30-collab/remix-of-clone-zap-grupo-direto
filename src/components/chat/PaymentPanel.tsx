@@ -226,23 +226,17 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
               {step === 'intro' && (
                 <div className="flex flex-col items-center gap-5">
-                  <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black shadow-inner">
-                    <video ref={vslVideoRef} className="w-full h-full object-cover" src="https://pub-a47e1d95fa6d47dcbaf7d09537629b3b.r2.dev/vslgruposecreto.mp4" autoPlay muted loop playsInline onContextMenu={(e) => e.preventDefault()} />
-                    {showVslOverlay && (
-                      <div onClick={() => { if(vslVideoRef.current){vslVideoRef.current.muted=false; setShowVslOverlay(false);}}} className="absolute inset-0 bg-black/60 cursor-pointer flex justify-center items-center"><VolumeX className="w-10 h-10 text-white" /></div>
-                    )}
-                  </div>
                   <div className="text-center">
                     <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
                     <p className="text-gray-500 text-sm">Últimas vagas para sua região!</p>
                     <div className="my-2">
                       <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                      <span className="text-4xl font-black text-[#16A349]">R$ 8,90</span>
+                      <span className="text-4xl font-black text-[#16A349]">R$ 19,00</span>
                     </div>
                   </div>
-                  <button onClick={() => handleGeneratePix(890, 'qr1')} disabled={loading} className="w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all">
-                    {loading ? <Loader2 className="animate-spin mx-auto" /> : "LIBERAR MEU ACESSO AGORA"}
-                  </button>
+                  <a href={localStorage.getItem('payment_redirect_link') || '#'} target="_blank" rel="noopener noreferrer" className="w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all text-center block">
+                    LIBERAR MEU ACESSO AGORA
+                  </a>
                   <div className="flex items-center gap-2 text-gray-400 text-xs">
                     <ShieldCheck size={14} /> Compra 100% Segura e Sigilosa
                   </div>
