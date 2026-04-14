@@ -20,7 +20,7 @@ const Index = () => {
   const [activeOptions, setActiveOptions] = useState<ButtonOption[] | null>(null);
   const [inputText, setInputText] = useState<string>('');
   const [inputType, setInputType] = useState<'text' | 'buttons' | 'none'>('none');
-  const [leadTracked, setLeadTracked] = useState<boolean>(false);
+  
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState<boolean>(false);
 
