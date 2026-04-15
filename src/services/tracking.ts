@@ -18,17 +18,39 @@ const getNamespace = () => {
   return `vott_v4_${cleanSlug}`;
 };
 
+const fetchWithFallback = async (targetUrl: string): Promise<any> => {
+  // Try direct first
+  try {
+    const res = await fetch(targetUrl, { cache: 'no-cache' });
+    if (res.ok) return await res.json();
+  } catch {}
+
+  // Fallback to allorigins proxy
+  try {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
+    const res = await fetch(proxyUrl, { mode: 'cors', cache: 'no-cache' });
+    if (res.ok) {
+      const wrapper = await res.json();
+      return JSON.parse(wrapper.contents);
+    }
+  } catch {}
+
+  // Fallback to corsproxy.io
+  try {
+    const proxyUrl2 = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    const res = await fetch(proxyUrl2, { cache: 'no-cache' });
+    if (res.ok) return await res.json();
+  } catch {}
+
+  return null;
+};
+
 export const trackEvent = async (key: 'h1' | 'h2' | 'h3' | 'h4' | 'h5') => {
   const namespace = getNamespace();
   const targetUrl = `${API_BASE}/${namespace}/${key}/up`;
 
   try {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
-    await fetch(proxyUrl, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache'
-    });
+    await fetchWithFallback(targetUrl);
     console.log(`[Track] Evento ${key} disparado com sucesso.`);
   } catch {
     console.warn(`[Track] Falha silenciosa no evento ${key}`);
@@ -44,12 +66,8 @@ export const getStats = async () => {
       keys.map(async (key) => {
         try {
           const targetUrl = `${API_BASE}/${namespace}/${key}`;
-          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
-          const res = await fetch(proxyUrl);
-          if (!res.ok) return { count: 0 };
-          const wrapper = await res.json();
-          const data = JSON.parse(wrapper.contents);
-          return { count: data.count || 0 };
+          const data = await fetchWithFallback(targetUrl);
+          return { count: data?.count || 0 };
         } catch {
           return { count: 0 };
         }
