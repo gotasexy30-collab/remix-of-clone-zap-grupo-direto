@@ -57,7 +57,7 @@ export const ChatDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none">
+    <div className="fixed inset-0 bg-[#0b141a] text-[#e9edef] p-4 font-sans select-none overflow-y-auto">
       <div className="max-w-xl mx-auto pb-20">
         <div className="mb-6 pt-4 flex items-center justify-between">
           <div>
