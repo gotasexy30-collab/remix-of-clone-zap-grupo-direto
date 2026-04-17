@@ -38,6 +38,92 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message_text: string
+          redirected_at: string
+          referer: string | null
+          session_id: string | null
+          user_agent: string | null
+          whatsapp_number_id: string | null
+          whatsapp_phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_text?: string
+          redirected_at?: string
+          referer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          whatsapp_number_id?: string | null
+          whatsapp_phone?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_text?: string
+          redirected_at?: string
+          referer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          whatsapp_number_id?: string | null
+          whatsapp_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_logs_whatsapp_number_id_fkey"
+            columns: ["whatsapp_number_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_numbers: {
+        Row: {
+          created_at: string
+          hourly_limit: number
+          id: string
+          label: string
+          last_lead_at: string | null
+          link: string
+          manually_disabled: boolean
+          phone: string
+          status: string
+          total_leads: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hourly_limit?: number
+          id?: string
+          label?: string
+          last_lead_at?: string | null
+          link?: string
+          manually_disabled?: boolean
+          phone: string
+          status?: string
+          total_leads?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hourly_limit?: number
+          id?: string
+          label?: string
+          last_lead_at?: string | null
+          link?: string
+          manually_disabled?: boolean
+          phone?: string
+          status?: string
+          total_leads?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

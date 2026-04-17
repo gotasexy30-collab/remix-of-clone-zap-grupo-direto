@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
+import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
@@ -127,6 +128,8 @@ export const ChatDashboard: React.FC = () => {
           {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
         </button>
+
+        <WhatsAppRouterPanel />
 
         <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
           <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
