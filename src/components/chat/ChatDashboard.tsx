@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
+import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
