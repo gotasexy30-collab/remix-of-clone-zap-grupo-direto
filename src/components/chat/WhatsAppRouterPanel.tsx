@@ -35,20 +35,45 @@ export const WhatsAppRouterPanel: React.FC = () => {
     return data;
   };
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await callAdmin("list_numbers");
-      setNumbers(data?.numbers || []);
+      const fresh: WaNumber[] = data?.numbers || [];
+      setNumbers((prev) => {
+        if (prev.length === 0) return fresh;
+        // Merge: mantém a ordem antiga e só atualiza métricas/status dos itens existentes.
+        // Adiciona novos no final e remove os que sumiram.
+        const freshMap = new Map(fresh.map((n) => [n.id, n]));
+        const merged = prev
+          .filter((p) => freshMap.has(p.id))
+          .map((p) => {
+            const f = freshMap.get(p.id)!;
+            freshMap.delete(p.id);
+            return {
+              ...p,
+              status: f.status,
+              manually_disabled: f.manually_disabled,
+              total_leads: f.total_leads,
+              last_lead_at: f.last_lead_at,
+              leads_last_hour: f.leads_last_hour,
+              hourly_limit: f.hourly_limit,
+              label: f.label,
+              phone: f.phone,
+              link: f.link,
+            };
+          });
+        return [...merged, ...Array.from(freshMap.values())];
+      });
     } catch (e) {
       console.error(e);
     }
-    setLoading(false);
+    if (!silent) setLoading(false);
   };
 
   useEffect(() => {
     load();
-    const i = setInterval(load, 30000);
+    const i = setInterval(() => load(true), 30000);
     return () => clearInterval(i);
   }, []);
 
