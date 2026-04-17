@@ -129,6 +129,8 @@ export const ChatDashboard: React.FC = () => {
           {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
         </button>
 
+        <WhatsAppRouterPanel />
+
         <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
           <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
             <Target size={16} /> Etapas do Funil
