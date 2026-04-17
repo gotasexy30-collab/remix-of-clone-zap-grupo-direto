@@ -3,6 +3,7 @@ import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck } from '
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
+import { useWhatsAppRouter } from '../../hooks/useWhatsAppRouter';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -31,6 +32,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [isTyping, setIsTyping] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState(false);
+  const { redirect } = useWhatsAppRouter();
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -68,13 +70,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     trackEvent('h3');
-    let link = localStorage.getItem('payment_redirect_link');
-    if (!link) {
-      link = await getSetting('payment_redirect_link');
+    let fallback = localStorage.getItem('payment_redirect_link') || '';
+    if (!fallback) {
+      fallback = (await getSetting('payment_redirect_link')) || '';
     }
-    if (link) {
-      window.location.href = link;
-    }
+    await redirect('Me manda o PIX amor vou entrar', fallback);
   };
 
   return (
