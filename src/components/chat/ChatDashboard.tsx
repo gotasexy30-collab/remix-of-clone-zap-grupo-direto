@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
@@ -11,6 +11,8 @@ export const ChatDashboard: React.FC = () => {
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
+  const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
+  const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -22,6 +24,8 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
+    if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
+    if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
     setLoading(false);
   };
 
@@ -41,12 +45,16 @@ export const ChatDashboard: React.FC = () => {
       setSetting('chat_profile_name', profileName),
       setSetting('chat_profile_photo', profilePhoto),
       setSetting('chat_location_image', locationImage),
+      setSetting('meta_pixel_id', metaPixelId),
+      setSetting('meta_capi_token', metaCapiToken),
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
+    localStorage.setItem('meta_pixel_id', metaPixelId);
+    localStorage.setItem('meta_capi_token', metaCapiToken);
     setSaving(false);
     setAllSaved(true);
     setTimeout(() => setAllSaved(false), 2000);
