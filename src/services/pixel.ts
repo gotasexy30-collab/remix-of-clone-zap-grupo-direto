@@ -51,6 +51,55 @@ export function fbqTrack(event: string, params?: Record<string, any>) {
   }
 }
 
+// ============ Meta CAPI (server-side) ============
+function getCookie(name: string): string {
+  try {
+    const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[2]) : '';
+  } catch { return ''; }
+}
+
+function genEventId(): string {
+  return (crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+}
+
+/**
+ * Tracks an event via BOTH client-side Pixel AND server-side CAPI with the same
+ * event_id, so Meta deduplicates automatically. Use for high-value events (Lead, Purchase).
+ */
+export function trackEventDual(event: string, params?: Record<string, any>) {
+  const eventId = genEventId();
+
+  // 1. Client-side pixel with eventID
+  if (window.fbq) {
+    window.fbq('track', event, params || {}, { eventID: eventId });
+  }
+
+  // 2. Server-side CAPI (fire-and-forget)
+  try {
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meta-capi`;
+    fetch(url, {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        event_name: event,
+        event_id: eventId,
+        event_source_url: window.location.href,
+        value: params?.value,
+        currency: params?.currency || 'BRL',
+        fbp: getCookie('_fbp'),
+        fbc: getCookie('_fbc'),
+        user_agent: navigator.userAgent,
+      }),
+    }).catch(() => {});
+  } catch { /* noop */ }
+}
+
 // ============ UTM persistence ============
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
 
