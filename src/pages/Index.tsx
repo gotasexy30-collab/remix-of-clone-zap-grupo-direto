@@ -9,6 +9,7 @@ import { PaymentPanel } from '../components/chat/PaymentPanel';
 import { trackEvent } from '../services/tracking';
 import { generateImageWithCity } from '../services/imageOverlay';
 import { getSetting } from '../services/settings';
+import { initMetaPixel, fbqTrack, captureUTMs } from '../services/pixel';
 
 const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4cf04952ad45a2c.jpg';
 
@@ -35,6 +36,8 @@ const Index = () => {
     if (!visitTracked.current) {
       trackEvent('h1');
       visitTracked.current = true;
+      captureUTMs();
+      initMetaPixel();
     }
     getUserLocation().then(data => setLocationData(data));
   }, []);
@@ -60,6 +63,7 @@ const Index = () => {
 
     if (currentStepId === 'AWAITING_CITY') {
       trackEvent('h2');
+      fbqTrack('ViewContent', { content_name: 'chat_started' });
     }
 
     const step = DIALOGUE[currentStepId];
