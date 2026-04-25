@@ -4,6 +4,7 @@ import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
 import { useWhatsAppRouter } from '../../hooks/useWhatsAppRouter';
+import { fbqTrack, appendUTMsToUrl } from '../../services/pixel';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -48,7 +49,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
     const processNextMessage = async () => {
       if (currentMsgIndex >= dynamicMessages.length) {
-        timeoutId = setTimeout(() => setShowModal(true), 1500);
+        timeoutId = setTimeout(() => {
+          setShowModal(true);
+          fbqTrack('InitiateCheckout', { value: 19.90, currency: 'BRL' });
+        }, 1500);
         return;
       }
       const msgData = dynamicMessages[currentMsgIndex];
@@ -70,11 +74,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     trackEvent('h3');
+    fbqTrack('Lead', { value: 19.90, currency: 'BRL' });
     let fallback = localStorage.getItem('payment_redirect_link') || '';
     if (!fallback) {
       fallback = (await getSetting('payment_redirect_link')) || '';
     }
-    await redirect('Me manda o PIX amor vou entrar', fallback);
+    await redirect('Me manda o PIX amor vou entrar', appendUTMsToUrl(fallback));
   };
 
   return (

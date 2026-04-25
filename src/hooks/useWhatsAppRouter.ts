@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { appendUTMsToUrl } from "@/services/pixel";
 
 const ROUTER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-router`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -60,7 +61,7 @@ export function useWhatsAppRouter() {
           session_id: getSessionId(),
         });
 
-        window.location.assign(link);
+        window.location.assign(appendUTMsToUrl(link));
       } catch {
         if (fallbackUrl) window.location.assign(fallbackUrl);
       } finally {

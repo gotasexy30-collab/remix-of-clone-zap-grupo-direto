@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
@@ -11,6 +11,8 @@ export const ChatDashboard: React.FC = () => {
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
+  const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
+  const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -22,6 +24,8 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
+    if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
+    if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
     setLoading(false);
   };
 
@@ -41,12 +45,16 @@ export const ChatDashboard: React.FC = () => {
       setSetting('chat_profile_name', profileName),
       setSetting('chat_profile_photo', profilePhoto),
       setSetting('chat_location_image', locationImage),
+      setSetting('meta_pixel_id', metaPixelId),
+      setSetting('meta_capi_token', metaCapiToken),
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
+    localStorage.setItem('meta_pixel_id', metaPixelId);
+    localStorage.setItem('meta_capi_token', metaCapiToken);
     setSaving(false);
     setAllSaved(true);
     setTimeout(() => setAllSaved(false), 2000);
@@ -128,6 +136,42 @@ export const ChatDashboard: React.FC = () => {
           {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
         </button>
+
+        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity size={16} className="text-[#1877F2]" />
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Meta Pixel + CAPI (opcional)</span>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Pixel ID (16 dígitos)</label>
+              <input
+                type="text"
+                placeholder="Ex: 1234567890123456"
+                value={metaPixelId}
+                onChange={(e) => setMetaPixelId(e.target.value.trim())}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
+              <input
+                type="password"
+                placeholder="EAAxxxxxxxxxxxxxxxxxx..."
+                value={metaCapiToken}
+                onChange={(e) => setMetaCapiToken(e.target.value.trim())}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
+            </div>
+            <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
+              <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
+                <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView (entrada), ViewContent (chat iniciado), InitiateCheckout (modal aberto), Lead (clique em Liberar Acesso).
+              </p>
+            </div>
+          </div>
+        </div>
 
         <WhatsAppRouterPanel />
 
