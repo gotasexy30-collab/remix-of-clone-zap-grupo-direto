@@ -4,7 +4,7 @@ import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
 import { useWhatsAppRouter } from '../../hooks/useWhatsAppRouter';
-import { fbqTrack, appendUTMsToUrl } from '../../services/pixel';
+import { fbqTrack, trackEventDual, appendUTMsToUrl } from '../../services/pixel';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -74,7 +74,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     trackEvent('h3');
-    fbqTrack('Lead', { value: 19.90, currency: 'BRL' });
+    trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
     let fallback = localStorage.getItem('payment_redirect_link') || '';
     if (!fallback) {
       fallback = (await getSetting('payment_redirect_link')) || '';
