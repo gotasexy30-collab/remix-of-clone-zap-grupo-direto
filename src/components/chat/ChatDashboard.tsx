@@ -137,6 +137,42 @@ export const ChatDashboard: React.FC = () => {
           {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
         </button>
 
+        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity size={16} className="text-[#1877F2]" />
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Meta Pixel + CAPI (opcional)</span>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Pixel ID (16 dígitos)</label>
+              <input
+                type="text"
+                placeholder="Ex: 1234567890123456"
+                value={metaPixelId}
+                onChange={(e) => setMetaPixelId(e.target.value.trim())}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
+              <input
+                type="password"
+                placeholder="EAAxxxxxxxxxxxxxxxxxx..."
+                value={metaCapiToken}
+                onChange={(e) => setMetaCapiToken(e.target.value.trim())}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
+            </div>
+            <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
+              <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
+                <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView (entrada), ViewContent (chat iniciado), InitiateCheckout (modal aberto), Lead (clique em Liberar Acesso).
+              </p>
+            </div>
+          </div>
+        </div>
+
         <WhatsAppRouterPanel />
 
         <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
