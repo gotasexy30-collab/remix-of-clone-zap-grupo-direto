@@ -74,6 +74,15 @@ async function getBestNumber() {
   });
 
   const n = available[0];
+
+  // Auto-reativa: se estava auto_paused mas agora tem vaga, volta para active
+  if (n.status === "auto_paused") {
+    await supabase
+      .from("whatsapp_numbers")
+      .update({ status: "active" })
+      .eq("id", n.id);
+  }
+
   return {
     number: { id: n.id, phone: n.phone, label: n.label, link: n.link },
   };
@@ -152,6 +161,24 @@ async function listNumbers() {
       hourlyCount[l.whatsapp_number_id] =
         (hourlyCount[l.whatsapp_number_id] || 0) + 1;
   });
+
+  // Auto-reativa chips que estavam auto_paused mas já têm vaga na janela deslizante
+  const toReactivate = (numbers || []).filter(
+    (n) =>
+      n.status === "auto_paused" &&
+      !n.manually_disabled &&
+      (hourlyCount[n.id] || 0) < n.hourly_limit,
+  );
+  if (toReactivate.length) {
+    await supabase
+      .from("whatsapp_numbers")
+      .update({ status: "active" })
+      .in(
+        "id",
+        toReactivate.map((n) => n.id),
+      );
+    toReactivate.forEach((n) => (n.status = "active"));
+  }
 
   return {
     numbers: (numbers || []).map((n) => ({
