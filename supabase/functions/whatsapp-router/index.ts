@@ -74,6 +74,15 @@ async function getBestNumber() {
   });
 
   const n = available[0];
+
+  // Auto-reativa: se estava auto_paused mas agora tem vaga, volta para active
+  if (n.status === "auto_paused") {
+    await supabase
+      .from("whatsapp_numbers")
+      .update({ status: "active" })
+      .eq("id", n.id);
+  }
+
   return {
     number: { id: n.id, phone: n.phone, label: n.label, link: n.link },
   };
