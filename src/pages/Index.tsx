@@ -10,6 +10,7 @@ import { trackEvent } from '../services/tracking';
 import { generateImageWithCity } from '../services/imageOverlay';
 import { getSetting } from '../services/settings';
 import { initMetaPixel, fbqTrack, captureUTMs } from '../services/pixel';
+import { supabase } from '@/integrations/supabase/client';
 
 const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4cf04952ad45a2c.jpg';
 
@@ -38,6 +39,23 @@ const Index = () => {
       visitTracked.current = true;
       captureUTMs();
       initMetaPixel();
+      // Registra visita no banco (funil diário)
+      try {
+        let sid = sessionStorage.getItem('wa_session_id');
+        if (!sid) {
+          sid = crypto.randomUUID();
+          sessionStorage.setItem('wa_session_id', sid);
+        }
+        supabase.functions.invoke('whatsapp-router', {
+          body: {
+            action: 'track_visit',
+            session_id: sid,
+            slug: getSlug(),
+            user_agent: navigator.userAgent,
+            referer: document.referrer,
+          },
+        }).catch(() => {});
+      } catch { /* noop */ }
     }
     getUserLocation().then(data => setLocationData(data));
   }, []);
