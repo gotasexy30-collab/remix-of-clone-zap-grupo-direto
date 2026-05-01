@@ -82,6 +82,33 @@ export type Database = {
           },
         ]
       }
+      page_visits: {
+        Row: {
+          id: string
+          referer: string
+          session_id: string
+          slug: string
+          user_agent: string
+          visited_at: string
+        }
+        Insert: {
+          id?: string
+          referer?: string
+          session_id?: string
+          slug?: string
+          user_agent?: string
+          visited_at?: string
+        }
+        Update: {
+          id?: string
+          referer?: string
+          session_id?: string
+          slug?: string
+          user_agent?: string
+          visited_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_numbers: {
         Row: {
           created_at: string
