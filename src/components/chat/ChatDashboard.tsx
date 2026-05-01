@@ -222,22 +222,6 @@ export const ChatDashboard: React.FC = () => {
               <strong className="text-white/80">Visitas</strong> = pessoas únicas que abriram o site hoje. <strong className="text-white/80">Foram p/ Zap</strong> = pessoas únicas que clicaram em "Liberar Acesso" e foram redirecionadas pro WhatsApp.
             </p>
           </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center bg-[#2a3942] p-4 rounded-xl">
-              <span className="text-sm font-bold">Chegaram ao final do funil</span>
-              <div className="text-right">
-                <span className="text-xl font-black text-[#00a884]">{stats.checkout}</span>
-                <span className="text-[10px] text-[#8696a0] block">{calcPct(stats.checkout, stats.visits)}% das visitas</span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center bg-[#2a3942] p-4 rounded-xl">
-              <span className="text-sm font-bold">Clicaram no link final</span>
-              <div className="text-right">
-                <span className="text-xl font-black text-[#00a884]">{stats.sale1}</span>
-                <span className="text-[10px] text-[#8696a0] block">{calcPct(stats.sale1, stats.visits)}% das visitas</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
