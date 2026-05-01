@@ -196,6 +196,7 @@ async function dailyFunnel() {
   ).size;
   const conversion =
     uniqueVisitors > 0 ? (uniqueClickers / uniqueVisitors) * 100 : 0;
+  const conversionCapped = Math.min(conversion, 100);
 
   return {
     day_start_utc: startUtc,
@@ -203,7 +204,7 @@ async function dailyFunnel() {
     unique_visitors: uniqueVisitors,
     total_clicks: totalClicks,
     unique_clickers: uniqueClickers,
-    conversion_pct: Math.round(conversion * 10) / 10,
+    conversion_pct: Math.round(conversionCapped * 10) / 10,
   };
 }
 
