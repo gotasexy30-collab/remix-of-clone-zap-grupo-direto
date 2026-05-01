@@ -196,6 +196,32 @@ export const ChatDashboard: React.FC = () => {
           <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
             <Target size={16} /> Etapas do Funil
           </h2>
+          <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
+              <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
+                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Visitas</div>
+                <div className="text-2xl font-black text-white">{funnel.unique_visitors}</div>
+                <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
+              </div>
+              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
+                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Foram p/ Zap</div>
+                <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
+                <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
+              </div>
+              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
+                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Conversão</div>
+                <div className="text-2xl font-black text-[#1877F2]">{funnel.conversion_pct}%</div>
+                <div className="text-[9px] text-[#8696a0]">visita → clique</div>
+              </div>
+            </div>
+            <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
+              <strong className="text-white/80">Visitas</strong> = pessoas únicas que abriram o site hoje. <strong className="text-white/80">Foram p/ Zap</strong> = pessoas únicas que clicaram em "Liberar Acesso" e foram redirecionadas pro WhatsApp.
+            </p>
+          </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-[#2a3942] p-4 rounded-xl">
               <span className="text-sm font-bold">Chegaram ao final do funil</span>
