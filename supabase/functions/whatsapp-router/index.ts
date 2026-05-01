@@ -140,6 +140,73 @@ async function logLead(body: any) {
   return { success: true };
 }
 
+async function trackVisit(body: any) {
+  const {
+    session_id = "",
+    slug = "",
+    user_agent = "",
+    referer = "",
+  } = body;
+  await supabase.from("page_visits").insert({
+    session_id,
+    slug,
+    user_agent,
+    referer,
+  });
+  return { success: true };
+}
+
+async function dailyFunnel() {
+  // Janela do dia em horário de Brasília (00:00 a 23:59)
+  const now = new Date();
+  // BRT = UTC-3 (sem DST atualmente)
+  const brtOffsetMs = 3 * 60 * 60 * 1000;
+  const brtNow = new Date(now.getTime() - brtOffsetMs);
+  const startBrt = new Date(
+    Date.UTC(
+      brtNow.getUTCFullYear(),
+      brtNow.getUTCMonth(),
+      brtNow.getUTCDate(),
+      0,
+      0,
+      0,
+    ),
+  );
+  // Converte de volta pra UTC somando o offset
+  const startUtc = new Date(startBrt.getTime() + brtOffsetMs).toISOString();
+
+  const [{ data: visits }, { data: clicks }] = await Promise.all([
+    supabase
+      .from("page_visits")
+      .select("session_id")
+      .gte("visited_at", startUtc),
+    supabase
+      .from("lead_logs")
+      .select("session_id")
+      .gte("redirected_at", startUtc),
+  ]);
+
+  const totalVisits = visits?.length || 0;
+  const uniqueVisitors = new Set(
+    (visits || []).map((v) => v.session_id).filter(Boolean),
+  ).size;
+  const totalClicks = clicks?.length || 0;
+  const uniqueClickers = new Set(
+    (clicks || []).map((c) => c.session_id).filter(Boolean),
+  ).size;
+  const conversion =
+    uniqueVisitors > 0 ? (uniqueClickers / uniqueVisitors) * 100 : 0;
+
+  return {
+    day_start_utc: startUtc,
+    total_visits: totalVisits,
+    unique_visitors: uniqueVisitors,
+    total_clicks: totalClicks,
+    unique_clickers: uniqueClickers,
+    conversion_pct: Math.round(conversion * 10) / 10,
+  };
+}
+
 // ---------- Admin actions ----------
 
 async function listNumbers() {
@@ -252,6 +319,10 @@ Deno.serve(async (req) => {
         return json(await getBestNumber());
       case "log_lead":
         return json(await logLead(body));
+      case "track_visit":
+        return json(await trackVisit(body));
+      case "daily_funnel":
+        return json(await dailyFunnel());
       case "list_numbers":
         if (!(await requireAdmin(body.password)))
           return json({ error: "unauthorized" }, 401);
