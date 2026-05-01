@@ -3,9 +3,17 @@ import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity } from
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
+import { supabase } from '@/integrations/supabase/client';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
+  const [funnel, setFunnel] = useState({
+    total_visits: 0,
+    unique_visitors: 0,
+    total_clicks: 0,
+    unique_clickers: 0,
+    conversion_pct: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
@@ -18,8 +26,13 @@ export const ChatDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [data, settings] = await Promise.all([getStats(), getAllSettings()]);
+    const [data, settings, funnelRes] = await Promise.all([
+      getStats(),
+      getAllSettings(),
+      supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel' } }),
+    ]);
     setStats(data);
+    if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
@@ -32,8 +45,12 @@ export const ChatDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
     const interval = setInterval(async () => {
-      const data = await getStats();
+      const [data, funnelRes] = await Promise.all([
+        getStats(),
+        supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel' } }),
+      ]);
       setStats(data);
+      if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
     }, 30000);
     return () => clearInterval(interval);
   }, []);
