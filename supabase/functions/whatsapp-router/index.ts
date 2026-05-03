@@ -65,15 +65,19 @@ async function getBestNumber() {
   if (!available.length) return { number: null };
 
   available.sort((a, b) => {
-    const ac = hourlyCount[a.id] || 0;
-    const bc = hourlyCount[b.id] || 0;
-    if (ac !== bc) return ac - bc;
-    const al = a.last_lead_at ? new Date(a.last_lead_at).getTime() : 0;
-    const bl = b.last_lead_at ? new Date(b.last_lead_at).getTime() : 0;
+    // Round-robin real: quem foi atribuído há mais tempo (ou nunca) vai primeiro
+    const al = a.last_assigned_at ? new Date(a.last_assigned_at).getTime() : 0;
+    const bl = b.last_assigned_at ? new Date(b.last_assigned_at).getTime() : 0;
     return al - bl;
   });
 
   const n = available[0];
+
+  // Marca imediatamente como "atribuído agora" para próximo lead pular para outro chip
+  await supabase
+    .from("whatsapp_numbers")
+    .update({ last_assigned_at: new Date().toISOString() })
+    .eq("id", n.id);
 
   // Auto-reativa: se estava auto_paused mas agora tem vaga, volta para active
   if (n.status === "auto_paused") {
@@ -212,7 +216,23 @@ async function dailyFunnel() {
 
 async function listNumbers() {
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-  const [{ data: numbers }, { data: recentLogs }] = await Promise.all([
+  // Início do dia em horário de Brasília (UTC-3)
+  const now = new Date();
+  const brtOffsetMs = 3 * 60 * 60 * 1000;
+  const brtNow = new Date(now.getTime() - brtOffsetMs);
+  const startBrt = new Date(
+    Date.UTC(
+      brtNow.getUTCFullYear(),
+      brtNow.getUTCMonth(),
+      brtNow.getUTCDate(),
+      0,
+      0,
+      0,
+    ),
+  );
+  const startOfDayUtc = new Date(startBrt.getTime() + brtOffsetMs).toISOString();
+
+  const [{ data: numbers }, { data: recentLogs }, { data: todayLogs }] = await Promise.all([
     supabase
       .from("whatsapp_numbers")
       .select("*")
@@ -221,6 +241,10 @@ async function listNumbers() {
       .from("lead_logs")
       .select("whatsapp_number_id")
       .gte("redirected_at", oneHourAgo),
+    supabase
+      .from("lead_logs")
+      .select("whatsapp_number_id")
+      .gte("redirected_at", startOfDayUtc),
   ]);
 
   const hourlyCount: Record<string, number> = {};
@@ -228,6 +252,13 @@ async function listNumbers() {
     if (l.whatsapp_number_id)
       hourlyCount[l.whatsapp_number_id] =
         (hourlyCount[l.whatsapp_number_id] || 0) + 1;
+  });
+
+  const todayCount: Record<string, number> = {};
+  todayLogs?.forEach((l) => {
+    if (l.whatsapp_number_id)
+      todayCount[l.whatsapp_number_id] =
+        (todayCount[l.whatsapp_number_id] || 0) + 1;
   });
 
   // Auto-reativa chips que estavam auto_paused mas já têm vaga na janela deslizante
@@ -252,6 +283,7 @@ async function listNumbers() {
     numbers: (numbers || []).map((n) => ({
       ...n,
       leads_last_hour: hourlyCount[n.id] || 0,
+      leads_today: todayCount[n.id] || 0,
     })),
   };
 }

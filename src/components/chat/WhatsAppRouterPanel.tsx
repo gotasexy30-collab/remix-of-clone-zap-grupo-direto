@@ -14,6 +14,7 @@ interface WaNumber {
   total_leads: number;
   last_lead_at: string | null;
   leads_last_hour?: number;
+  leads_today?: number;
 }
 
 export const WhatsAppRouterPanel: React.FC = () => {
@@ -57,6 +58,7 @@ export const WhatsAppRouterPanel: React.FC = () => {
               total_leads: f.total_leads,
               last_lead_at: f.last_lead_at,
               leads_last_hour: f.leads_last_hour,
+              leads_today: f.leads_today,
               hourly_limit: f.hourly_limit,
               label: f.label,
               phone: f.phone,
@@ -129,6 +131,7 @@ export const WhatsAppRouterPanel: React.FC = () => {
   };
 
   const totalLeadsHour = numbers.reduce((s, n) => s + (n.leads_last_hour || 0), 0);
+  const totalLeadsToday = numbers.reduce((s, n) => s + (n.leads_today || 0), 0);
   const activeCount = numbers.filter((n) => !n.manually_disabled && n.status !== "inactive").length;
 
   return (
@@ -155,8 +158,8 @@ export const WhatsAppRouterPanel: React.FC = () => {
           <div className="text-lg font-black text-[#00a884]">{activeCount}</div>
         </div>
         <div className="bg-[#2a3942] rounded-lg p-2 text-center">
-          <div className="text-[9px] text-[#8696a0] font-bold uppercase">Leads/hora</div>
-          <div className="text-lg font-black text-[#00a884]">{totalLeadsHour}</div>
+          <div className="text-[9px] text-[#8696a0] font-bold uppercase">Hoje</div>
+          <div className="text-lg font-black text-[#00a884]">{totalLeadsToday}</div>
         </div>
         <div className="bg-[#2a3942] rounded-lg p-2 text-center">
           <div className="text-[9px] text-[#8696a0] font-bold uppercase">Total</div>
@@ -235,6 +238,10 @@ export const WhatsAppRouterPanel: React.FC = () => {
                   <span className="text-[9px] text-[#8696a0] flex items-center gap-1">
                     <Activity size={10} /> {n.leads_last_hour || 0}/{n.hourly_limit}
                   </span>
+                </div>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <span className="text-[10px] text-[#8696a0]">Hoje (00h–23h59):</span>
+                  <span className="text-[11px] font-black text-[#00a884]">{n.leads_today || 0} leads</span>
                 </div>
                 <input
                   value={edited?.phone ?? n.phone}

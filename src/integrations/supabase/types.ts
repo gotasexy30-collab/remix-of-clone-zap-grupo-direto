@@ -115,6 +115,7 @@ export type Database = {
           hourly_limit: number
           id: string
           label: string
+          last_assigned_at: string | null
           last_lead_at: string | null
           link: string
           manually_disabled: boolean
@@ -128,6 +129,7 @@ export type Database = {
           hourly_limit?: number
           id?: string
           label?: string
+          last_assigned_at?: string | null
           last_lead_at?: string | null
           link?: string
           manually_disabled?: boolean
@@ -141,6 +143,7 @@ export type Database = {
           hourly_limit?: number
           id?: string
           label?: string
+          last_assigned_at?: string | null
           last_lead_at?: string | null
           link?: string
           manually_disabled?: boolean

@@ -1,0 +1,2 @@
+ALTER TABLE public.whatsapp_numbers ADD COLUMN IF NOT EXISTS last_assigned_at TIMESTAMP WITH TIME ZONE;
+CREATE INDEX IF NOT EXISTS idx_lead_logs_number_redirected ON public.lead_logs(whatsapp_number_id, redirected_at);
