@@ -220,7 +220,13 @@ export const WhatsAppRouterPanel: React.FC = () => {
         </p>
       ) : (
         <div className="space-y-2">
-          {numbers.map((n) => {
+          {[...numbers]
+            .sort((a, b) => {
+              const aPaused = a.manually_disabled || a.status === "inactive" ? 1 : 0;
+              const bPaused = b.manually_disabled || b.status === "inactive" ? 1 : 0;
+              return aPaused - bPaused;
+            })
+            .map((n) => {
             const isActive = !n.manually_disabled && n.status !== "inactive";
             const isPaused = n.status === "auto_paused";
             const edited = editing[n.id];
