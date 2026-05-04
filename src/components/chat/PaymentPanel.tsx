@@ -33,7 +33,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [isTyping, setIsTyping] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState(false);
-  const { redirect } = useWhatsAppRouter();
+  const [pix, setPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
