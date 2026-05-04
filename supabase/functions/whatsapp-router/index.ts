@@ -218,6 +218,9 @@ async function dailyFunnel() {
     total_clicks: totalClicks,
     unique_clickers: uniqueClickers,
     conversion_pct: Math.round(conversionCapped * 10) / 10,
+    total_sales: totalSales,
+    revenue: Math.round(revenue * 100) / 100,
+    sales_conversion_pct: Math.round(salesConversion * 10) / 10,
   };
 }
 
