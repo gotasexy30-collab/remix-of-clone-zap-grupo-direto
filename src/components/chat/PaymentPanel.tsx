@@ -173,9 +173,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+        setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       }
     } catch {
       setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+      setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     } finally {
       setCheckingManual(false);
     }
