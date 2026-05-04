@@ -39,6 +39,32 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const [videoMuted, setVideoMuted] = useState(true);
+  const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(
+    localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4'
+  );
+
+  useEffect(() => {
+    (async () => {
+      const url = await getSetting('pix_tutorial_video_url');
+      if (url) setTutorialVideoUrl(url);
+    })();
+  }, []);
+
+  const toggleVideoPlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setVideoPlaying(true); }
+    else { v.pause(); setVideoPlaying(false); }
+  };
+  const toggleVideoMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setVideoMuted(v.muted);
+  };
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
