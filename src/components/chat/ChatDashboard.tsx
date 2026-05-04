@@ -356,6 +356,13 @@ export const ChatDashboard: React.FC = () => {
                         >
                           {previewCopied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
                         </button>
+                        <button
+                          disabled
+                          className="w-full mt-2 bg-white border-2 border-[#16A349] text-[#16A349] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 opacity-90"
+                        >
+                          <Check size={18} /> JÁ PAGUEI
+                        </button>
+                        <p className="text-[9px] text-gray-400 italic text-center mt-1">(Botão real verifica o PIX. Se não pago, mostra: "amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥")</p>
                       </div>
 
                       <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
