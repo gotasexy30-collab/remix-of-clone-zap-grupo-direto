@@ -109,6 +109,36 @@ export type Database = {
         }
         Relationships: []
       }
+      purchases: {
+        Row: {
+          amount: number
+          approved_at: string
+          created_at: string
+          id: string
+          mp_payment_id: string
+          session_id: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          approved_at?: string
+          created_at?: string
+          id?: string
+          mp_payment_id: string
+          session_id?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string
+          created_at?: string
+          id?: string
+          mp_payment_id?: string
+          session_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       whatsapp_numbers: {
         Row: {
           created_at: string

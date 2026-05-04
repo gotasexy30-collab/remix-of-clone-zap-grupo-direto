@@ -179,7 +179,7 @@ async function dailyFunnel() {
   // Converte de volta pra UTC somando o offset
   const startUtc = new Date(startBrt.getTime() + brtOffsetMs).toISOString();
 
-  const [{ data: visits }, { data: clicks }] = await Promise.all([
+  const [{ data: visits }, { data: clicks }, { data: sales }] = await Promise.all([
     supabase
       .from("page_visits")
       .select("session_id")
@@ -188,6 +188,11 @@ async function dailyFunnel() {
       .from("lead_logs")
       .select("session_id")
       .gte("redirected_at", startUtc),
+    supabase
+      .from("purchases")
+      .select("amount, session_id")
+      .eq("status", "approved")
+      .gte("approved_at", startUtc),
   ]);
 
   const totalVisits = visits?.length || 0;
@@ -198,9 +203,13 @@ async function dailyFunnel() {
   const uniqueClickers = new Set(
     (clicks || []).map((c) => c.session_id).filter(Boolean),
   ).size;
+  const totalSales = sales?.length || 0;
+  const revenue = (sales || []).reduce((s, p) => s + Number(p.amount || 0), 0);
   const conversion =
     uniqueVisitors > 0 ? (uniqueClickers / uniqueVisitors) * 100 : 0;
   const conversionCapped = Math.min(conversion, 100);
+  const salesConversion =
+    uniqueVisitors > 0 ? (totalSales / uniqueVisitors) * 100 : 0;
 
   return {
     day_start_utc: startUtc,
@@ -209,6 +218,9 @@ async function dailyFunnel() {
     total_clicks: totalClicks,
     unique_clickers: uniqueClickers,
     conversion_pct: Math.round(conversionCapped * 10) / 10,
+    total_sales: totalSales,
+    revenue: Math.round(revenue * 100) / 100,
+    sales_conversion_pct: Math.round(salesConversion * 10) / 10,
   };
 }
 

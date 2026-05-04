@@ -102,8 +102,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   useEffect(() => {
     if (!pix?.id || paymentStatus === 'approved') return;
     pollRef.current = setInterval(async () => {
+      const sessionId = sessionStorage.getItem('wa_session_id') || '';
       const { data } = await supabase.functions.invoke('mp-pix', {
-        body: { action: 'check_status', id: pix.id },
+        body: { action: 'check_status', id: pix.id, session_id: sessionId },
       });
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
