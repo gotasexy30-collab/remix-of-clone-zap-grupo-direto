@@ -78,13 +78,50 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   }, [displayedMessages, isTyping]);
 
   const handleAccessClick = async () => {
+    if (pixLoading || pix) return;
     trackEvent('h3');
     trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
-    let fallback = localStorage.getItem('payment_redirect_link') || '';
-    if (!fallback) {
-      fallback = (await getSetting('payment_redirect_link')) || '';
+    setPixLoading(true);
+    setPixError('');
+    try {
+      const { data, error } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'create_pix', amount: 19.9, description: `Clube Secreto - ${userCity || 'VIP'}` },
+      });
+      if (error || !data || data.error) {
+        setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
+        return;
+      }
+      setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+    } catch {
+      setPixError('Erro de conexão. Tente novamente.');
+    } finally {
+      setPixLoading(false);
     }
-    await redirect('Me manda o PIX amor vou entrar', appendUTMsToUrl(fallback));
+  };
+
+  useEffect(() => {
+    if (!pix?.id || paymentStatus === 'approved') return;
+    pollRef.current = setInterval(async () => {
+      const { data } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'check_status', id: pix.id },
+      });
+      if (data?.status === 'approved') {
+        setPaymentStatus('approved');
+        if (pollRef.current) clearInterval(pollRef.current);
+        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        let url = localStorage.getItem('pix_success_url') || '';
+        if (!url) url = (await getSetting('pix_success_url')) || '';
+        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
+      }
+    }, 3000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [pix?.id, paymentStatus]);
+
+  const handleCopy = async () => {
+    if (!pix?.qr_code) return;
+    await navigator.clipboard.writeText(pix.qr_code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
