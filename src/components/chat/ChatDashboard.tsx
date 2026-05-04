@@ -42,6 +42,7 @@ export const ChatDashboard: React.FC = () => {
 
   const [previewError, setPreviewError] = useState('');
   const [previewCopied, setPreviewCopied] = useState(false);
+  const [previewShowNotPaid, setPreviewShowNotPaid] = useState(false);
 
   const handlePreviewPix = async () => {
     setPreviewLoading(true);
