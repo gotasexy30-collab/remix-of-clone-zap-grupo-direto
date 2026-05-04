@@ -321,6 +321,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                         {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
                       </button>
                       {notPaidMsg && (
+                        <div ref={notPaidRef}>
                         <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
                           <p className="text-[13px] text-pink-700 font-medium leading-snug">{notPaidMsg}</p>
                         </div>
