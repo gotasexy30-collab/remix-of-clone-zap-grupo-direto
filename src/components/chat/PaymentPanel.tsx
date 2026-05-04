@@ -153,6 +153,32 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleManualCheck = async () => {
+    if (!pix?.id || checkingManual) return;
+    setCheckingManual(true);
+    setNotPaidMsg('');
+    try {
+      const sessionId = sessionStorage.getItem('wa_session_id') || '';
+      const { data } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'check_status', id: pix.id, session_id: sessionId },
+      });
+      if (data?.status === 'approved') {
+        setPaymentStatus('approved');
+        if (pollRef.current) clearInterval(pollRef.current);
+        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        let url = localStorage.getItem('pix_success_url') || '';
+        if (!url) url = (await getSetting('pix_success_url')) || '';
+        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
+      } else {
+        setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+      }
+    } catch {
+      setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+    } finally {
+      setCheckingManual(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] bg-[#0a0a0a] flex justify-center animate-fadeIn h-[100dvh]">
       <div className="w-full sm:max-w-[480px] bg-[#0b141a] flex flex-col h-full relative shadow-2xl">
