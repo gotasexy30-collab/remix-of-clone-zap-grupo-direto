@@ -25,6 +25,7 @@ export const ChatDashboard: React.FC = () => {
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
   const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
+  const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -44,6 +45,7 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
     if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
     if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
+    if (settings.pix_tutorial_video_url) setPixTutorialVideoUrl(settings.pix_tutorial_video_url);
     setLoading(false);
   };
 
@@ -70,6 +72,7 @@ export const ChatDashboard: React.FC = () => {
       setSetting('chat_location_image', locationImage),
       setSetting('meta_pixel_id', metaPixelId),
       setSetting('meta_capi_token', metaCapiToken),
+      setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
@@ -79,6 +82,7 @@ export const ChatDashboard: React.FC = () => {
     localStorage.setItem('chat_location_image', locationImage);
     localStorage.setItem('meta_pixel_id', metaPixelId);
     localStorage.setItem('meta_capi_token', metaCapiToken);
+    localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
     setSaving(false);
     setAllSaved(true);
     setTimeout(() => setAllSaved(false), 2000);
@@ -133,6 +137,17 @@ export const ChatDashboard: React.FC = () => {
                 onChange={(e) => setRedirectLink(e.target.value)}
                 className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
               />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL do vídeo tutorial PIX (mp4)</label>
+              <input
+                type="url"
+                placeholder="/pix-tutorial.mp4 ou https://..."
+                value={pixTutorialVideoUrl}
+                onChange={(e) => setPixTutorialVideoUrl(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Vídeo exibido abaixo do QR Code no checkout. Pode ser um link externo (CDN).</p>
             </div>
           </div>
         </div>
