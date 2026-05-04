@@ -61,6 +61,7 @@ export const ChatDashboard: React.FC = () => {
     setSaving(true);
     await Promise.all([
       setSetting('payment_redirect_link', redirectLink),
+      setSetting('pix_success_url', pixSuccessUrl),
       setSetting('chat_profile_name', profileName),
       setSetting('chat_profile_photo', profilePhoto),
       setSetting('chat_location_image', locationImage),
