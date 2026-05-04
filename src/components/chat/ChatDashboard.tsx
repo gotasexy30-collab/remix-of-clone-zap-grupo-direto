@@ -309,15 +309,32 @@ export const ChatDashboard: React.FC = () => {
                       </div>
 
                       {pixTutorialVideoUrl && (
-                        <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                        <div className="w-full rounded-xl overflow-hidden bg-black relative group">
                           <video
+                            ref={previewVideoRef}
                             src={pixTutorialVideoUrl}
                             autoPlay
                             loop
-                            muted
+                            muted={previewVideoMuted}
                             playsInline
                             className="w-full h-auto"
                           />
+                          <div className="absolute bottom-2 right-2 flex gap-2">
+                            <button
+                              onClick={togglePreviewVideoPlay}
+                              aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
+                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                            >
+                              {previewVideoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                            </button>
+                            <button
+                              onClick={togglePreviewVideoMute}
+                              aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
+                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                            >
+                              {previewVideoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                            </button>
+                          </div>
                         </div>
                       )}
 
