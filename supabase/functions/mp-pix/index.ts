@@ -1,4 +1,6 @@
 // Mercado Pago PIX integration
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -13,6 +15,11 @@ const json = (b: unknown, s = 200) =>
 
 const MP_TOKEN = Deno.env.get("MP_ACCESS_TOKEN")!;
 const MP_API = "https://api.mercadopago.com";
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 async function createPix(body: any) {
   const amount = Number(body.amount) || 19.9;
@@ -55,6 +62,7 @@ async function createPix(body: any) {
 async function checkStatus(body: any) {
   const id = body.id;
   if (!id) return { error: "id required" };
+  const sessionId = body.session_id || "";
 
   const res = await fetch(`${MP_API}/v1/payments/${id}`, {
     headers: { Authorization: `Bearer ${MP_TOKEN}` },
@@ -62,9 +70,24 @@ async function checkStatus(body: any) {
   const data = await res.json();
   if (!res.ok) return { error: data?.message || "Erro ao consultar" };
 
+  // Quando aprovado, registra na tabela purchases (idempotente via UNIQUE)
+  if (data.status === "approved") {
+    await supabase
+      .from("purchases")
+      .insert({
+        mp_payment_id: String(data.id),
+        amount: Number(data.transaction_amount) || 0,
+        session_id: sessionId,
+        status: "approved",
+        approved_at: data.date_approved || new Date().toISOString(),
+      })
+      .select();
+    // ignora erro de duplicidade (UNIQUE constraint)
+  }
+
   return {
     id: data.id,
-    status: data.status, // pending, approved, rejected, cancelled
+    status: data.status,
     status_detail: data.status_detail,
   };
 }
