@@ -34,6 +34,12 @@ export const ChatDashboard: React.FC = () => {
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewCity, setPreviewCity] = useState<string>('');
+
+  useEffect(() => {
+    getUserLocation().then(loc => setPreviewCity(loc.city)).catch(() => {});
+  }, []);
+
   const [previewError, setPreviewError] = useState('');
   const [previewCopied, setPreviewCopied] = useState(false);
 
