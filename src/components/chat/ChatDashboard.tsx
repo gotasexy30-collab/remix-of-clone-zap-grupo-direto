@@ -35,6 +35,7 @@ export const ChatDashboard: React.FC = () => {
     setStats(data);
     if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
+    if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
