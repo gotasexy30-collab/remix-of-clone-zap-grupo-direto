@@ -70,6 +70,7 @@ export const ChatDashboard: React.FC = () => {
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
+    localStorage.setItem('pix_success_url', pixSuccessUrl);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
