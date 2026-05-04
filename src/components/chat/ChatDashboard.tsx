@@ -269,27 +269,66 @@ export const ChatDashboard: React.FC = () => {
               )}
 
               {previewPix && (
-                <div className="bg-white rounded-xl p-4 flex flex-col items-center gap-3">
-                  {previewPix.qr_code_base64 && (
-                    <img
-                      src={`data:image/png;base64,${previewPix.qr_code_base64}`}
-                      alt="QR Code PIX preview"
-                      className="w-40 h-40 object-contain"
-                    />
-                  )}
-                  <div className="w-full">
-                    <p className="text-[10px] font-bold text-gray-500 mb-1">PIX Copia e Cola:</p>
-                    <div className="bg-gray-100 rounded-lg p-2 text-[9px] text-gray-700 break-all max-h-16 overflow-y-auto border border-gray-200">
-                      {previewPix.qr_code}
+                <div className="bg-white sm:rounded-xl rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="overflow-y-auto p-4 max-h-[70vh]">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="text-center">
+                        <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
+                        <p className="text-gray-500 text-sm">Últimas vagas para sua região!</p>
+                        <div className="my-2">
+                          <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
+                          <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full bg-gray-50 rounded-xl p-2 flex flex-col items-center">
+                        {previewPix.qr_code_base64 && (
+                          <img
+                            src={`data:image/png;base64,${previewPix.qr_code_base64}`}
+                            alt="QR Code PIX"
+                            className="w-36 h-36 object-contain"
+                          />
+                        )}
+                        <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
+                      </div>
+
+                      {pixTutorialVideoUrl && (
+                        <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                          <video
+                            src={pixTutorialVideoUrl}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      )}
+
+                      <div className="w-full">
+                        <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
+                        <div className="bg-gray-100 rounded-lg p-2 text-[10px] text-gray-700 break-all max-h-20 overflow-y-auto border">
+                          {previewPix.qr_code}
+                        </div>
+                        <button
+                          onClick={handlePreviewCopy}
+                          className="w-full mt-2 bg-[#16A349] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                        >
+                          {previewCopied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
+                        </button>
+                      </div>
+
+                      <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
+                        <Loader2 size={14} className="animate-spin text-yellow-700" />
+                        <span className="text-xs text-yellow-800 font-medium">Aguardando pagamento...</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-gray-400 text-xs">
+                        <ShieldCheck size={14} /> Compra 100% Segura e Sigilosa
+                      </div>
                     </div>
-                    <button
-                      onClick={handlePreviewCopy}
-                      className="w-full mt-2 bg-[#16A349] text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.98]"
-                    >
-                      {previewCopied ? <><Check size={14} /> Copiado!</> : <><Copy size={14} /> Copiar código</>}
-                    </button>
                   </div>
-                  <p className="text-[10px] text-gray-400 italic text-center">⚠️ PIX real de teste — não pague, ou cancele depois no Mercado Pago.</p>
+                  <p className="text-[10px] text-gray-400 italic text-center bg-gray-50 py-2 border-t border-gray-100">⚠️ PIX real de teste — não pague, ou cancele depois no Mercado Pago.</p>
                 </div>
               )}
             </div>
