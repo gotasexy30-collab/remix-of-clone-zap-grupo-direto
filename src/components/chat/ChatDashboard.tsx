@@ -28,6 +28,7 @@ export const ChatDashboard: React.FC = () => {
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router'>('funil');
 
   const loadData = async () => {
     setLoading(true);
