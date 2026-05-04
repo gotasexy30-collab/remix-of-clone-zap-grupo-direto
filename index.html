@@ -51,38 +51,6 @@
         if ((e.ctrlKey || e.metaKey) && ['u','s','p','a'].includes(k)) { e.preventDefault(); return false; }
       }, true);
 
-      // Detecta DevTools aberto e redireciona / limpa a página
-      (function() {
-        var threshold = 160;
-        var devtoolsOpen = false;
-        function check() {
-          var widthDiff = window.outerWidth - window.innerWidth;
-          var heightDiff = window.outerHeight - window.innerHeight;
-          if (widthDiff > threshold || heightDiff > threshold) {
-            if (!devtoolsOpen) {
-              devtoolsOpen = true;
-              try { document.body.innerHTML = ''; } catch(_){}
-              window.location.href = 'about:blank';
-            }
-          } else {
-            devtoolsOpen = false;
-          }
-        }
-        setInterval(check, 800);
-
-        // Trava console
-        try {
-          var noop = function(){};
-          ['log','warn','error','info','debug','table','dir','trace'].forEach(function(m){
-            try { console[m] = noop; } catch(_){}
-          });
-        } catch(_){}
-
-        // debugger trap
-        setInterval(function(){
-          try { (function(){}).constructor('debugger')(); } catch(_){}
-        }, 1000);
-      })();
     </script>
   </body>
 </html>
