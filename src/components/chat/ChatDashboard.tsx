@@ -30,6 +30,39 @@ export const ChatDashboard: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router'>('funil');
 
+  // PIX preview state
+  const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
+  const [previewCopied, setPreviewCopied] = useState(false);
+
+  const handlePreviewPix = async () => {
+    setPreviewLoading(true);
+    setPreviewError('');
+    setPreviewPix(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'create_pix', amount: 19.9, description: 'PREVIEW Dashboard' },
+      });
+      if (error || !data || data.error) {
+        setPreviewError(data?.error || 'Erro ao gerar PIX.');
+      } else {
+        setPreviewPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+      }
+    } catch {
+      setPreviewError('Erro de conexão.');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handlePreviewCopy = async () => {
+    if (!previewPix?.qr_code) return;
+    await navigator.clipboard.writeText(previewPix.qr_code);
+    setPreviewCopied(true);
+    setTimeout(() => setPreviewCopied(false), 2000);
+  };
+
   const loadData = async () => {
     setLoading(true);
     const [data, settings, funnelRes] = await Promise.all([
