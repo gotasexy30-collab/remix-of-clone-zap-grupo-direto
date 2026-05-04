@@ -38,6 +38,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [pixError, setPixError] = useState('');
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
+  const [checkingManual, setCheckingManual] = useState(false);
+  const [notPaidMsg, setNotPaidMsg] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
@@ -149,6 +151,32 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     await navigator.clipboard.writeText(pix.qr_code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleManualCheck = async () => {
+    if (!pix?.id || checkingManual) return;
+    setCheckingManual(true);
+    setNotPaidMsg('');
+    try {
+      const sessionId = sessionStorage.getItem('wa_session_id') || '';
+      const { data } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'check_status', id: pix.id, session_id: sessionId },
+      });
+      if (data?.status === 'approved') {
+        setPaymentStatus('approved');
+        if (pollRef.current) clearInterval(pollRef.current);
+        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        let url = localStorage.getItem('pix_success_url') || '';
+        if (!url) url = (await getSetting('pix_success_url')) || '';
+        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
+      } else {
+        setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+      }
+    } catch {
+      setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+    } finally {
+      setCheckingManual(false);
+    }
   };
 
   return (
@@ -281,6 +309,18 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       >
                         {copied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
                       </button>
+                      <button
+                        onClick={handleManualCheck}
+                        disabled={checkingManual}
+                        className="w-full mt-2 bg-white border-2 border-[#16A349] text-[#16A349] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60"
+                      >
+                        {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
+                      </button>
+                      {notPaidMsg && (
+                        <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
+                          <p className="text-[13px] text-pink-700 font-medium leading-snug">{notPaidMsg}</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
