@@ -224,25 +224,30 @@ export const ChatDashboard: React.FC = () => {
               <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
               <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
             </div>
-            <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="bg-[#2a3942] rounded-xl p-3 text-center">
                 <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Visitas</div>
                 <div className="text-2xl font-black text-white">{funnel.unique_visitors}</div>
                 <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
               </div>
               <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Foram p/ Zap</div>
+                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Abriu Modal</div>
                 <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
                 <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
               </div>
-              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Conversão</div>
-                <div className="text-2xl font-black text-[#1877F2]">{funnel.conversion_pct}%</div>
-                <div className="text-[9px] text-[#8696a0]">visita → clique</div>
+              <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
+                <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
+                <div className="text-2xl font-black text-[#16A349]">{funnel.total_sales}</div>
+                <div className="text-[9px] text-[#8696a0]">{funnel.sales_conversion_pct}% das visitas</div>
+              </div>
+              <div className="bg-gradient-to-br from-[#1877F2]/30 to-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl p-3 text-center">
+                <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
+                <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
+                <div className="text-[9px] text-[#8696a0]">hoje</div>
               </div>
             </div>
             <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-              <strong className="text-white/80">Visitas</strong> = pessoas únicas que abriram o site hoje. <strong className="text-white/80">Foram p/ Zap</strong> = pessoas únicas que clicaram em "Liberar Acesso" e foram redirecionadas pro WhatsApp.
+              <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
             </p>
           </div>
         </div>
