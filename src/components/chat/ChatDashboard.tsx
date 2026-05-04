@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
@@ -29,6 +29,39 @@ export const ChatDashboard: React.FC = () => {
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router'>('funil');
+
+  // PIX preview state
+  const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
+  const [previewCopied, setPreviewCopied] = useState(false);
+
+  const handlePreviewPix = async () => {
+    setPreviewLoading(true);
+    setPreviewError('');
+    setPreviewPix(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'create_pix', amount: 19.9, description: 'PREVIEW Dashboard' },
+      });
+      if (error || !data || data.error) {
+        setPreviewError(data?.error || 'Erro ao gerar PIX.');
+      } else {
+        setPreviewPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+      }
+    } catch {
+      setPreviewError('Erro de conexão.');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handlePreviewCopy = async () => {
+    if (!previewPix?.qr_code) return;
+    await navigator.clipboard.writeText(previewPix.qr_code);
+    setPreviewCopied(true);
+    setTimeout(() => setPreviewCopied(false), 2000);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -196,6 +229,69 @@ export const ChatDashboard: React.FC = () => {
                 <input type="url" placeholder="/pix-tutorial.mp4 ou https://..." value={pixTutorialVideoUrl} onChange={(e) => setPixTutorialVideoUrl(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">Vídeo exibido abaixo do QR Code no checkout. Pode ser um link externo (CDN).</p>
               </div>
+            </div>
+
+            {/* Prévia do checkout PIX */}
+            <div className="mt-5 pt-5 border-t border-white/5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <QrCode size={16} className="text-[#00a884]" />
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Prévia do Checkout (R$ 19,90)</span>
+                </div>
+                <button
+                  onClick={handlePreviewPix}
+                  disabled={previewLoading}
+                  className="flex items-center gap-1.5 text-[11px] font-bold text-[#00a884] hover:text-[#00c896] disabled:opacity-50"
+                >
+                  {previewLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                  {previewPix ? 'Gerar novo' : 'Gerar PIX teste'}
+                </button>
+              </div>
+
+              {previewError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-[11px] text-red-400">
+                  {previewError}
+                </div>
+              )}
+
+              {!previewPix && !previewLoading && !previewError && (
+                <div className="bg-[#2a3942]/40 border border-dashed border-white/10 rounded-xl p-6 text-center">
+                  <QrCode size={32} className="text-[#8696a0]/40 mx-auto mb-2" />
+                  <p className="text-[11px] text-[#8696a0]">Clique em "Gerar PIX teste" para visualizar o QR Code aqui mesmo, sem abrir o chat.</p>
+                </div>
+              )}
+
+              {previewLoading && (
+                <div className="bg-[#2a3942]/40 rounded-xl p-8 flex flex-col items-center justify-center gap-2">
+                  <Loader2 size={24} className="animate-spin text-[#00a884]" />
+                  <p className="text-[11px] text-[#8696a0]">Gerando QR Code...</p>
+                </div>
+              )}
+
+              {previewPix && (
+                <div className="bg-white rounded-xl p-4 flex flex-col items-center gap-3">
+                  {previewPix.qr_code_base64 && (
+                    <img
+                      src={`data:image/png;base64,${previewPix.qr_code_base64}`}
+                      alt="QR Code PIX preview"
+                      className="w-40 h-40 object-contain"
+                    />
+                  )}
+                  <div className="w-full">
+                    <p className="text-[10px] font-bold text-gray-500 mb-1">PIX Copia e Cola:</p>
+                    <div className="bg-gray-100 rounded-lg p-2 text-[9px] text-gray-700 break-all max-h-16 overflow-y-auto border border-gray-200">
+                      {previewPix.qr_code}
+                    </div>
+                    <button
+                      onClick={handlePreviewCopy}
+                      className="w-full mt-2 bg-[#16A349] text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.98]"
+                    >
+                      {previewCopied ? <><Check size={14} /> Copiado!</> : <><Copy size={14} /> Copiar código</>}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-gray-400 italic text-center">⚠️ PIX real de teste — não pague, ou cancele depois no Mercado Pago.</p>
+                </div>
+              )}
             </div>
           </div>
         )}
