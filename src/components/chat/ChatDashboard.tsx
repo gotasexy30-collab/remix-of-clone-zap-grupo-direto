@@ -56,6 +56,22 @@ export const ChatDashboard: React.FC = () => {
     }
   };
 
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const [previewVideoPlaying, setPreviewVideoPlaying] = useState(true);
+  const [previewVideoMuted, setPreviewVideoMuted] = useState(true);
+  const togglePreviewVideoPlay = () => {
+    const v = previewVideoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPreviewVideoPlaying(true); }
+    else { v.pause(); setPreviewVideoPlaying(false); }
+  };
+  const togglePreviewVideoMute = () => {
+    const v = previewVideoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setPreviewVideoMuted(v.muted);
+  };
+
   const handlePreviewCopy = async () => {
     if (!previewPix?.qr_code) return;
     await navigator.clipboard.writeText(previewPix.qr_code);
