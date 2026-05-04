@@ -28,6 +28,7 @@ export const ChatDashboard: React.FC = () => {
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router'>('funil');
 
   const loadData = async () => {
     setLoading(true);
@@ -111,161 +112,166 @@ export const ChatDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Link2 size={16} className="text-[#00a884]" />
-            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (Mercado Pago)</span>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL de redirecionamento APÓS pagamento aprovado</label>
-              <input
-                type="url"
-                placeholder="https://area-de-membros.com/acesso"
-                value={pixSuccessUrl}
-                onChange={(e) => setPixSuccessUrl(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-              />
-              <p className="text-[10px] text-[#8696a0] mt-1 italic">Cliente é redirecionado aqui automaticamente quando o PIX é confirmado.</p>
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Link Fallback (legado WhatsApp)</label>
-              <input
-                type="url"
-                placeholder="https://seu-link-de-pagamento.com"
-                value={redirectLink}
-                onChange={(e) => setRedirectLink(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-              />
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL do vídeo tutorial PIX (mp4)</label>
-              <input
-                type="url"
-                placeholder="/pix-tutorial.mp4 ou https://..."
-                value={pixTutorialVideoUrl}
-                onChange={(e) => setPixTutorialVideoUrl(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-              />
-              <p className="text-[10px] text-[#8696a0] mt-1 italic">Vídeo exibido abaixo do QR Code no checkout. Pode ser um link externo (CDN).</p>
-            </div>
-          </div>
+        {/* Tabs de navegação rápida */}
+        <div className="grid grid-cols-5 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
+          {[
+            { id: 'funil', label: 'Funil', icon: TrendingUp },
+            { id: 'pagamento', label: 'Pagamento', icon: Link2 },
+            { id: 'perfil', label: 'Perfil', icon: User },
+            { id: 'pixel', label: 'Pixel', icon: Activity },
+            { id: 'router', label: 'Router', icon: Target },
+          ].map((t) => {
+            const Icon = t.icon;
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${active ? 'bg-[#00a884] text-white shadow-lg' : 'text-[#8696a0] hover:bg-[#2a3942]'}`}
+              >
+                <Icon size={14} />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <User size={16} className="text-[#00a884]" />
-            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Nome e Foto do Perfil</span>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Nome exibido no chat</label>
-              <input type="text" placeholder="Ex: Thaisinha" value={profileName} onChange={(e) => setProfileName(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da foto de perfil</label>
-              <input type="url" placeholder="https://exemplo.com/foto.jpg" value={profilePhoto} onChange={(e) => setProfilePhoto(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da imagem com localização (base)</label>
-              <input type="url" placeholder="https://exemplo.com/imagem-base.jpg" value={locationImage} onChange={(e) => setLocationImage(e.target.value)}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
-              <p className="text-[10px] text-[#8696a0] mt-1 italic">A cidade do usuário será sobreposta automaticamente nesta imagem</p>
-            </div>
-            {profilePhoto && (
-              <div className="flex items-center gap-3">
-                <img src={profilePhoto} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-[#00a884]/30" />
-                <span className="text-[11px] text-[#8696a0]">Preview da foto</span>
+        {activeTab === 'funil' && (
+          <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6 animate-fadeIn">
+            <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
+              <Target size={16} /> Etapas do Funil
+            </h2>
+            <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
+                <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
               </div>
-            )}
-          </div>
-        </div>
-
-        <button
-          onClick={handleSaveAll}
-          disabled={saving}
-          className={`w-full px-4 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all mb-6 ${allSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'} disabled:opacity-50`}
-        >
-          {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-          {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
-        </button>
-
-        <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Activity size={16} className="text-[#1877F2]" />
-            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Meta Pixel + CAPI (opcional)</span>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Pixel ID (16 dígitos)</label>
-              <input
-                type="text"
-                placeholder="Ex: 1234567890123456"
-                value={metaPixelId}
-                onChange={(e) => setMetaPixelId(e.target.value.trim())}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
-              />
-              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
-            </div>
-            <div>
-              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
-              <input
-                type="password"
-                placeholder="EAAxxxxxxxxxxxxxxxxxx..."
-                value={metaCapiToken}
-                onChange={(e) => setMetaCapiToken(e.target.value.trim())}
-                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
-              />
-              <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
-            </div>
-            <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
-              <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
-                <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView (entrada), ViewContent (chat iniciado), InitiateCheckout (modal aberto), Lead (clique em Liberar Acesso).
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-[#2a3942] rounded-xl p-3 text-center">
+                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Visitas</div>
+                  <div className="text-2xl font-black text-white">{funnel.unique_visitors}</div>
+                  <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
+                </div>
+                <div className="bg-[#2a3942] rounded-xl p-3 text-center">
+                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Abriu Modal</div>
+                  <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
+                  <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
+                </div>
+                <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
+                  <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
+                  <div className="text-2xl font-black text-[#16A349]">{funnel.total_sales}</div>
+                  <div className="text-[9px] text-[#8696a0]">{funnel.sales_conversion_pct}% das visitas</div>
+                </div>
+                <div className="bg-gradient-to-br from-[#1877F2]/30 to-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl p-3 text-center">
+                  <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
+                  <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
+                  <div className="text-[9px] text-[#8696a0]">hoje</div>
+                </div>
+              </div>
+              <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
+                <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
               </p>
             </div>
           </div>
-        </div>
+        )}
 
-        <WhatsAppRouterPanel />
-
-        <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6">
-          <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
-            <Target size={16} /> Etapas do Funil
-          </h2>
-          <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
-              <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
+        {activeTab === 'pagamento' && (
+          <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <Link2 size={16} className="text-[#00a884]" />
+              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (Mercado Pago)</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Visitas</div>
-                <div className="text-2xl font-black text-white">{funnel.unique_visitors}</div>
-                <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL de redirecionamento APÓS pagamento aprovado</label>
+                <input type="url" placeholder="https://area-de-membros.com/acesso" value={pixSuccessUrl} onChange={(e) => setPixSuccessUrl(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Cliente é redirecionado aqui automaticamente quando o PIX é confirmado.</p>
               </div>
-              <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Abriu Modal</div>
-                <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
-                <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Link Fallback (legado WhatsApp)</label>
+                <input type="url" placeholder="https://seu-link-de-pagamento.com" value={redirectLink} onChange={(e) => setRedirectLink(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
               </div>
-              <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
-                <div className="text-2xl font-black text-[#16A349]">{funnel.total_sales}</div>
-                <div className="text-[9px] text-[#8696a0]">{funnel.sales_conversion_pct}% das visitas</div>
-              </div>
-              <div className="bg-gradient-to-br from-[#1877F2]/30 to-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl p-3 text-center">
-                <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
-                <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
-                <div className="text-[9px] text-[#8696a0]">hoje</div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL do vídeo tutorial PIX (mp4)</label>
+                <input type="url" placeholder="/pix-tutorial.mp4 ou https://..." value={pixTutorialVideoUrl} onChange={(e) => setPixTutorialVideoUrl(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Vídeo exibido abaixo do QR Code no checkout. Pode ser um link externo (CDN).</p>
               </div>
             </div>
-            <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-              <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
-            </p>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'perfil' && (
+          <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <User size={16} className="text-[#00a884]" />
+              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Nome e Foto do Perfil</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Nome exibido no chat</label>
+                <input type="text" placeholder="Ex: Thaisinha" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+              </div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da foto de perfil</label>
+                <input type="url" placeholder="https://exemplo.com/foto.jpg" value={profilePhoto} onChange={(e) => setProfilePhoto(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+              </div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da imagem com localização (base)</label>
+                <input type="url" placeholder="https://exemplo.com/imagem-base.jpg" value={locationImage} onChange={(e) => setLocationImage(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">A cidade do usuário será sobreposta automaticamente nesta imagem</p>
+              </div>
+              {profilePhoto && (
+                <div className="flex items-center gap-3">
+                  <img src={profilePhoto} alt="Preview" className="w-12 h-12 rounded-full object-cover border-2 border-[#00a884]/30" />
+                  <span className="text-[11px] text-[#8696a0]">Preview da foto</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'pixel' && (
+          <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity size={16} className="text-[#1877F2]" />
+              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Meta Pixel + CAPI (opcional)</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Pixel ID (16 dígitos)</label>
+                <input type="text" placeholder="Ex: 1234567890123456" value={metaPixelId} onChange={(e) => setMetaPixelId(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
+                <input type="password" placeholder="EAAxxxxxxxxxxxxxxxxxx..." value={metaCapiToken} onChange={(e) => setMetaCapiToken(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
+              </div>
+              <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
+                <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
+                  <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView, ViewContent, InitiateCheckout, Lead.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'router' && (
+          <div className="animate-fadeIn mb-6">
+            <WhatsAppRouterPanel />
+          </div>
+        )}
+
+        {activeTab !== 'funil' && (
+          <button
+            onClick={handleSaveAll}
+            disabled={saving}
+            className={`w-full px-4 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all mb-6 ${allSaved ? 'bg-[#00a884] text-white' : 'bg-[#00a884]/20 text-[#00a884] hover:bg-[#00a884]/30'} disabled:opacity-50`}
+          >
+            {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+            {saving ? 'Salvando...' : allSaved ? 'Configurações Salvas!' : 'Salvar Configurações'}
+          </button>
+        )}
       </div>
     </div>
   );
