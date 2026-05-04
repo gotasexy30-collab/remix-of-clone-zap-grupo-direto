@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { getStats } from '../../services/tracking';
+import { getUserLocation } from '../../services/location';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +34,12 @@ export const ChatDashboard: React.FC = () => {
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewCity, setPreviewCity] = useState<string>('');
+
+  useEffect(() => {
+    getUserLocation().then(loc => setPreviewCity(loc.city)).catch(() => {});
+  }, []);
+
   const [previewError, setPreviewError] = useState('');
   const [previewCopied, setPreviewCopied] = useState(false);
 
@@ -290,7 +297,7 @@ export const ChatDashboard: React.FC = () => {
                     <div className="flex flex-col items-center gap-4">
                       <div className="text-center">
                         <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
-                        <p className="text-gray-500 text-sm">Últimas vagas para sua região!</p>
+                        <p className="text-gray-500 text-sm">Últimas vagas para {previewCity || 'sua região'}!</p>
                         <div className="my-2">
                           <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
                           <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
@@ -349,6 +356,13 @@ export const ChatDashboard: React.FC = () => {
                         >
                           {previewCopied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
                         </button>
+                        <button
+                          disabled
+                          className="w-full mt-2 bg-white border-2 border-[#16A349] text-[#16A349] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 opacity-90"
+                        >
+                          <Check size={18} /> JÁ PAGUEI
+                        </button>
+                        <p className="text-[9px] text-gray-400 italic text-center mt-1">(Botão real verifica o PIX. Se não pago, mostra: "amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥")</p>
                       </div>
 
                       <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
