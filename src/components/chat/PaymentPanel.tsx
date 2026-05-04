@@ -42,6 +42,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [notPaidMsg, setNotPaidMsg] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const modalScrollRef = useRef<HTMLDivElement>(null);
+  const notPaidRef = useRef<HTMLDivElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [videoMuted, setVideoMuted] = useState(true);
   const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(
@@ -171,9 +173,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+        setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       }
     } catch {
       setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
+      setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     } finally {
       setCheckingManual(false);
     }
@@ -222,9 +226,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       </div>
 
       {showModal && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-50 flex items-end sm:items-center justify-center animate-fadeIn overscroll-contain">
-          <div className="w-full sm:max-w-[480px] bg-white sm:rounded-xl rounded-t-2xl shadow-2xl overflow-hidden max-h-[90dvh] sm:max-h-[90vh] flex flex-col relative animate-slideIn">
-            <div className="overflow-y-auto overscroll-contain p-4 sm:p-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-50 flex items-center justify-center animate-fadeIn overscroll-contain p-2 sm:p-4">
+          <div className="w-full sm:max-w-[480px] bg-white rounded-xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] flex flex-col relative animate-slideIn">
+            <div ref={modalScrollRef} className="overflow-y-auto overscroll-contain p-4 sm:p-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="flex flex-col items-center gap-4">
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
@@ -317,7 +321,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                         {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
                       </button>
                       {notPaidMsg && (
-                        <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
+                        <div ref={notPaidRef} className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
                           <p className="text-[13px] text-pink-700 font-medium leading-snug">{notPaidMsg}</p>
                         </div>
                       )}
