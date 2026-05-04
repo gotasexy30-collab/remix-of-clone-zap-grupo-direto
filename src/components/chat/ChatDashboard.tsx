@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
@@ -54,6 +54,22 @@ export const ChatDashboard: React.FC = () => {
     } finally {
       setPreviewLoading(false);
     }
+  };
+
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const [previewVideoPlaying, setPreviewVideoPlaying] = useState(true);
+  const [previewVideoMuted, setPreviewVideoMuted] = useState(true);
+  const togglePreviewVideoPlay = () => {
+    const v = previewVideoRef.current;
+    if (!v) return;
+    if (v.paused) { v.play(); setPreviewVideoPlaying(true); }
+    else { v.pause(); setPreviewVideoPlaying(false); }
+  };
+  const togglePreviewVideoMute = () => {
+    const v = previewVideoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    setPreviewVideoMuted(v.muted);
   };
 
   const handlePreviewCopy = async () => {
@@ -293,15 +309,32 @@ export const ChatDashboard: React.FC = () => {
                       </div>
 
                       {pixTutorialVideoUrl && (
-                        <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                        <div className="w-full rounded-xl overflow-hidden bg-black relative group">
                           <video
+                            ref={previewVideoRef}
                             src={pixTutorialVideoUrl}
                             autoPlay
                             loop
-                            muted
+                            muted={previewVideoMuted}
                             playsInline
                             className="w-full h-auto"
                           />
+                          <div className="absolute bottom-2 right-2 flex gap-2">
+                            <button
+                              onClick={togglePreviewVideoPlay}
+                              aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
+                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                            >
+                              {previewVideoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                            </button>
+                            <button
+                              onClick={togglePreviewVideoMute}
+                              aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
+                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                            >
+                              {previewVideoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                            </button>
+                          </div>
                         </div>
                       )}
 
