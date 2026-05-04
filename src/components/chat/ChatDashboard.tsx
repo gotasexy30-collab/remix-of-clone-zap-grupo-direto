@@ -82,6 +82,7 @@ export const ChatDashboard: React.FC = () => {
     localStorage.setItem('chat_location_image', locationImage);
     localStorage.setItem('meta_pixel_id', metaPixelId);
     localStorage.setItem('meta_capi_token', metaCapiToken);
+    localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
     setSaving(false);
     setAllSaved(true);
     setTimeout(() => setAllSaved(false), 2000);
