@@ -16,6 +16,7 @@ export const ChatDashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
+  const [pixSuccessUrl, setPixSuccessUrl] = useState(localStorage.getItem('pix_success_url') || '');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
@@ -34,6 +35,7 @@ export const ChatDashboard: React.FC = () => {
     setStats(data);
     if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
+    if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
@@ -59,6 +61,7 @@ export const ChatDashboard: React.FC = () => {
     setSaving(true);
     await Promise.all([
       setSetting('payment_redirect_link', redirectLink),
+      setSetting('pix_success_url', pixSuccessUrl),
       setSetting('chat_profile_name', profileName),
       setSetting('chat_profile_photo', profilePhoto),
       setSetting('chat_location_image', locationImage),
@@ -67,6 +70,7 @@ export const ChatDashboard: React.FC = () => {
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
+    localStorage.setItem('pix_success_url', pixSuccessUrl);
     localStorage.setItem('chat_profile_name', profileName);
     localStorage.setItem('chat_profile_photo', profilePhoto);
     localStorage.setItem('chat_location_image', locationImage);
@@ -103,15 +107,31 @@ export const ChatDashboard: React.FC = () => {
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Link2 size={16} className="text-[#00a884]" />
-            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Link do Botão "Liberar Acesso"</span>
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (Mercado Pago)</span>
           </div>
-          <input
-            type="url"
-            placeholder="https://seu-link-de-pagamento.com"
-            value={redirectLink}
-            onChange={(e) => setRedirectLink(e.target.value)}
-            className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-          />
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL de redirecionamento APÓS pagamento aprovado</label>
+              <input
+                type="url"
+                placeholder="https://area-de-membros.com/acesso"
+                value={pixSuccessUrl}
+                onChange={(e) => setPixSuccessUrl(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Cliente é redirecionado aqui automaticamente quando o PIX é confirmado.</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Link Fallback (legado WhatsApp)</label>
+              <input
+                type="url"
+                placeholder="https://seu-link-de-pagamento.com"
+                value={redirectLink}
+                onChange={(e) => setRedirectLink(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">

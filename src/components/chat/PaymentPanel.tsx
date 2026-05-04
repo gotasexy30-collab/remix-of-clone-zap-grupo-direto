@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck } from 'lucide-react';
+import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, Check, Loader2 } from 'lucide-react';
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
-import { useWhatsAppRouter } from '../../hooks/useWhatsAppRouter';
 import { fbqTrack, trackEventDual, appendUTMsToUrl } from '../../services/pixel';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -33,7 +33,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [isTyping, setIsTyping] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showModal, setShowModal] = useState(false);
-  const { redirect } = useWhatsAppRouter();
+  const [pix, setPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
+  const [pixLoading, setPixLoading] = useState(false);
+  const [pixError, setPixError] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -73,13 +78,50 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   }, [displayedMessages, isTyping]);
 
   const handleAccessClick = async () => {
+    if (pixLoading || pix) return;
     trackEvent('h3');
     trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
-    let fallback = localStorage.getItem('payment_redirect_link') || '';
-    if (!fallback) {
-      fallback = (await getSetting('payment_redirect_link')) || '';
+    setPixLoading(true);
+    setPixError('');
+    try {
+      const { data, error } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'create_pix', amount: 19.9, description: `Clube Secreto - ${userCity || 'VIP'}` },
+      });
+      if (error || !data || data.error) {
+        setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
+        return;
+      }
+      setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+    } catch {
+      setPixError('Erro de conexão. Tente novamente.');
+    } finally {
+      setPixLoading(false);
     }
-    await redirect('Me manda o PIX amor vou entrar', appendUTMsToUrl(fallback));
+  };
+
+  useEffect(() => {
+    if (!pix?.id || paymentStatus === 'approved') return;
+    pollRef.current = setInterval(async () => {
+      const { data } = await supabase.functions.invoke('mp-pix', {
+        body: { action: 'check_status', id: pix.id },
+      });
+      if (data?.status === 'approved') {
+        setPaymentStatus('approved');
+        if (pollRef.current) clearInterval(pollRef.current);
+        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        let url = localStorage.getItem('pix_success_url') || '';
+        if (!url) url = (await getSetting('pix_success_url')) || '';
+        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
+      }
+    }, 3000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [pix?.id, paymentStatus]);
+
+  const handleCopy = async () => {
+    if (!pix?.qr_code) return;
+    await navigator.clipboard.writeText(pix.qr_code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -128,7 +170,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-50 flex items-center justify-center animate-fadeIn">
           <div className="w-full sm:max-w-[480px] bg-white sm:rounded-xl rounded-t-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col relative animate-slideIn">
             <div className="overflow-y-auto p-4 sm:p-6">
-              <div className="flex flex-col items-center gap-5">
+              <div className="flex flex-col items-center gap-4">
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
                   <p className="text-gray-500 text-sm">Últimas vagas para sua região!</p>
@@ -137,12 +179,65 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                     <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
                   </div>
                 </div>
-                <button onClick={handleAccessClick} className="w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all text-center">
-                  LIBERAR MEU ACESSO AGORA
-                </button>
-                <div className="flex items-center gap-2 text-gray-400 text-xs">
-                  <ShieldCheck size={14} /> Compra 100% Segura e Sigilosa
-                </div>
+
+                {paymentStatus === 'approved' ? (
+                  <div className="w-full text-center py-6">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-[#16A349] flex items-center justify-center mb-3">
+                      <Check size={36} className="text-white" />
+                    </div>
+                    <h3 className="text-xl font-black text-[#16A349] mb-1">PAGAMENTO APROVADO!</h3>
+                    <p className="text-gray-500 text-sm">Liberando seu acesso...</p>
+                  </div>
+                ) : !pix ? (
+                  <>
+                    <button
+                      onClick={handleAccessClick}
+                      disabled={pixLoading}
+                      className="w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all text-center disabled:opacity-60 flex items-center justify-center gap-2"
+                    >
+                      {pixLoading ? <><Loader2 size={20} className="animate-spin" /> Gerando PIX...</> : 'GERAR PIX AGORA'}
+                    </button>
+                    {pixError && <p className="text-red-500 text-xs text-center">{pixError}</p>}
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                      <ShieldCheck size={14} /> Compra 100% Segura e Sigilosa
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-full bg-gray-50 rounded-xl p-3 flex flex-col items-center">
+                      {pix.qr_code_base64 && (
+                        <img
+                          src={`data:image/png;base64,${pix.qr_code_base64}`}
+                          alt="QR Code PIX"
+                          className="w-56 h-56 object-contain"
+                        />
+                      )}
+                      <p className="text-[11px] text-gray-500 mt-2 text-center">Escaneie o QR Code no app do seu banco</p>
+                    </div>
+
+                    <div className="w-full">
+                      <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
+                      <div className="bg-gray-100 rounded-lg p-2 text-[10px] text-gray-700 break-all max-h-20 overflow-y-auto border">
+                        {pix.qr_code}
+                      </div>
+                      <button
+                        onClick={handleCopy}
+                        className="w-full mt-2 bg-[#16A349] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        {copied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
+                      </button>
+                    </div>
+
+                    <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
+                      <Loader2 size={14} className="animate-spin text-yellow-700" />
+                      <span className="text-xs text-yellow-800 font-medium">Aguardando pagamento...</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-gray-400 text-xs">
+                      <ShieldCheck size={14} /> Compra 100% Segura e Sigilosa
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
