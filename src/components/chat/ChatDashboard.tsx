@@ -137,8 +137,19 @@ export const ChatDashboard: React.FC = () => {
                 onChange={(e) => setRedirectLink(e.target.value)}
                 className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
               />
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL do vídeo tutorial PIX (mp4)</label>
+              <input
+                type="url"
+                placeholder="/pix-tutorial.mp4 ou https://..."
+                value={pixTutorialVideoUrl}
+                onChange={(e) => setPixTutorialVideoUrl(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Vídeo exibido abaixo do QR Code no checkout. Pode ser um link externo (CDN).</p>
             </div>
           </div>
+        </div>
         </div>
 
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
