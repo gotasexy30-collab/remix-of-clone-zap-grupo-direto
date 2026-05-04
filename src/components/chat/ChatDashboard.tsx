@@ -45,6 +45,7 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
     if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
     if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
+    if (settings.pix_tutorial_video_url) setPixTutorialVideoUrl(settings.pix_tutorial_video_url);
     setLoading(false);
   };
 
