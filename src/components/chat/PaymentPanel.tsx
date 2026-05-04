@@ -309,6 +309,18 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       >
                         {copied ? <><Check size={18} /> Código Copiado!</> : <><Copy size={18} /> COPIAR CÓDIGO PIX</>}
                       </button>
+                      <button
+                        onClick={handleManualCheck}
+                        disabled={checkingManual}
+                        className="w-full mt-2 bg-white border-2 border-[#16A349] text-[#16A349] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60"
+                      >
+                        {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
+                      </button>
+                      {notPaidMsg && (
+                        <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
+                          <p className="text-[13px] text-pink-700 font-medium leading-snug">{notPaidMsg}</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
