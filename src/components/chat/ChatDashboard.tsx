@@ -72,6 +72,7 @@ export const ChatDashboard: React.FC = () => {
       setSetting('chat_location_image', locationImage),
       setSetting('meta_pixel_id', metaPixelId),
       setSetting('meta_capi_token', metaCapiToken),
+      setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
