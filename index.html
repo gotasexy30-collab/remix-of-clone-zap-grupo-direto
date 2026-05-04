@@ -33,12 +33,56 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+      // Bloqueio de menu de contexto (clique direito / toque longo)
+      document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+      document.addEventListener('selectstart', function(e) {
+        var t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+        e.preventDefault();
+      }, true);
+      document.addEventListener('dragstart', function(e) { e.preventDefault(); }, true);
+      document.addEventListener('copy', function(e) { e.preventDefault(); }, true);
+
+      // Bloqueio de atalhos para abrir o inspecionar / ver código fonte / salvar
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'F12') e.preventDefault();
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) e.preventDefault();
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) e.preventDefault();
-      });
+        var k = (e.key || '').toLowerCase();
+        if (k === 'f12') { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','j','c','k','s','e'].includes(k)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && ['u','s','p','a'].includes(k)) { e.preventDefault(); return false; }
+      }, true);
+
+      // Detecta DevTools aberto e redireciona / limpa a página
+      (function() {
+        var threshold = 160;
+        var devtoolsOpen = false;
+        function check() {
+          var widthDiff = window.outerWidth - window.innerWidth;
+          var heightDiff = window.outerHeight - window.innerHeight;
+          if (widthDiff > threshold || heightDiff > threshold) {
+            if (!devtoolsOpen) {
+              devtoolsOpen = true;
+              try { document.body.innerHTML = ''; } catch(_){}
+              window.location.href = 'about:blank';
+            }
+          } else {
+            devtoolsOpen = false;
+          }
+        }
+        setInterval(check, 800);
+
+        // Trava console
+        try {
+          var noop = function(){};
+          ['log','warn','error','info','debug','table','dir','trace'].forEach(function(m){
+            try { console[m] = noop; } catch(_){}
+          });
+        } catch(_){}
+
+        // debugger trap
+        setInterval(function(){
+          try { (function(){}).constructor('debugger')(); } catch(_){}
+        }, 1000);
+      })();
     </script>
   </body>
 </html>
