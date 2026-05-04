@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { getStats } from '../../services/tracking';
+import { getUserLocation } from '../../services/location';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { supabase } from '@/integrations/supabase/client';
