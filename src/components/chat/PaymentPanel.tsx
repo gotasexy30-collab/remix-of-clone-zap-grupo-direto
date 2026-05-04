@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck } from 'lucide-react';
+import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, Check, Loader2 } from 'lucide-react';
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
-import { useWhatsAppRouter } from '../../hooks/useWhatsAppRouter';
 import { fbqTrack, trackEventDual, appendUTMsToUrl } from '../../services/pixel';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentPanelProps {
   userCity: string;
