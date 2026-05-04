@@ -205,15 +205,26 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   </>
                 ) : (
                   <>
-                    <div className="w-full bg-gray-50 rounded-xl p-3 flex flex-col items-center">
+                    <div className="w-full bg-gray-50 rounded-xl p-2 flex flex-col items-center">
                       {pix.qr_code_base64 && (
                         <img
                           src={`data:image/png;base64,${pix.qr_code_base64}`}
                           alt="QR Code PIX"
-                          className="w-56 h-56 object-contain"
+                          className="w-36 h-36 object-contain"
                         />
                       )}
-                      <p className="text-[11px] text-gray-500 mt-2 text-center">Escaneie o QR Code no app do seu banco</p>
+                      <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
+                    </div>
+
+                    <div className="w-full rounded-xl overflow-hidden bg-black">
+                      <video
+                        src="/pix-tutorial.mp4"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-auto"
+                      />
                     </div>
 
                     <div className="w-full">
