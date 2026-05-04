@@ -107,15 +107,31 @@ export const ChatDashboard: React.FC = () => {
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Link2 size={16} className="text-[#00a884]" />
-            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Link do Botão "Liberar Acesso"</span>
+            <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (Mercado Pago)</span>
           </div>
-          <input
-            type="url"
-            placeholder="https://seu-link-de-pagamento.com"
-            value={redirectLink}
-            onChange={(e) => setRedirectLink(e.target.value)}
-            className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
-          />
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL de redirecionamento APÓS pagamento aprovado</label>
+              <input
+                type="url"
+                placeholder="https://area-de-membros.com/acesso"
+                value={pixSuccessUrl}
+                onChange={(e) => setPixSuccessUrl(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+              <p className="text-[10px] text-[#8696a0] mt-1 italic">Cliente é redirecionado aqui automaticamente quando o PIX é confirmado.</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Link Fallback (legado WhatsApp)</label>
+              <input
+                type="url"
+                placeholder="https://seu-link-de-pagamento.com"
+                value={redirectLink}
+                onChange={(e) => setRedirectLink(e.target.value)}
+                className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6">
