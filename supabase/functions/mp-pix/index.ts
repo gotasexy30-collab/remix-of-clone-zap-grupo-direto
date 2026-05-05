@@ -21,6 +21,49 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
+async function getSetting(key: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", key)
+    .maybeSingle();
+  return data?.value ?? null;
+}
+
+async function sendCapiPurchase(paymentId: string, amount: number, metadata: Record<string, string> = {}) {
+  try {
+    const [pixelId, accessToken] = await Promise.all([
+      getSetting("meta_pixel_id"),
+      getSetting("meta_capi_token"),
+    ]);
+    if (!pixelId || !accessToken) return;
+
+    const userData: Record<string, string> = {};
+    if (metadata.user_agent) userData.client_user_agent = metadata.user_agent;
+    if (metadata.fbp) userData.fbp = metadata.fbp;
+    if (metadata.fbc) userData.fbc = metadata.fbc;
+
+    const payload = {
+      data: [{
+        event_name: "Purchase",
+        event_id: `mp_${paymentId}`,
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: "website",
+        event_source_url: metadata.event_source_url || "",
+        user_data: userData,
+        custom_data: { value: amount, currency: "BRL" },
+      }],
+    };
+    const fbRes = await fetch(
+      `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
+    );
+    if (!fbRes.ok) console.error("Meta CAPI purchase error", await fbRes.text());
+  } catch (e) {
+    console.error("capi purchase err", e);
+  }
+}
+
 async function createPix(body: any) {
   const amount = Number(body.amount) || 19.9;
   const description = body.description || "Acesso Clube Secreto VIP";
