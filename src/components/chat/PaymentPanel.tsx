@@ -86,7 +86,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (currentMsgIndex >= dynamicMessages.length) {
         timeoutId = setTimeout(() => {
           setShowModal(true);
-          fbqTrack('InitiateCheckout', { value: 19.90, currency: 'BRL' });
+          fbqTrack('InitiateCheckout', { value: 0.50, currency: 'BRL' });
           logTrackedEvent('InitiateCheckout');
         }, 1500);
         return;
@@ -111,12 +111,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const handleAccessClick = async () => {
     if (pixLoading || pix) return;
     trackEvent('h3');
-    trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
+    trackEventDual('Lead', { value: 0.50, currency: 'BRL' });
     setPixLoading(true);
     setPixError('');
     try {
       const { data, error } = await supabase.functions.invoke('mp-pix', {
-        body: { action: 'create_pix', amount: 19.9, description: `Clube Secreto - ${userCity || 'VIP'}` },
+        body: { action: 'create_pix', amount: 0.50, description: `Clube Secreto - ${userCity || 'VIP'}` },
       });
       if (error || !data || data.error) {
         setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
@@ -140,7 +140,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        trackEventDual('Purchase', { value: 0.50, currency: 'BRL' });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
@@ -200,7 +200,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        trackEventDual('Purchase', { value: 0.50, currency: 'BRL' });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
@@ -269,7 +269,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
                     <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 0,50</span>
                   </div>
                 </div>
 
