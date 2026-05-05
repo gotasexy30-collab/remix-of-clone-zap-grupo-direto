@@ -341,6 +341,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
               </div>
             </div>
           </div>
+          </div>
         </div>
       )}
     </div>
