@@ -84,7 +84,13 @@ async function createPix(body: any) {
       description,
       payment_method_id: "pix",
       payer: { email: payer_email },
-      metadata: { session_id: body.session_id || "" },
+      metadata: {
+        session_id: body.session_id || "",
+        fbp: body.meta?.fbp || "",
+        fbc: body.meta?.fbc || "",
+        event_source_url: body.meta?.event_source_url || "",
+        user_agent: body.meta?.user_agent || "",
+      },
     }),
   });
 
@@ -116,12 +122,14 @@ async function checkStatus(body: any) {
 
   // Quando aprovado, registra na tabela purchases (idempotente via UNIQUE)
   if (data.status === "approved") {
+    const paymentSessionId = data?.metadata?.session_id || sessionId;
+    const amount = Number(data.transaction_amount) || 0;
     const { data: inserted } = await supabase
       .from("purchases")
       .insert({
         mp_payment_id: String(data.id),
-        amount: Number(data.transaction_amount) || 0,
-        session_id: sessionId,
+        amount,
+        session_id: paymentSessionId,
         status: "approved",
         approved_at: data.date_approved || new Date().toISOString(),
       })
@@ -131,9 +139,10 @@ async function checkStatus(body: any) {
     if (inserted) {
       await supabase.from("tracked_events").insert({
         event_name: "Purchase",
-        session_id: sessionId,
+        session_id: paymentSessionId,
         slug: "webhook",
       });
+      await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
     }
   }
 
