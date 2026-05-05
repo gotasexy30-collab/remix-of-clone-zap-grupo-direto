@@ -41,6 +41,7 @@ async function createPix(body: any) {
       description,
       payment_method_id: "pix",
       payer: { email: payer_email },
+      metadata: { session_id: body.session_id || "" },
     }),
   });
 
