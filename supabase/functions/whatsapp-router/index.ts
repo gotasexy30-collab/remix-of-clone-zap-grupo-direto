@@ -231,6 +231,9 @@ async function dailyFunnel() {
     total_sales: totalSales,
     revenue: Math.round(revenue * 100) / 100,
     sales_conversion_pct: Math.round(salesConversion * 10) / 10,
+    initiate_checkout: initiate_checkout,
+    lead: lead,
+    purchase: purchase,
   };
 }
 
