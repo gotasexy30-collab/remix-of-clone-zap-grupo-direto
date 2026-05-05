@@ -226,9 +226,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       </div>
 
       {showModal && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-50 flex items-center justify-center animate-fadeIn overscroll-contain p-2 sm:p-4">
-          <div className="w-full sm:max-w-[480px] bg-white rounded-xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] flex flex-col relative animate-slideIn">
-            <div ref={modalScrollRef} className="overflow-y-auto overscroll-contain p-4 sm:p-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div ref={modalScrollRef} className="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-50 overflow-y-auto overscroll-contain animate-fadeIn" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-4">
+          <div className="w-full sm:max-w-[480px] bg-white rounded-xl shadow-2xl flex flex-col relative animate-slideIn my-2">
+            <div className="p-4 sm:p-6">
               <div className="flex flex-col items-center gap-4">
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
@@ -339,6 +340,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                 )}
               </div>
             </div>
+          </div>
           </div>
         </div>
       )}
