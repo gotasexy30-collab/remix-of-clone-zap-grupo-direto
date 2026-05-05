@@ -73,7 +73,7 @@ async function checkStatus(body: any) {
 
   // Quando aprovado, registra na tabela purchases (idempotente via UNIQUE)
   if (data.status === "approved") {
-    await supabase
+    const { data: inserted } = await supabase
       .from("purchases")
       .insert({
         mp_payment_id: String(data.id),
@@ -82,8 +82,16 @@ async function checkStatus(body: any) {
         status: "approved",
         approved_at: data.date_approved || new Date().toISOString(),
       })
-      .select();
-    // ignora erro de duplicidade (UNIQUE constraint)
+      .select()
+      .maybeSingle();
+    // Só loga tracked_event se foi insert novo (evita duplicar com webhook)
+    if (inserted) {
+      await supabase.from("tracked_events").insert({
+        event_name: "Purchase",
+        session_id: sessionId,
+        slug: "webhook",
+      });
+    }
   }
 
   return {
