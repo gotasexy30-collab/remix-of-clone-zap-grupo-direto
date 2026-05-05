@@ -195,7 +195,7 @@ async function dailyFunnel() {
       .gte("approved_at", startUtc),
     supabase
       .from("tracked_events")
-      .select("event_name, session_id")
+      .select("event_name, session_id, slug")
       .gte("created_at", startUtc),
   ]);
 
