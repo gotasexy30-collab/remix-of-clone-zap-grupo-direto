@@ -3,7 +3,7 @@ import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, C
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
-import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent } from '../../services/pixel';
+import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrackingContext } from '../../services/pixel';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentPanelProps {
@@ -116,7 +116,13 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setPixError('');
     try {
       const { data, error } = await supabase.functions.invoke('mp-pix', {
-        body: { action: 'create_pix', amount: 19.90, description: `Clube Secreto - ${userCity || 'VIP'}` },
+        body: {
+          action: 'create_pix',
+          amount: 19.90,
+          description: `Clube Secreto - ${userCity || 'VIP'}`,
+          session_id: sessionStorage.getItem('wa_session_id') || '',
+          meta: getMetaTrackingContext(),
+        },
       });
       if (error || !data || data.error) {
         setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
@@ -140,7 +146,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        const eventId = `mp_${pix.id}`;
+        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
@@ -200,7 +207,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' });
+        const eventId = `mp_${pix.id}`;
+        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
