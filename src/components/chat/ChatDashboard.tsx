@@ -17,6 +17,9 @@ export const ChatDashboard: React.FC = () => {
     total_sales: 0,
     revenue: 0,
     sales_conversion_pct: 0,
+    initiate_checkout: 0,
+    lead: 0,
+    purchase: 0,
   });
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
