@@ -62,7 +62,10 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       },
-    );
+    ).then(async (res) => {
+      if (!res.ok) console.error("Meta CAPI purchase error", await res.text());
+      else console.log("Meta CAPI purchase sent", paymentId, await res.text());
+    });
   } catch (e) {
     console.error("capi err", e);
   }
@@ -99,8 +102,9 @@ async function processPayment(paymentId: string) {
     .maybeSingle();
 
   if (error) {
-    // duplicate = already processed
+    // duplicate = already processed, but still retry Meta so no approved sale is left unreported
     console.log("purchase insert skipped:", error.message);
+    await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
     return;
   }
 
