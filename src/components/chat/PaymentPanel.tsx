@@ -269,7 +269,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
                     <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                    <span className="text-4xl font-black text-[#16A349]">R$ 0,50</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
                   </div>
                 </div>
 
