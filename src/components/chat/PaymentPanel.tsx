@@ -87,6 +87,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         timeoutId = setTimeout(() => {
           setShowModal(true);
           fbqTrack('InitiateCheckout', { value: 19.90, currency: 'BRL' });
+          logTrackedEvent('InitiateCheckout');
         }, 1500);
         return;
       }
