@@ -3,7 +3,7 @@ import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, C
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
-import { fbqTrack, trackEventDual, appendUTMsToUrl } from '../../services/pixel';
+import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent } from '../../services/pixel';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentPanelProps {
