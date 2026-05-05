@@ -214,7 +214,7 @@ async function dailyFunnel() {
     (events || []).filter((e) => e.event_name === name).length;
   const initiate_checkout = countEvent("InitiateCheckout");
   const lead = countEvent("Lead");
-  const purchase = (events || []).filter((e) => e.event_name === "Purchase" && e.slug === "webhook").length;
+  const purchase = totalSales;
   const conversion =
     uniqueVisitors > 0 ? (uniqueClickers / uniqueVisitors) * 100 : 0;
   const conversionCapped = Math.min(conversion, 100);

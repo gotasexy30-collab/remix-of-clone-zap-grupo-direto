@@ -45,9 +45,10 @@ export async function initMetaPixel(): Promise<void> {
   pixelLoaded = true;
 }
 
-export function fbqTrack(event: string, params?: Record<string, any>) {
+export function fbqTrack(event: string, params?: Record<string, any>, options?: Record<string, any>) {
   if (window.fbq) {
-    window.fbq('track', event, params || {});
+    if (options) window.fbq('track', event, params || {}, options);
+    else window.fbq('track', event, params || {});
   }
 }
 
@@ -57,6 +58,15 @@ function getCookie(name: string): string {
     const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
     return m ? decodeURIComponent(m[2]) : '';
   } catch { return ''; }
+}
+
+export function getMetaTrackingContext() {
+  return {
+    fbp: getCookie('_fbp'),
+    fbc: getCookie('_fbc'),
+    event_source_url: window.location.href,
+    user_agent: navigator.userAgent,
+  };
 }
 
 function genEventId(): string {

@@ -29,13 +29,18 @@ async function getSetting(key: string): Promise<string | null> {
   return data?.value ?? null;
 }
 
-async function sendCapiPurchase(paymentId: string, amount: number) {
+async function sendCapiPurchase(paymentId: string, amount: number, metadata: Record<string, string> = {}) {
   try {
     const [pixelId, accessToken] = await Promise.all([
       getSetting("meta_pixel_id"),
       getSetting("meta_capi_token"),
     ]);
     if (!pixelId || !accessToken) return;
+
+    const userData: Record<string, string> = {};
+    if (metadata.user_agent) userData.client_user_agent = metadata.user_agent;
+    if (metadata.fbp) userData.fbp = metadata.fbp;
+    if (metadata.fbc) userData.fbc = metadata.fbc;
 
     const payload = {
       data: [
@@ -44,7 +49,8 @@ async function sendCapiPurchase(paymentId: string, amount: number) {
           event_id: `mp_${paymentId}`,
           event_time: Math.floor(Date.now() / 1000),
           action_source: "website",
-          user_data: {},
+          event_source_url: metadata.event_source_url || "",
+          user_data: userData,
           custom_data: { value: amount, currency: "BRL" },
         },
       ],
@@ -56,7 +62,10 @@ async function sendCapiPurchase(paymentId: string, amount: number) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       },
-    );
+    ).then(async (res) => {
+      if (!res.ok) console.error("Meta CAPI purchase error", await res.text());
+      else console.log("Meta CAPI purchase sent", paymentId, await res.text());
+    });
   } catch (e) {
     console.error("capi err", e);
   }
@@ -93,8 +102,9 @@ async function processPayment(paymentId: string) {
     .maybeSingle();
 
   if (error) {
-    // duplicate = already processed
+    // duplicate = already processed, but still retry Meta so no approved sale is left unreported
     console.log("purchase insert skipped:", error.message);
+    await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
     return;
   }
 
@@ -105,7 +115,7 @@ async function processPayment(paymentId: string) {
       session_id: sessionId,
       slug: "webhook",
     });
-    await sendCapiPurchase(String(data.id), amount);
+    await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
     console.log(`purchase ${paymentId} recorded`);
   }
 }
