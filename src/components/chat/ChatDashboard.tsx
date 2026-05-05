@@ -119,7 +119,7 @@ export const ChatDashboard: React.FC = () => {
       ]);
       setStats(data);
       if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
-    }, 30000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
