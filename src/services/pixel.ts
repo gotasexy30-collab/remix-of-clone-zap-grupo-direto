@@ -67,6 +67,21 @@ function genEventId(): string {
  * Tracks an event via BOTH client-side Pixel AND server-side CAPI with the same
  * event_id, so Meta deduplicates automatically. Use for high-value events (Lead, Purchase).
  */
+export function logTrackedEvent(event: string) {
+  try {
+    const sessionId = sessionStorage.getItem('wa_session_id') || '';
+    const slug = (() => {
+      try {
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        return parts[0] || 'main';
+      } catch { return 'main'; }
+    })();
+    import('@/integrations/supabase/client').then(({ supabase }) => {
+      supabase.from('tracked_events').insert({ event_name: event, session_id: sessionId, slug }).then(() => {});
+    });
+  } catch { /* noop */ }
+}
+
 export function trackEventDual(event: string, params?: Record<string, any>) {
   const eventId = genEventId();
 
@@ -74,6 +89,9 @@ export function trackEventDual(event: string, params?: Record<string, any>) {
   if (window.fbq) {
     window.fbq('track', event, params || {}, { eventID: eventId });
   }
+
+  // Log to DB for funnel metrics
+  logTrackedEvent(event);
 
   // 2. Server-side CAPI (fire-and-forget)
   try {

@@ -17,6 +17,9 @@ export const ChatDashboard: React.FC = () => {
     total_sales: 0,
     revenue: 0,
     sales_conversion_pct: 0,
+    initiate_checkout: 0,
+    lead: 0,
+    purchase: 0,
   });
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
@@ -223,6 +226,23 @@ export const ChatDashboard: React.FC = () => {
                   <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
                   <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
                   <div className="text-[9px] text-[#8696a0]">hoje</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#FFA500]/20">
+                  <div className="text-[9px] text-[#FFA500] font-bold uppercase mb-1">Initiate Checkout</div>
+                  <div className="text-xl font-black text-[#FFA500]">{funnel.initiate_checkout}</div>
+                  <div className="text-[9px] text-[#8696a0]">modais abertos</div>
+                </div>
+                <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
+                  <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Lead</div>
+                  <div className="text-xl font-black text-[#1877F2]">{funnel.lead}</div>
+                  <div className="text-[9px] text-[#8696a0]">PIX gerados</div>
+                </div>
+                <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
+                  <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">Purchase</div>
+                  <div className="text-xl font-black text-[#16A349]">{funnel.purchase}</div>
+                  <div className="text-[9px] text-[#8696a0]">aprovados</div>
                 </div>
               </div>
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">

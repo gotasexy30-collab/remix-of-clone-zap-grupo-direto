@@ -139,6 +139,30 @@ export type Database = {
         }
         Relationships: []
       }
+      tracked_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          session_id: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          session_id?: string
+          slug?: string
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          session_id?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       whatsapp_numbers: {
         Row: {
           created_at: string
