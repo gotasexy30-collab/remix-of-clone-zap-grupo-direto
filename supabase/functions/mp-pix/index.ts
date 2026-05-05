@@ -59,6 +59,7 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
       { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
     );
     if (!fbRes.ok) console.error("Meta CAPI purchase error", await fbRes.text());
+    else console.log("Meta CAPI purchase sent", paymentId, await fbRes.text());
   } catch (e) {
     console.error("capi purchase err", e);
   }
@@ -142,8 +143,8 @@ async function checkStatus(body: any) {
         session_id: paymentSessionId,
         slug: "webhook",
       });
-      await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
     }
+    await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
   }
 
   return {
