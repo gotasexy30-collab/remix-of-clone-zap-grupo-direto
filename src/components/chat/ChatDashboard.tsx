@@ -249,6 +249,7 @@ export const ChatDashboard: React.FC = () => {
               </div>
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
                 <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
+              </p>
             </div>
 
             {/* Funil completo + feed ao vivo */}
