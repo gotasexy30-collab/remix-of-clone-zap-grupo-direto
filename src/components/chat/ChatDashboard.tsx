@@ -337,35 +337,7 @@ export const ChatDashboard: React.FC = () => {
                         <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
                       </div>
 
-                      {pixTutorialVideoUrl && (
-                        <div className="w-full rounded-xl overflow-hidden bg-black relative group">
-                          <video
-                            ref={previewVideoRef}
-                            src={pixTutorialVideoUrl}
-                            autoPlay
-                            loop
-                            muted={previewVideoMuted}
-                            playsInline
-                            className="w-full h-auto"
-                          />
-                          <div className="absolute bottom-2 right-2 flex gap-2">
-                            <button
-                              onClick={togglePreviewVideoPlay}
-                              aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
-                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                            >
-                              {previewVideoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                            </button>
-                            <button
-                              onClick={togglePreviewVideoMute}
-                              aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
-                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                            >
-                              {previewVideoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                      {/* Vídeo movido para modal acionado pelo botão "Como pagar" */}
 
                       <div className="w-full">
                         <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
