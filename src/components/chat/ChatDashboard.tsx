@@ -385,6 +385,47 @@ export const ChatDashboard: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {previewShowVideoModal && pixTutorialVideoUrl && (
+              <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setPreviewShowVideoModal(false)}>
+                <div className="relative w-full sm:max-w-[480px]" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setPreviewShowVideoModal(false)}
+                    aria-label="Fechar"
+                    className="absolute -top-3 -right-3 z-10 bg-white text-black rounded-full p-2 shadow-lg active:scale-95"
+                  >
+                    <X size={20} />
+                  </button>
+                  <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                    <video
+                      ref={previewVideoRef}
+                      src={pixTutorialVideoUrl}
+                      autoPlay
+                      loop
+                      playsInline
+                      className="w-full h-auto"
+                      onLoadedMetadata={(e) => { (e.currentTarget as HTMLVideoElement).muted = false; }}
+                    />
+                    <div className="absolute bottom-2 right-2 flex gap-2">
+                      <button
+                        onClick={togglePreviewVideoPlay}
+                        aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
+                        className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                      >
+                        {previewVideoPlaying ? <Pause size={18} /> : <Play size={18} />}
+                      </button>
+                      <button
+                        onClick={togglePreviewVideoMute}
+                        aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
+                        className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                      >
+                        {previewVideoMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
