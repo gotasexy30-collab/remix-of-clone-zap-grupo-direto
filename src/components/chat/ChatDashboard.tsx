@@ -389,14 +389,14 @@ export const ChatDashboard: React.FC = () => {
             {previewShowVideoModal && pixTutorialVideoUrl && (
               <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setPreviewShowVideoModal(false)}>
                 <div className="relative w-full sm:max-w-[480px]" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setPreviewShowVideoModal(false)}
-                    aria-label="Fechar"
-                    className="absolute -top-3 -right-3 z-10 bg-white text-black rounded-full p-2 shadow-lg active:scale-95"
-                  >
-                    <X size={20} />
-                  </button>
                   <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                    <button
+                      onClick={() => setPreviewShowVideoModal(false)}
+                      aria-label="Fechar"
+                      className="absolute top-2 right-2 z-10 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition active:scale-95"
+                    >
+                      <X size={18} />
+                    </button>
                     <video
                       ref={previewVideoRef}
                       src={pixTutorialVideoUrl}
