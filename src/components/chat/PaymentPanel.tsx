@@ -317,33 +317,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
                     </div>
 
-                    <div className="w-full rounded-xl overflow-hidden bg-black relative group">
-                      <video
-                        ref={videoRef}
-                        src={tutorialVideoUrl}
-                        autoPlay
-                        loop
-                        muted={videoMuted}
-                        playsInline
-                        className="w-full h-auto"
-                      />
-                      <div className="absolute bottom-2 right-2 flex gap-2">
-                        <button
-                          onClick={toggleVideoPlay}
-                          aria-label={videoPlaying ? 'Pausar' : 'Reproduzir'}
-                          className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                        >
-                          {videoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                        </button>
-                        <button
-                          onClick={toggleVideoMute}
-                          aria-label={videoMuted ? 'Ativar som' : 'Mutar'}
-                          className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                        >
-                          {videoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                        </button>
-                      </div>
-                    </div>
+                    {/* Video movido para modal — abre no clique do botão "Como pagar" */}
 
                     <div className="w-full">
                       <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
