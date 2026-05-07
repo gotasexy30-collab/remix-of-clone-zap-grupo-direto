@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getUserLocation } from '../../services/location';
 import { getAllSettings, setSetting } from '../../services/settings';
@@ -69,7 +69,8 @@ export const ChatDashboard: React.FC = () => {
 
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const [previewVideoPlaying, setPreviewVideoPlaying] = useState(true);
-  const [previewVideoMuted, setPreviewVideoMuted] = useState(true);
+  const [previewVideoMuted, setPreviewVideoMuted] = useState(false);
+  const [previewShowVideoModal, setPreviewShowVideoModal] = useState(false);
   const togglePreviewVideoPlay = () => {
     const v = previewVideoRef.current;
     if (!v) return;
@@ -336,35 +337,7 @@ export const ChatDashboard: React.FC = () => {
                         <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
                       </div>
 
-                      {pixTutorialVideoUrl && (
-                        <div className="w-full rounded-xl overflow-hidden bg-black relative group">
-                          <video
-                            ref={previewVideoRef}
-                            src={pixTutorialVideoUrl}
-                            autoPlay
-                            loop
-                            muted={previewVideoMuted}
-                            playsInline
-                            className="w-full h-auto"
-                          />
-                          <div className="absolute bottom-2 right-2 flex gap-2">
-                            <button
-                              onClick={togglePreviewVideoPlay}
-                              aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
-                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                            >
-                              {previewVideoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                            </button>
-                            <button
-                              onClick={togglePreviewVideoMute}
-                              aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
-                              className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                            >
-                              {previewVideoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                      {/* Vídeo movido para modal acionado pelo botão "Como pagar" */}
 
                       <div className="w-full">
                         <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
@@ -383,6 +356,14 @@ export const ChatDashboard: React.FC = () => {
                         >
                           <Check size={18} /> JÁ PAGUEI
                         </button>
+                        {pixTutorialVideoUrl && (
+                          <button
+                            onClick={() => { setPreviewShowVideoModal(true); setPreviewVideoPlaying(true); setPreviewVideoMuted(false); }}
+                            className="w-full mt-2 bg-blue-50 border-2 border-blue-400 text-blue-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                          >
+                            <HelpCircle size={18} /> COMO PAGAR
+                          </button>
+                        )}
                         {previewShowNotPaid && (
                           <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center animate-fadeIn">
                             <p className="text-[13px] text-pink-700 font-medium leading-snug">amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥</p>
@@ -404,6 +385,47 @@ export const ChatDashboard: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {previewShowVideoModal && pixTutorialVideoUrl && (
+              <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setPreviewShowVideoModal(false)}>
+                <div className="relative w-full sm:max-w-[480px]" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setPreviewShowVideoModal(false)}
+                    aria-label="Fechar"
+                    className="absolute -top-3 -right-3 z-10 bg-white text-black rounded-full p-2 shadow-lg active:scale-95"
+                  >
+                    <X size={20} />
+                  </button>
+                  <div className="w-full rounded-xl overflow-hidden bg-black relative">
+                    <video
+                      ref={previewVideoRef}
+                      src={pixTutorialVideoUrl}
+                      autoPlay
+                      loop
+                      playsInline
+                      className="w-full h-auto"
+                      onLoadedMetadata={(e) => { (e.currentTarget as HTMLVideoElement).muted = false; }}
+                    />
+                    <div className="absolute bottom-2 right-2 flex gap-2">
+                      <button
+                        onClick={togglePreviewVideoPlay}
+                        aria-label={previewVideoPlaying ? 'Pausar' : 'Reproduzir'}
+                        className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                      >
+                        {previewVideoPlaying ? <Pause size={18} /> : <Play size={18} />}
+                      </button>
+                      <button
+                        onClick={togglePreviewVideoMute}
+                        aria-label={previewVideoMuted ? 'Ativar som' : 'Mutar'}
+                        className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                      >
+                        {previewVideoMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
