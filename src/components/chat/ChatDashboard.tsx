@@ -4,6 +4,7 @@ import { getStats } from '../../services/tracking';
 import { getUserLocation } from '../../services/location';
 import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
+import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
 
 export const ChatDashboard: React.FC = () => {
@@ -250,6 +251,9 @@ export const ChatDashboard: React.FC = () => {
                 <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
               </p>
             </div>
+
+            {/* Funil completo + feed ao vivo */}
+            <FunnelLiveFeed />
           </div>
         )}
 

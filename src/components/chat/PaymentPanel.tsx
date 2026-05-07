@@ -143,6 +143,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         return;
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+      logTrackedEvent('PixGenerated');
     } catch {
       setPixError('Erro de conexão. Tente novamente.');
     } finally {
@@ -188,6 +189,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         document.body.removeChild(ta);
       }
       setCopied(true);
+      logTrackedEvent('PixCopied');
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Copy failed', err);
@@ -213,6 +215,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     if (!pix?.id || checkingManual) return;
     setCheckingManual(true);
     setNotPaidMsg('');
+    logTrackedEvent('AlreadyPaid');
     try {
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
       const { data } = await supabase.functions.invoke('mp-pix', {
@@ -351,7 +354,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                         {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
                       </button>
                       <button
-                        onClick={() => { setShowVideoModal(true); setVideoPlaying(true); setVideoMuted(false); }}
+                        onClick={() => { setShowVideoModal(true); setVideoPlaying(true); setVideoMuted(false); logTrackedEvent('TutorialOpened'); }}
                         className="w-full mt-2 bg-blue-50 border-2 border-blue-400 text-blue-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
                       >
                         <HelpCircle size={18} /> COMO PAGAR
