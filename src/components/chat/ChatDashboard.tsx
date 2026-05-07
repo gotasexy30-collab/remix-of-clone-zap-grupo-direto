@@ -356,6 +356,14 @@ export const ChatDashboard: React.FC = () => {
                         >
                           <Check size={18} /> JÁ PAGUEI
                         </button>
+                        {pixTutorialVideoUrl && (
+                          <button
+                            onClick={() => { setPreviewShowVideoModal(true); setPreviewVideoPlaying(true); setPreviewVideoMuted(false); }}
+                            className="w-full mt-2 bg-blue-50 border-2 border-blue-400 text-blue-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                          >
+                            <HelpCircle size={18} /> COMO PAGAR
+                          </button>
+                        )}
                         {previewShowNotPaid && (
                           <div className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center animate-fadeIn">
                             <p className="text-[13px] text-pink-700 font-medium leading-snug">amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥</p>
