@@ -337,6 +337,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       >
                         {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
                       </button>
+                      <button
+                        onClick={() => { setShowVideoModal(true); setVideoPlaying(true); setVideoMuted(false); }}
+                        className="w-full mt-2 bg-blue-50 border-2 border-blue-400 text-blue-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        <HelpCircle size={18} /> COMO PAGAR
+                      </button>
                       {notPaidMsg && (
                         <div ref={notPaidRef} className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
                           <p className="text-[13px] text-pink-700 font-medium leading-snug">{notPaidMsg}</p>
