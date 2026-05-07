@@ -45,7 +45,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const modalScrollRef = useRef<HTMLDivElement>(null);
   const notPaidRef = useRef<HTMLDivElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
-  const [videoMuted, setVideoMuted] = useState(true);
+  const [videoMuted, setVideoMuted] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(
     localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4'
   );
