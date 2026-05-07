@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, Check, Loader2, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { MoreVertical, Video, Phone, Mic, Paperclip, Smile, ShieldCheck, Copy, Check, Loader2, Play, Pause, Volume2, VolumeX, X, HelpCircle } from 'lucide-react';
 import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
@@ -45,7 +45,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const modalScrollRef = useRef<HTMLDivElement>(null);
   const notPaidRef = useRef<HTMLDivElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
-  const [videoMuted, setVideoMuted] = useState(true);
+  const [videoMuted, setVideoMuted] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(
     localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4'
   );
@@ -316,33 +317,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
                     </div>
 
-                    <div className="w-full rounded-xl overflow-hidden bg-black relative group">
-                      <video
-                        ref={videoRef}
-                        src={tutorialVideoUrl}
-                        autoPlay
-                        loop
-                        muted={videoMuted}
-                        playsInline
-                        className="w-full h-auto"
-                      />
-                      <div className="absolute bottom-2 right-2 flex gap-2">
-                        <button
-                          onClick={toggleVideoPlay}
-                          aria-label={videoPlaying ? 'Pausar' : 'Reproduzir'}
-                          className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                        >
-                          {videoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                        </button>
-                        <button
-                          onClick={toggleVideoMute}
-                          aria-label={videoMuted ? 'Ativar som' : 'Mutar'}
-                          className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
-                        >
-                          {videoMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                        </button>
-                      </div>
-                    </div>
+                    {/* Video movido para modal — abre no clique do botão "Como pagar" */}
 
                     <div className="w-full">
                       <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
@@ -361,6 +336,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                         className="w-full mt-2 bg-white border-2 border-[#16A349] text-[#16A349] py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60"
                       >
                         {checkingManual ? <><Loader2 size={18} className="animate-spin" /> Verificando...</> : <><Check size={18} /> JÁ PAGUEI</>}
+                      </button>
+                      <button
+                        onClick={() => { setShowVideoModal(true); setVideoPlaying(true); setVideoMuted(false); }}
+                        className="w-full mt-2 bg-blue-50 border-2 border-blue-400 text-blue-600 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+                      >
+                        <HelpCircle size={18} /> COMO PAGAR
                       </button>
                       {notPaidMsg && (
                         <div ref={notPaidRef} className="mt-2 bg-pink-50 border border-pink-200 rounded-lg p-3 text-center">
@@ -382,6 +363,47 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
               </div>
             </div>
           </div>
+          </div>
+        </div>
+      )}
+
+      {showVideoModal && (
+        <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setShowVideoModal(false)}>
+          <div className="relative w-full sm:max-w-[480px]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowVideoModal(false)}
+              aria-label="Fechar"
+              className="absolute -top-3 -right-3 z-10 bg-white text-black rounded-full p-2 shadow-lg active:scale-95"
+            >
+              <X size={20} />
+            </button>
+            <div className="w-full rounded-xl overflow-hidden bg-black relative">
+              <video
+                ref={videoRef}
+                src={tutorialVideoUrl}
+                autoPlay
+                loop
+                playsInline
+                className="w-full h-auto"
+                onLoadedMetadata={(e) => { (e.currentTarget as HTMLVideoElement).muted = false; }}
+              />
+              <div className="absolute bottom-2 right-2 flex gap-2">
+                <button
+                  onClick={toggleVideoPlay}
+                  aria-label={videoPlaying ? 'Pausar' : 'Reproduzir'}
+                  className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                >
+                  {videoPlaying ? <Pause size={18} /> : <Play size={18} />}
+                </button>
+                <button
+                  onClick={toggleVideoMute}
+                  aria-label={videoMuted ? 'Ativar som' : 'Mutar'}
+                  className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition"
+                >
+                  {videoMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
