@@ -82,6 +82,7 @@ const Index = () => {
     if (currentStepId === 'AWAITING_CITY') {
       trackEvent('h2');
       fbqTrack('ViewContent', { content_name: 'chat_started' });
+      import('../services/pixel').then(({ logTrackedEvent }) => logTrackedEvent('ChatStarted'));
     }
 
     const step = DIALOGUE[currentStepId];
