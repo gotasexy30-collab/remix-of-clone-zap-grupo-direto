@@ -69,7 +69,8 @@ export const ChatDashboard: React.FC = () => {
 
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const [previewVideoPlaying, setPreviewVideoPlaying] = useState(true);
-  const [previewVideoMuted, setPreviewVideoMuted] = useState(true);
+  const [previewVideoMuted, setPreviewVideoMuted] = useState(false);
+  const [previewShowVideoModal, setPreviewShowVideoModal] = useState(false);
   const togglePreviewVideoPlay = () => {
     const v = previewVideoRef.current;
     if (!v) return;
