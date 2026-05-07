@@ -384,6 +384,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                 autoPlay
                 loop
                 playsInline
+                preload="auto"
                 className="w-full h-auto"
                 onLoadedMetadata={(e) => { (e.currentTarget as HTMLVideoElement).muted = false; }}
               />
