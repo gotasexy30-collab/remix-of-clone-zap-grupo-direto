@@ -58,6 +58,19 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     })();
   }, []);
 
+  // Preload video in background para abrir instantaneamente
+  useEffect(() => {
+    if (!tutorialVideoUrl) return;
+    const v = document.createElement('video');
+    v.src = tutorialVideoUrl;
+    v.preload = 'auto';
+    v.muted = true;
+    v.style.display = 'none';
+    document.body.appendChild(v);
+    v.load();
+    return () => { try { document.body.removeChild(v); } catch {} };
+  }, [tutorialVideoUrl]);
+
   const toggleVideoPlay = () => {
     const v = videoRef.current;
     if (!v) return;
