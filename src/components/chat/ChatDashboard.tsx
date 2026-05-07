@@ -403,6 +403,7 @@ export const ChatDashboard: React.FC = () => {
                       autoPlay
                       loop
                       playsInline
+                      preload="auto"
                       className="w-full h-auto"
                       onLoadedMetadata={(e) => { (e.currentTarget as HTMLVideoElement).muted = false; }}
                     />
