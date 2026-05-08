@@ -47,36 +47,46 @@ export const FunnelLiveFeed: React.FC = () => {
     return r.useToday ? startOfToday() : startOfHoursAgo(r.hours);
   };
 
+  const fetchAllPaged = async <T,>(builder: (from: number, to: number) => any): Promise<T[]> => {
+    const PAGE = 1000;
+    let from = 0;
+    const all: T[] = [];
+    while (true) {
+      const { data, error } = await builder(from, from + PAGE - 1);
+      if (error || !data) break;
+      all.push(...(data as T[]));
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  };
+
   const loadCounts = async () => {
     setLoading(true);
     const fromIso = fromDate().toISOString();
 
-    // Visitas (sessões únicas)
-    const { data: visits } = await supabase
-      .from('page_visits')
-      .select('session_id')
-      .gte('visited_at', fromIso);
-    const uniqueVisits = new Set((visits || []).map(v => v.session_id).filter(Boolean)).size;
+    // Visitas (sessões únicas) — paginado para passar do limite de 1000
+    const visits = await fetchAllPaged<{ session_id: string }>((f, t) =>
+      supabase.from('page_visits').select('session_id').gte('visited_at', fromIso).range(f, t)
+    );
+    const uniqueVisits = new Set(visits.map(v => v.session_id).filter(Boolean)).size;
 
     // Eventos rastreados (sessões únicas por evento)
-    const { data: events } = await supabase
-      .from('tracked_events')
-      .select('event_name, session_id')
-      .gte('created_at', fromIso);
+    const events = await fetchAllPaged<{ event_name: string; session_id: string }>((f, t) =>
+      supabase.from('tracked_events').select('event_name, session_id').gte('created_at', fromIso).range(f, t)
+    );
 
     const uniqueByEvent: Record<string, Set<string>> = {};
-    (events || []).forEach(e => {
+    events.forEach(e => {
       if (!uniqueByEvent[e.event_name]) uniqueByEvent[e.event_name] = new Set();
       if (e.session_id) uniqueByEvent[e.event_name].add(e.session_id);
     });
 
     // Compras aprovadas
-    const { data: purchases } = await supabase
-      .from('purchases')
-      .select('session_id')
-      .gte('approved_at', fromIso)
-      .eq('status', 'approved');
-    const uniquePurchases = new Set((purchases || []).map(p => p.session_id).filter(Boolean)).size;
+    const purchases = await fetchAllPaged<{ session_id: string }>((f, t) =>
+      supabase.from('purchases').select('session_id').gte('approved_at', fromIso).eq('status', 'approved').range(f, t)
+    );
+    const uniquePurchases = new Set(purchases.map(p => p.session_id).filter(Boolean)).size;
 
     setCounts({
       Visited: uniqueVisits,
