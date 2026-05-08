@@ -179,24 +179,43 @@ async function dailyFunnel() {
   // Converte de volta pra UTC somando o offset
   const startUtc = new Date(startBrt.getTime() + brtOffsetMs).toISOString();
 
-  const [{ data: visits }, { data: clicks }, { data: sales }, { data: events }] = await Promise.all([
-    supabase
-      .from("page_visits")
-      .select("session_id")
-      .gte("visited_at", startUtc),
-    supabase
-      .from("lead_logs")
-      .select("session_id")
-      .gte("redirected_at", startUtc),
-    supabase
-      .from("purchases")
-      .select("amount, session_id")
-      .eq("status", "approved")
-      .gte("approved_at", startUtc),
-    supabase
-      .from("tracked_events")
-      .select("event_name, session_id, slug")
-      .gte("created_at", startUtc),
+  // Pagina sem o limite padrão de 1000 do PostgREST
+  const fetchAll = async (build: (from: number, to: number) => any) => {
+    const PAGE = 1000;
+    let from = 0;
+    const all: any[] = [];
+    while (true) {
+      const { data, error } = await build(from, from + PAGE - 1);
+      if (error || !data) break;
+      all.push(...data);
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  };
+
+  const [visits, clicks, sales, events] = await Promise.all([
+    fetchAll((f, t) =>
+      supabase.from("page_visits").select("session_id").gte("visited_at", startUtc).range(f, t),
+    ),
+    fetchAll((f, t) =>
+      supabase.from("lead_logs").select("session_id").gte("redirected_at", startUtc).range(f, t),
+    ),
+    fetchAll((f, t) =>
+      supabase
+        .from("purchases")
+        .select("amount, session_id")
+        .eq("status", "approved")
+        .gte("approved_at", startUtc)
+        .range(f, t),
+    ),
+    fetchAll((f, t) =>
+      supabase
+        .from("tracked_events")
+        .select("event_name, session_id, slug")
+        .gte("created_at", startUtc)
+        .range(f, t),
+    ),
   ]);
 
   const totalVisits = visits?.length || 0;
