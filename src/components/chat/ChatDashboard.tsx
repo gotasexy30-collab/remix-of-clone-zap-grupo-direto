@@ -34,6 +34,7 @@ export const ChatDashboard: React.FC = () => {
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
   const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
   const [redirectCopied, setRedirectCopied] = useState(false);
+  const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect'>('funil');
@@ -46,6 +47,18 @@ export const ChatDashboard: React.FC = () => {
   useEffect(() => {
     getUserLocation().then(loc => setPreviewCity(loc.city)).catch(() => {});
   }, []);
+
+  const loadDesktopRedirects = async () => {
+    const { count } = await supabase
+      .from('tracked_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_name', 'RedirectDesktop');
+    setDesktopRedirects(count ?? 0);
+  };
+
+  useEffect(() => {
+    if (activeTab === 'redirect') loadDesktopRedirects();
+  }, [activeTab]);
 
   const [previewError, setPreviewError] = useState('');
   const [previewCopied, setPreviewCopied] = useState(false);
@@ -520,6 +533,25 @@ export const ChatDashboard: React.FC = () => {
                 📱 <strong className="text-white/80">Celular/Tablet</strong> → URL Mobile<br />
                 💻 <strong className="text-white/80">PC/Notebook</strong> → URL Desktop
               </p>
+            </div>
+
+            <div className="bg-[#0b141a] border border-[#1877F2]/30 rounded-xl p-4 mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest mb-1 flex items-center gap-1.5">
+                  <Monitor size={12} className="text-[#1877F2]" /> Redirecionados para PC/Notebook
+                </p>
+                <p className="text-3xl font-black text-white tabular-nums">
+                  {desktopRedirects === null ? '—' : desktopRedirects}
+                </p>
+                <p className="text-[10px] text-[#8696a0] italic mt-1">Total acumulado de cliques no link /r vindos de desktop.</p>
+              </div>
+              <button
+                onClick={loadDesktopRedirects}
+                className="text-[#1877F2] hover:text-[#3b8df5] p-2 rounded-lg hover:bg-white/5 transition"
+                title="Atualizar"
+              >
+                <RefreshCw size={16} />
+              </button>
             </div>
 
             <div className="bg-[#2a3942]/50 border border-white/5 rounded-xl p-3 mb-4 flex items-center gap-2">
