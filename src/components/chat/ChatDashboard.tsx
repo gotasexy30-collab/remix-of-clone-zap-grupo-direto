@@ -506,6 +506,79 @@ export const ChatDashboard: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'redirect' && (
+          <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <Split size={16} className="text-[#00a884]" />
+              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Redirecionador por Dispositivo</span>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-xl p-3 mb-4">
+              <p className="text-[11px] text-[#e9edef] font-semibold mb-1">Como funciona</p>
+              <p className="text-[10px] text-[#8696a0] leading-relaxed">
+                Use o link <strong className="text-[#00a884]">{`${window.location.origin}/r`}</strong> nos seus anúncios. Ele detecta o aparelho e manda automaticamente:<br />
+                📱 <strong className="text-white/80">Celular/Tablet</strong> → URL Mobile<br />
+                💻 <strong className="text-white/80">PC/Notebook</strong> → URL Desktop
+              </p>
+            </div>
+
+            <div className="bg-[#2a3942]/50 border border-white/5 rounded-xl p-3 mb-4 flex items-center gap-2">
+              <input
+                readOnly
+                value={`${window.location.origin}/r`}
+                className="flex-1 bg-transparent text-[#e9edef] text-sm outline-none font-mono"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                onClick={async () => {
+                  await navigator.clipboard.writeText(`${window.location.origin}/r`);
+                  setRedirectCopied(true);
+                  setTimeout(() => setRedirectCopied(false), 1500);
+                }}
+                className="flex items-center gap-1 text-[11px] font-bold text-[#00a884] hover:text-[#00c896] px-2 py-1"
+              >
+                {redirectCopied ? <Check size={14} /> : <Copy size={14} />}
+                {redirectCopied ? 'Copiado!' : 'Copiar'}
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 flex items-center gap-1.5">
+                  <Smartphone size={12} className="text-[#00a884]" /> URL para Celular / Tablet
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://sua-pagina-de-vendas.com"
+                  value={redirectMobileUrl}
+                  onChange={(e) => setRedirectMobileUrl(e.target.value)}
+                  className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50"
+                />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Para onde o usuário de celular será enviado.</p>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 flex items-center gap-1.5">
+                  <Monitor size={12} className="text-[#1877F2]" /> URL para PC / Notebook
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://outra-pagina.com"
+                  value={redirectDesktopUrl}
+                  onChange={(e) => setRedirectDesktopUrl(e.target.value)}
+                  className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+                />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Para onde o usuário de PC/Notebook será enviado. Se ficar vazio, usa a URL Mobile como fallback.</p>
+              </div>
+            </div>
+
+            <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3">
+              <p className="text-[10px] text-yellow-200/80 leading-relaxed">
+                💡 <strong>Dica:</strong> Os parâmetros UTM da URL (ex: <code className="text-yellow-300">?utm_source=facebook</code>) são repassados automaticamente para o destino.
+              </p>
+            </div>
+          </div>
+        )}
+
         {activeTab !== 'funil' && (
           <button
             onClick={handleSaveAll}
