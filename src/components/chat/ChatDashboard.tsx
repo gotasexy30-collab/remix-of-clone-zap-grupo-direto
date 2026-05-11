@@ -535,6 +535,25 @@ export const ChatDashboard: React.FC = () => {
               </p>
             </div>
 
+            <div className="bg-[#0b141a] border border-[#1877F2]/30 rounded-xl p-4 mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest mb-1 flex items-center gap-1.5">
+                  <Monitor size={12} className="text-[#1877F2]" /> Redirecionados para PC/Notebook
+                </p>
+                <p className="text-3xl font-black text-white tabular-nums">
+                  {desktopRedirects === null ? '—' : desktopRedirects}
+                </p>
+                <p className="text-[10px] text-[#8696a0] italic mt-1">Total acumulado de cliques no link /r vindos de desktop.</p>
+              </div>
+              <button
+                onClick={loadDesktopRedirects}
+                className="text-[#1877F2] hover:text-[#3b8df5] p-2 rounded-lg hover:bg-white/5 transition"
+                title="Atualizar"
+              >
+                <RefreshCw size={16} />
+              </button>
+            </div>
+
             <div className="bg-[#2a3942]/50 border border-white/5 rounded-xl p-3 mb-4 flex items-center gap-2">
               <input
                 readOnly
