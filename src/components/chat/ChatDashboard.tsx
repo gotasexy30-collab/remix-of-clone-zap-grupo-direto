@@ -34,6 +34,7 @@ export const ChatDashboard: React.FC = () => {
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
   const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
   const [redirectCopied, setRedirectCopied] = useState(false);
+  const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect'>('funil');
