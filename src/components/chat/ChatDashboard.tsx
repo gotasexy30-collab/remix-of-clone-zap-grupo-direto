@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle, Smartphone, Monitor, Split } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getUserLocation } from '../../services/location';
 import { getAllSettings, setSetting } from '../../services/settings';
@@ -31,9 +31,12 @@ export const ChatDashboard: React.FC = () => {
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
   const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
+  const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
+  const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
+  const [redirectCopied, setRedirectCopied] = useState(false);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router'>('funil');
+  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect'>('funil');
 
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
@@ -109,6 +112,8 @@ export const ChatDashboard: React.FC = () => {
     if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
     if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
     if (settings.pix_tutorial_video_url) setPixTutorialVideoUrl(settings.pix_tutorial_video_url);
+    if (settings.redirect_mobile_url) setRedirectMobileUrl(settings.redirect_mobile_url);
+    if (settings.redirect_desktop_url) setRedirectDesktopUrl(settings.redirect_desktop_url);
     setLoading(false);
   };
 
@@ -136,6 +141,8 @@ export const ChatDashboard: React.FC = () => {
       setSetting('meta_pixel_id', metaPixelId),
       setSetting('meta_capi_token', metaCapiToken),
       setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
+      setSetting('redirect_mobile_url', redirectMobileUrl),
+      setSetting('redirect_desktop_url', redirectDesktopUrl),
     ]);
     // Also update localStorage for immediate use by chat components
     localStorage.setItem('payment_redirect_link', redirectLink);
@@ -146,6 +153,8 @@ export const ChatDashboard: React.FC = () => {
     localStorage.setItem('meta_pixel_id', metaPixelId);
     localStorage.setItem('meta_capi_token', metaCapiToken);
     localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
+    localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
+    localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
     setSaving(false);
     setAllSaved(true);
     setTimeout(() => setAllSaved(false), 2000);
@@ -175,13 +184,14 @@ export const ChatDashboard: React.FC = () => {
         </div>
 
         {/* Tabs de navegação rápida */}
-        <div className="grid grid-cols-5 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
+        <div className="grid grid-cols-6 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
           {[
             { id: 'funil', label: 'Funil', icon: TrendingUp },
             { id: 'pagamento', label: 'Pagamento', icon: Link2 },
             { id: 'perfil', label: 'Perfil', icon: User },
             { id: 'pixel', label: 'Pixel', icon: Activity },
             { id: 'router', label: 'Router', icon: Target },
+            { id: 'redirect', label: 'Redirect', icon: Split },
           ].map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.id;
