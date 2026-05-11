@@ -30,12 +30,26 @@ const Redirect = () => {
       try {
         const mobileUrl = await getSetting('redirect_mobile_url');
         const desktopUrl = await getSetting('redirect_desktop_url');
-        const target = isMobileOrTablet() ? mobileUrl : desktopUrl;
+        const isMobile = isMobileOrTablet();
+        const target = isMobile ? mobileUrl : desktopUrl;
         const fallback = mobileUrl || desktopUrl;
         const finalUrl = (target && target.trim()) || (fallback && fallback.trim());
         if (!finalUrl) {
           setError('URLs de redirecionamento não configuradas. Acesse /painel para configurar.');
           return;
+        }
+        // Conta apenas quem foi para a página de PC/Notebook
+        if (!isMobile) {
+          try {
+            const sessionId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            await supabase.from('tracked_events').insert({
+              event_name: 'RedirectDesktop',
+              session_id: sessionId,
+              slug: 'r',
+            });
+          } catch {}
         }
         window.location.replace(appendQuery(finalUrl));
       } catch (e) {
