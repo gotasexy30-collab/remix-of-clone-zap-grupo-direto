@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getSetting } from '../services/settings';
+import { supabase } from '@/integrations/supabase/client';
 
 const isMobileOrTablet = () => {
   const ua = navigator.userAgent || '';
