@@ -48,6 +48,18 @@ export const ChatDashboard: React.FC = () => {
     getUserLocation().then(loc => setPreviewCity(loc.city)).catch(() => {});
   }, []);
 
+  const loadDesktopRedirects = async () => {
+    const { count } = await supabase
+      .from('tracked_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_name', 'RedirectDesktop');
+    setDesktopRedirects(count ?? 0);
+  };
+
+  useEffect(() => {
+    if (activeTab === 'redirect') loadDesktopRedirects();
+  }, [activeTab]);
+
   const [previewError, setPreviewError] = useState('');
   const [previewCopied, setPreviewCopied] = useState(false);
   const [previewShowNotPaid, setPreviewShowNotPaid] = useState(false);
