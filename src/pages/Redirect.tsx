@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getSetting } from '../services/settings';
 import { supabase } from '@/integrations/supabase/client';
 
