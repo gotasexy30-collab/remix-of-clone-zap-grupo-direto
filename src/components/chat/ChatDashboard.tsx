@@ -6,6 +6,7 @@ import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
+import { PresselTest } from './PresselTest';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
