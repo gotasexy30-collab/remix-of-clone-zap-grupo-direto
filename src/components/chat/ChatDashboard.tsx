@@ -6,6 +6,7 @@ import { getAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
+import { PresselTest } from './PresselTest';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
@@ -37,7 +38,7 @@ export const ChatDashboard: React.FC = () => {
   const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect'>('funil');
+  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
 
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
@@ -197,7 +198,7 @@ export const ChatDashboard: React.FC = () => {
         </div>
 
         {/* Tabs de navegação rápida */}
-        <div className="grid grid-cols-6 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
+        <div className="grid grid-cols-7 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
           {[
             { id: 'funil', label: 'Funil', icon: TrendingUp },
             { id: 'pagamento', label: 'Pagamento', icon: Link2 },
@@ -205,6 +206,7 @@ export const ChatDashboard: React.FC = () => {
             { id: 'pixel', label: 'Pixel', icon: Activity },
             { id: 'router', label: 'Router', icon: Target },
             { id: 'redirect', label: 'Redirect', icon: Split },
+            { id: 'pressel', label: 'Pressel', icon: Smartphone },
           ].map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.id;
@@ -611,7 +613,9 @@ export const ChatDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab !== 'funil' && (
+        {activeTab === 'pressel' && <PresselTest />}
+
+        {activeTab !== 'funil' && activeTab !== 'pressel' && (
           <button
             onClick={handleSaveAll}
             disabled={saving}
