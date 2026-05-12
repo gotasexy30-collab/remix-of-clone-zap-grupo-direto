@@ -20,6 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/r" element={<Redirect />} />
+          <Route path="/pressel" element={<Pressel />} />
           <Route path="/painel" element={<Dashboard />} />
           <Route path="/:slug/painel" element={<Dashboard />} />
           <Route path="/:slug" element={<Index />} />
