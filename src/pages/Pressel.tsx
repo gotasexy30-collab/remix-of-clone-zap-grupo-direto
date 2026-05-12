@@ -55,8 +55,15 @@ const Pressel = () => {
     setProgress(100);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!target) return;
+    try {
+      await supabase.from('tracked_events').insert({
+        event_name: 'PresselPassed',
+        session_id: getOrCreateSessionId(),
+        slug: 'pressel',
+      });
+    } catch {}
     window.location.replace(appendQuery(target));
   };
 
