@@ -39,6 +39,25 @@ export const ChatDashboard: React.FC = () => {
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
+  const [presselPassed, setPresselPassed] = useState(0);
+
+  const loadPresselPassed = async () => {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const { data } = await supabase
+      .from('tracked_events')
+      .select('session_id')
+      .eq('event_name', 'PresselPassed')
+      .gte('created_at', start.toISOString())
+      .limit(1000);
+    const unique = new Set((data || []).map((r: any) => r.session_id).filter(Boolean));
+    setPresselPassed(unique.size);
+  };
+
+  useEffect(() => {
+    loadPresselPassed();
+    const i = setInterval(loadPresselPassed, 15000);
+    return () => clearInterval(i);
+  }, []);
 
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
