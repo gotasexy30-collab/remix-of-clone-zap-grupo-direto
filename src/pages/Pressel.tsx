@@ -31,32 +31,11 @@ const Pressel = () => {
       const desktopUrl = await getSetting('redirect_desktop_url');
       setTarget((mobileUrl && mobileUrl.trim()) || (desktopUrl && desktopUrl.trim()) || null);
     })();
-
-    try {
-      const sessionId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      supabase.from('tracked_events').insert({
-        event_name: 'PresselView',
-        session_id: sessionId,
-        slug: 'pressel',
-      });
-    } catch {}
   }, []);
 
   const handleAnswer = (opt: string) => {
     setAnswered(opt);
     setProgress(100);
-    try {
-      const sessionId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      supabase.from('tracked_events').insert({
-        event_name: 'PresselAnswer',
-        session_id: sessionId,
-        slug: 'pressel',
-      });
-    } catch {}
   };
 
   const handleContinue = () => {
