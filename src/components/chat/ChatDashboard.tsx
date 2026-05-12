@@ -259,9 +259,9 @@ export const ChatDashboard: React.FC = () => {
                   <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
                 </div>
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Abriu Modal</div>
-                  <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
-                  <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
+                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Passou Pressel</div>
+                  <div className="text-2xl font-black text-[#00a884]">{presselPassed}</div>
+                  <div className="text-[9px] text-[#8696a0]">cliques no CTA (mobile)</div>
                 </div>
                 <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
