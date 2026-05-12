@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getSetting } from '../services/settings';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,33 +25,36 @@ const appendQuery = (url: string) => {
 
 const Redirect = () => {
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
       try {
-        const mobileUrl = await getSetting('redirect_mobile_url');
-        const desktopUrl = await getSetting('redirect_desktop_url');
         const isMobile = isMobileOrTablet();
-        const target = isMobile ? mobileUrl : desktopUrl;
-        const fallback = mobileUrl || desktopUrl;
-        const finalUrl = (target && target.trim()) || (fallback && fallback.trim());
+
+        // Mobile: envia para a pressel (preserva query string para UTMs)
+        if (isMobile) {
+          navigate({ pathname: '/pressel', search: window.location.search }, { replace: true });
+          return;
+        }
+
+        const desktopUrl = await getSetting('redirect_desktop_url');
+        const mobileUrl = await getSetting('redirect_mobile_url');
+        const finalUrl = (desktopUrl && desktopUrl.trim()) || (mobileUrl && mobileUrl.trim());
         if (!finalUrl) {
           setError('URLs de redirecionamento não configuradas. Acesse /painel para configurar.');
           return;
         }
-        // Conta apenas quem foi para a página de PC/Notebook
-        if (!isMobile) {
-          try {
-            const sessionId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-              ? crypto.randomUUID()
-              : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-            await supabase.from('tracked_events').insert({
-              event_name: 'RedirectDesktop',
-              session_id: sessionId,
-              slug: 'r',
-            });
-          } catch {}
-        }
+        try {
+          const sessionId = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          await supabase.from('tracked_events').insert({
+            event_name: 'RedirectDesktop',
+            session_id: sessionId,
+            slug: 'r',
+          });
+        } catch {}
         window.location.replace(appendQuery(finalUrl));
       } catch (e) {
         setError('Erro ao carregar redirecionamento.');

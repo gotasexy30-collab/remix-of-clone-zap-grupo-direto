@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Redirect from "./pages/Redirect.tsx";
+import Pressel from "./pages/Pressel.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/r" element={<Redirect />} />
+          <Route path="/pressel" element={<Pressel />} />
           <Route path="/painel" element={<Dashboard />} />
           <Route path="/:slug/painel" element={<Dashboard />} />
           <Route path="/:slug" element={<Index />} />
