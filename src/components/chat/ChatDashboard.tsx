@@ -613,7 +613,9 @@ export const ChatDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab !== 'funil' && (
+        {activeTab === 'pressel' && <PresselTest />}
+
+        {activeTab !== 'funil' && activeTab !== 'pressel' && (
           <button
             onClick={handleSaveAll}
             disabled={saving}
