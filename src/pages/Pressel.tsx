@@ -1,6 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
 import { getSetting } from '../services/settings';
+import { supabase } from '@/integrations/supabase/client';
+
+const getOrCreateSessionId = () => {
+  try {
+    const k = 'pressel_session_id';
+    let s = sessionStorage.getItem(k);
+    if (!s) {
+      s = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem(k, s);
+    }
+    return s;
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+};
 
 const QUESTION = {
   text: 'Você é maior de 18 anos?',
