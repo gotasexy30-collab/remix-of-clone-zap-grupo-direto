@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
 import { getSetting } from '../services/settings';
-import { supabase } from '@/integrations/supabase/client';
 
 const QUESTION = {
   text: 'Você é maior de 18 anos?',
