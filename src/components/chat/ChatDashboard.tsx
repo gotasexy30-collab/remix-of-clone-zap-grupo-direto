@@ -198,7 +198,7 @@ export const ChatDashboard: React.FC = () => {
         </div>
 
         {/* Tabs de navegação rápida */}
-        <div className="grid grid-cols-6 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
+        <div className="grid grid-cols-7 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
           {[
             { id: 'funil', label: 'Funil', icon: TrendingUp },
             { id: 'pagamento', label: 'Pagamento', icon: Link2 },
@@ -206,6 +206,7 @@ export const ChatDashboard: React.FC = () => {
             { id: 'pixel', label: 'Pixel', icon: Activity },
             { id: 'router', label: 'Router', icon: Target },
             { id: 'redirect', label: 'Redirect', icon: Split },
+            { id: 'pressel', label: 'Pressel', icon: Smartphone },
           ].map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.id;
