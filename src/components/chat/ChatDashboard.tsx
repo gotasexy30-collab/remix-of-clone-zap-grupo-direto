@@ -39,6 +39,25 @@ export const ChatDashboard: React.FC = () => {
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
+  const [presselPassed, setPresselPassed] = useState(0);
+
+  const loadPresselPassed = async () => {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const { data } = await supabase
+      .from('tracked_events')
+      .select('session_id')
+      .eq('event_name', 'PresselPassed')
+      .gte('created_at', start.toISOString())
+      .limit(1000);
+    const unique = new Set((data || []).map((r: any) => r.session_id).filter(Boolean));
+    setPresselPassed(unique.size);
+  };
+
+  useEffect(() => {
+    loadPresselPassed();
+    const i = setInterval(loadPresselPassed, 15000);
+    return () => clearInterval(i);
+  }, []);
 
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
@@ -240,9 +259,9 @@ export const ChatDashboard: React.FC = () => {
                   <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
                 </div>
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Abriu Modal</div>
-                  <div className="text-2xl font-black text-[#00a884]">{funnel.unique_clickers}</div>
-                  <div className="text-[9px] text-[#8696a0]">{funnel.total_clicks} cliques</div>
+                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Passou Pressel</div>
+                  <div className="text-2xl font-black text-[#00a884]">{presselPassed}</div>
+                  <div className="text-[9px] text-[#8696a0]">cliques no CTA (mobile)</div>
                 </div>
                 <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
