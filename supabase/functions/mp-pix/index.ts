@@ -139,8 +139,9 @@ async function checkStatus(body: any) {
   const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
     headers: { "x-api-key": NEXUS_KEY },
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { error: data?.message || data?.error || "Erro ao consultar" };
+  const raw = await res.json().catch(() => ({}));
+  if (!res.ok) return { error: raw?.message || raw?.error || "Erro ao consultar" };
+  const data = raw?.transaction || raw?.data || raw;
 
   const status = normalizeStatus(data?.status);
 
