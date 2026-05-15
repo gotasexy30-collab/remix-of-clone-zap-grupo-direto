@@ -115,11 +115,12 @@ async function createPix(body: any) {
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json().catch(() => ({}));
+  const raw = await res.json().catch(() => ({}));
   if (!res.ok) {
-    console.error("NexusPag create error", res.status, data);
-    return { error: data?.message || data?.error || "Erro ao criar PIX", details: data };
+    console.error("NexusPag create error", res.status, raw);
+    return { error: raw?.message || raw?.error || "Erro ao criar PIX", details: raw };
   }
+  const data = raw?.transaction || raw?.data || raw;
 
   return {
     id: pickId(data),
