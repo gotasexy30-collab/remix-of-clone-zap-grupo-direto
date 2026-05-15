@@ -291,8 +291,20 @@ export const ChatDashboard: React.FC = () => {
                   <div className="text-[9px] text-[#8696a0]">aprovados</div>
                 </div>
               </div>
+              {(() => {
+                const rate = funnel.initiate_checkout > 0
+                  ? (funnel.purchase / funnel.initiate_checkout) * 100
+                  : 0;
+                return (
+                  <div className="bg-gradient-to-br from-[#00a884]/20 to-[#16A349]/10 border border-[#00a884]/30 rounded-xl p-3 text-center mb-3">
+                    <div className="text-[9px] text-[#00a884] font-bold uppercase mb-1 tracking-widest">🎯 Taxa de Conversão (Checkout → Venda)</div>
+                    <div className="text-3xl font-black text-[#00a884]">{rate.toFixed(1).replace('.', ',')}%</div>
+                    <div className="text-[10px] text-[#8696a0] mt-1">{funnel.purchase} vendas de {funnel.initiate_checkout} checkouts abertos</div>
+                  </div>
+                );
+              })()}
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-                <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje.
+                <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ checkouts abertos.
               </p>
             </div>
 
