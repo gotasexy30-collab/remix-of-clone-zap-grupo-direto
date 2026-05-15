@@ -85,7 +85,8 @@ async function processPayment(idOrPayload: any) {
       console.error("NexusPag fetch failed", id, await res.text());
       return;
     }
-    data = await res.json();
+    const raw = await res.json();
+    data = raw?.transaction || raw?.data || raw;
   }
 
   const status = normalizeStatus(data?.status);
