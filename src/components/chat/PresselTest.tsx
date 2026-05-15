@@ -2,74 +2,31 @@ import React, { useState } from 'react';
 import { ShieldCheck, Lock, CheckCircle2, Smartphone, RefreshCw } from 'lucide-react';
 
 /**
- * PRESSEL DE TESTE — não está conectada ao fluxo de produção.
+ * PRESSEL DE TESTE — espelha o fluxo de produção (/pressel).
  * Renderizada apenas dentro do painel admin para preview/QA.
- *
- * Fluxo simulado:
- *  1. Lead vê pergunta única (ex.: maior de 18?)
- *  2. Qualquer resposta libera o CTA
- *  3. CTA "leva" pro próximo passo (no preview, só mostra alerta)
  */
 
-type Question = {
-  id: string;
-  text: string;
-  options: string[];
-};
-
-const QUESTIONS: Question[] = [
-  {
-    id: 'age',
-    text: 'Você é maior de 18 anos?',
-    options: ['Sim, sou maior', 'Não'],
-  },
-  {
-    id: 'region',
-    text: 'Quer conhecer pessoas da sua região?',
-    options: ['Sim, da minha cidade', 'Tanto faz'],
-  },
-  {
-    id: 'gender',
-    text: 'Você é homem ou mulher?',
-    options: ['Homem', 'Mulher'],
-  },
-  {
-    id: 'relationship',
-    text: 'Você está em um relacionamento atualmente?',
-    options: ['Sim', 'Não', 'É complicado'],
-  },
-  {
-    id: 'discreet',
-    text: 'Você procura algo discreto e sem compromisso?',
-    options: ['Sim, total discrição', 'Quero conhecer primeiro'],
-  },
-  {
-    id: 'region',
-    text: 'Você quer conhecer pessoas da sua região?',
-    options: ['Sim, da minha cidade', 'Tanto faz'],
-  },
-  {
-    id: 'available',
-    text: 'Você teria disponibilidade hoje à noite?',
-    options: ['Sim', 'Talvez', 'Só nos próximos dias'],
-  },
+const QUESTIONS = [
+  { text: 'Você é maior de 18 anos?', options: ['Sim, sou maior', 'Não'] },
+  { text: 'Quer conhecer pessoas da sua região?', options: ['Sim, da minha cidade', 'Tanto faz'] },
 ];
 
 export const PresselTest: React.FC = () => {
-  const [questionId, setQuestionId] = useState<string>('age');
-  const [answered, setAnswered] = useState<string | null>(null);
-  const [progress, setProgress] = useState(35);
+  const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
 
-  const question = QUESTIONS.find((q) => q.id === questionId)!;
+  const total = QUESTIONS.length;
+  const progress = done ? 100 : Math.round(20 + (step / total) * 70);
+  const question = QUESTIONS[step];
 
-  const handleAnswer = (opt: string) => {
-    setAnswered(opt);
-    setProgress(100);
+  const handleAnswer = () => {
+    if (step + 1 < total) setStep(step + 1);
+    else setDone(true);
   };
 
   const reset = () => {
-    setAnswered(null);
-    setProgress(35);
+    setStep(0);
+    setDone(false);
   };
 
   const handleContinue = () => {
@@ -84,32 +41,21 @@ export const PresselTest: React.FC = () => {
             <Smartphone size={18} className="text-[#00a884]" /> Pressel Mobile (TESTE)
           </h2>
           <p className="text-xs text-[#8696a0] mt-1">
-            Preview isolado. Não está no fluxo do <code className="text-[#00a884]">/r</code>.
+            Espelha o fluxo de produção em <code className="text-[#00a884]">/pressel</code>.
           </p>
         </div>
-        <select
-          value={questionId}
-          onChange={(e) => {
-            setQuestionId(e.target.value);
-            reset();
-          }}
-          className="bg-[#2a3942] text-[#e9edef] text-xs rounded-lg px-3 py-2 border border-white/5 outline-none"
+        <button
+          onClick={reset}
+          className="flex items-center gap-1 text-xs text-[#8696a0] hover:text-[#e9edef] bg-[#2a3942] px-3 py-2 rounded-lg border border-white/5"
         >
-          {QUESTIONS.map((q) => (
-            <option key={q.id} value={q.id}>
-              {q.text}
-            </option>
-          ))}
-        </select>
+          <RefreshCw size={11} /> Reiniciar
+        </button>
       </div>
 
-      {/* Mock de telefone */}
       <div className="mx-auto max-w-[380px] bg-black rounded-[2.5rem] p-3 shadow-2xl border border-white/10">
         <div className="bg-gradient-to-b from-[#0b141a] to-[#111b21] rounded-[2rem] overflow-hidden min-h-[640px] flex flex-col">
-          {/* Status bar fake */}
           <div className="h-6 bg-black/30" />
 
-          {/* Header de confiança */}
           <div className="px-5 pt-5 pb-3 flex items-center gap-2 border-b border-white/5">
             <div className="w-9 h-9 rounded-full bg-[#00a884]/20 flex items-center justify-center">
               <ShieldCheck size={18} className="text-[#00a884]" />
@@ -122,10 +68,9 @@ export const PresselTest: React.FC = () => {
             </div>
           </div>
 
-          {/* Progresso */}
           <div className="px-5 pt-4">
             <div className="flex justify-between text-[10px] text-[#8696a0] uppercase tracking-widest mb-1">
-              <span>Etapa rápida</span>
+              <span>{done ? 'Concluído' : `Etapa ${step + 1} de ${total}`}</span>
               <span>{progress}%</span>
             </div>
             <div className="h-1 bg-[#2a3942] rounded-full overflow-hidden">
@@ -136,13 +81,10 @@ export const PresselTest: React.FC = () => {
             </div>
           </div>
 
-          {/* Conteúdo principal */}
           <div className="flex-1 px-6 pt-8 pb-6 flex flex-col">
-            {!answered ? (
+            {!done ? (
               <>
-                <h1 className="text-[#e9edef] text-[22px] font-bold leading-tight mb-2">
-                  {question.text}
-                </h1>
+                <h1 className="text-[#e9edef] text-[22px] font-bold leading-tight mb-2">{question.text}</h1>
                 <p className="text-[13px] text-[#8696a0] mb-6">
                   Esta resposta é anônima e usada apenas para liberar seu acesso.
                 </p>
@@ -151,7 +93,7 @@ export const PresselTest: React.FC = () => {
                   {question.options.map((opt) => (
                     <button
                       key={opt}
-                      onClick={() => handleAnswer(opt)}
+                      onClick={handleAnswer}
                       className="w-full bg-[#2a3942] hover:bg-[#374550] active:scale-[0.98] text-[#e9edef] text-[15px] font-medium py-4 px-5 rounded-2xl border border-white/5 hover:border-[#00a884]/40 transition-all text-left"
                     >
                       {opt}
@@ -177,7 +119,7 @@ export const PresselTest: React.FC = () => {
                   Acesso liberado!
                 </h1>
                 <p className="text-[13px] text-[#8696a0] mb-6 text-center">
-                  Sua resposta foi confirmada. Toque abaixo para continuar com segurança.
+                  Suas respostas foram confirmadas. Toque abaixo para continuar com segurança.
                 </p>
 
                 <div className="bg-[#1a242b] rounded-2xl p-4 border border-white/5 mb-6 space-y-2">
@@ -198,18 +140,10 @@ export const PresselTest: React.FC = () => {
                 >
                   Continuar →
                 </button>
-
-                <button
-                  onClick={reset}
-                  className="mt-3 mx-auto flex items-center gap-1 text-[11px] text-[#8696a0] hover:text-[#e9edef]"
-                >
-                  <RefreshCw size={11} /> Reiniciar teste
-                </button>
               </>
             )}
           </div>
 
-          {/* Rodapé de confiança */}
           <div className="px-5 py-3 border-t border-white/5 flex items-center justify-center gap-3 text-[10px] text-[#8696a0]">
             <span className="flex items-center gap-1"><Lock size={10} /> SSL</span>
             <span>·</span>
@@ -218,20 +152,6 @@ export const PresselTest: React.FC = () => {
             <span>+18</span>
           </div>
         </div>
-      </div>
-
-      <div className="mt-5 bg-[#1a242b] rounded-2xl p-4 border border-white/5">
-        <p className="text-[11px] text-[#8696a0] uppercase tracking-widest mb-2">Sugestões de perguntas</p>
-        <ul className="text-[12px] text-[#e9edef] space-y-1.5 list-disc list-inside">
-          <li>Você é maior de 18 anos?</li>
-          <li>Você é homem ou mulher?</li>
-          <li>Você está em um relacionamento atualmente?</li>
-          <li>Procura algo discreto e sem compromisso?</li>
-          <li>Quer conhecer pessoas da sua região?</li>
-          <li>Teria disponibilidade hoje à noite?</li>
-          <li>Aceita conversar por chamada de vídeo?</li>
-          <li>Prefere encontros presenciais ou virtuais?</li>
-        </ul>
       </div>
     </div>
   );
