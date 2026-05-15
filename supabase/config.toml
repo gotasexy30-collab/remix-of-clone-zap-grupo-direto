@@ -2,3 +2,6 @@ project_id = "tvehjrsvruykhvhvoksm"
 
 [functions.mp-pix]
 verify_jwt = false
+
+[functions.nexuspag-webhook]
+verify_jwt = false

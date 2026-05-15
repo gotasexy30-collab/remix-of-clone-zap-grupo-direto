@@ -1,4 +1,4 @@
-// Mercado Pago PIX integration
+// NexusPag PIX integration (mantém o nome mp-pix p/ não quebrar o frontend)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -13,8 +13,8 @@ const json = (b: unknown, s = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-const MP_TOKEN = Deno.env.get("MP_ACCESS_TOKEN")!;
-const MP_API = "https://api.mercadopago.com";
+const NEXUS_KEY = Deno.env.get("NEXUSPAG_API_KEY")!;
+const NEXUS_API = "https://nexuspag.com";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -46,7 +46,7 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
     const payload = {
       data: [{
         event_name: "Purchase",
-        event_id: `mp_${paymentId}`,
+        event_id: `np_${paymentId}`,
         event_time: Math.floor(Date.now() / 1000),
         action_source: "website",
         event_source_url: metadata.event_source_url || "",
@@ -59,54 +59,74 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
       { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) },
     );
     if (!fbRes.ok) console.error("Meta CAPI purchase error", await fbRes.text());
-    else console.log("Meta CAPI purchase sent", paymentId, await fbRes.text());
   } catch (e) {
     console.error("capi purchase err", e);
   }
 }
 
+// Helpers tolerantes a variações de nomenclatura de campos
+function pickId(d: any): string {
+  return String(d?.id ?? d?.uuid ?? d?.transaction_id ?? d?.txid ?? d?.external_id ?? "");
+}
+function pickQrCode(d: any): string {
+  return d?.qr_code ?? d?.pix_copia_cola ?? d?.copia_cola ?? d?.brcode ?? d?.payload ?? d?.emv ?? d?.pix?.qr_code ?? d?.pix?.payload ?? "";
+}
+function pickQrBase64(d: any): string {
+  const v = d?.qr_code_base64 ?? d?.qr_code_image ?? d?.qrcode_image ?? d?.qr_image ?? d?.pix?.qr_code_base64 ?? "";
+  if (!v) return "";
+  return String(v).startsWith("data:") ? String(v).split(",").pop() || "" : String(v);
+}
+function normalizeStatus(s: any): string {
+  const v = String(s || "").toLowerCase();
+  if (["paid", "approved", "completed", "confirmed", "success"].includes(v)) return "approved";
+  if (["pending", "waiting", "created", "processing"].includes(v)) return "pending";
+  if (["expired", "canceled", "cancelled", "failed", "refused"].includes(v)) return "rejected";
+  return v || "pending";
+}
+
 async function createPix(body: any) {
   const amount = Number(body.amount) || 19.9;
   const description = body.description || "Acesso Clube Secreto VIP";
-  const payer_email =
-    body.payer_email || `cliente_${Date.now()}@clubesecreto.com`;
+  const externalId = body.external_id || `cs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  const idempotencyKey = crypto.randomUUID();
+  const projectUrl = Deno.env.get("SUPABASE_URL");
+  const webhookUrl = `${projectUrl}/functions/v1/nexuspag-webhook`;
 
-  const res = await fetch(`${MP_API}/v1/payments`, {
+  const payload = {
+    amount,
+    description,
+    external_id: externalId,
+    webhook_url: webhookUrl,
+    metadata: {
+      session_id: body.session_id || "",
+      fbp: body.meta?.fbp || "",
+      fbc: body.meta?.fbc || "",
+      event_source_url: body.meta?.event_source_url || "",
+      user_agent: body.meta?.user_agent || "",
+    },
+  };
+
+  const res = await fetch(`${NEXUS_API}/api/pix/create`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${MP_TOKEN}`,
+      "x-api-key": NEXUS_KEY,
       "Content-Type": "application/json",
-      "X-Idempotency-Key": idempotencyKey,
     },
-    body: JSON.stringify({
-      transaction_amount: amount,
-      description,
-      payment_method_id: "pix",
-      payer: { email: payer_email },
-      metadata: {
-        session_id: body.session_id || "",
-        fbp: body.meta?.fbp || "",
-        fbc: body.meta?.fbc || "",
-        event_source_url: body.meta?.event_source_url || "",
-        user_agent: body.meta?.user_agent || "",
-      },
-    }),
+    body: JSON.stringify(payload),
   });
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    return { error: data?.message || "Erro ao criar PIX", details: data };
+    console.error("NexusPag create error", res.status, data);
+    return { error: data?.message || data?.error || "Erro ao criar PIX", details: data };
   }
 
-  const tx = data?.point_of_interaction?.transaction_data;
   return {
-    id: data.id,
-    status: data.status,
-    qr_code: tx?.qr_code || "",
-    qr_code_base64: tx?.qr_code_base64 || "",
-    ticket_url: tx?.ticket_url || "",
+    id: pickId(data),
+    status: normalizeStatus(data?.status),
+    qr_code: pickQrCode(data),
+    qr_code_base64: pickQrBase64(data),
+    ticket_url: data?.ticket_url || data?.payment_url || "",
   };
 }
 
@@ -115,28 +135,32 @@ async function checkStatus(body: any) {
   if (!id) return { error: "id required" };
   const sessionId = body.session_id || "";
 
-  const res = await fetch(`${MP_API}/v1/payments/${id}`, {
-    headers: { Authorization: `Bearer ${MP_TOKEN}` },
+  const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
+    headers: { "x-api-key": NEXUS_KEY },
   });
-  const data = await res.json();
-  if (!res.ok) return { error: data?.message || "Erro ao consultar" };
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) return { error: data?.message || data?.error || "Erro ao consultar" };
 
-  // Quando aprovado, registra na tabela purchases (idempotente via UNIQUE)
-  if (data.status === "approved") {
-    const paymentSessionId = data?.metadata?.session_id || sessionId;
-    const amount = Number(data.transaction_amount) || 0;
+  const status = normalizeStatus(data?.status);
+
+  if (status === "approved") {
+    const md = data?.metadata || {};
+    const paymentSessionId = md?.session_id || sessionId;
+    const amount = Number(data?.amount ?? data?.transaction_amount) || 0;
+    const paymentId = pickId(data) || String(id);
+
     const { data: inserted } = await supabase
       .from("purchases")
       .insert({
-        mp_payment_id: String(data.id),
+        mp_payment_id: paymentId,
         amount,
         session_id: paymentSessionId,
         status: "approved",
-        approved_at: data.date_approved || new Date().toISOString(),
+        approved_at: data?.paid_at || data?.date_approved || new Date().toISOString(),
       })
       .select()
       .maybeSingle();
-    // Só loga tracked_event se foi insert novo (evita duplicar com webhook)
+
     if (inserted) {
       await supabase.from("tracked_events").insert({
         event_name: "Purchase",
@@ -144,13 +168,13 @@ async function checkStatus(body: any) {
         slug: "webhook",
       });
     }
-    await sendCapiPurchase(String(data.id), amount, data?.metadata || {});
+    await sendCapiPurchase(paymentId, amount, md);
   }
 
   return {
-    id: data.id,
-    status: data.status,
-    status_detail: data.status_detail,
+    id: pickId(data) || String(id),
+    status,
+    status_detail: data?.status_detail || "",
   };
 }
 
