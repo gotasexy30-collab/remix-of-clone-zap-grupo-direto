@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
 import { getSetting } from '../services/settings';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,10 +19,10 @@ const getOrCreateSessionId = () => {
   }
 };
 
-const QUESTION = {
-  text: 'Você é maior de 18 anos?',
-  options: ['Sim, sou maior', 'Não'],
-};
+const QUESTIONS = [
+  { text: 'Você é maior de 18 anos?', options: ['Sim, sou maior', 'Não'] },
+  { text: 'Quer conhecer pessoas da sua região?', options: ['Sim, da minha cidade', 'Tanto faz'] },
+];
 
 const appendQuery = (url: string) => {
   try {
@@ -38,8 +38,8 @@ const appendQuery = (url: string) => {
 };
 
 const Pressel = () => {
-  const [answered, setAnswered] = useState<string | null>(null);
-  const [progress, setProgress] = useState(35);
+  const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,9 +50,15 @@ const Pressel = () => {
     })();
   }, []);
 
-  const handleAnswer = (opt: string) => {
-    setAnswered(opt);
-    setProgress(100);
+  const total = QUESTIONS.length;
+  const progress = done ? 100 : Math.round(20 + (step / total) * 70);
+
+  const handleAnswer = (_opt: string) => {
+    if (step + 1 < total) {
+      setStep(step + 1);
+    } else {
+      setDone(true);
+    }
   };
 
   const handleContinue = async () => {
@@ -66,6 +72,8 @@ const Pressel = () => {
     } catch {}
     window.location.replace(appendQuery(target));
   };
+
+  const question = QUESTIONS[step];
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-[#0b141a] to-[#111b21] flex flex-col">
@@ -83,7 +91,7 @@ const Pressel = () => {
 
       <div className="px-5 pt-4">
         <div className="flex justify-between text-[10px] text-[#8696a0] uppercase tracking-widest mb-1">
-          <span>Etapa rápida</span>
+          <span>{done ? 'Concluído' : `Etapa ${step + 1} de ${total}`}</span>
           <span>{progress}%</span>
         </div>
         <div className="h-1 bg-[#2a3942] rounded-full overflow-hidden">
@@ -95,15 +103,15 @@ const Pressel = () => {
       </div>
 
       <div className="flex-1 px-6 pt-8 pb-6 flex flex-col max-w-[480px] mx-auto w-full">
-        {!answered ? (
+        {!done ? (
           <>
-            <h1 className="text-[#e9edef] text-[22px] font-bold leading-tight mb-2">{QUESTION.text}</h1>
+            <h1 className="text-[#e9edef] text-[22px] font-bold leading-tight mb-2">{question.text}</h1>
             <p className="text-[13px] text-[#8696a0] mb-6">
               Esta resposta é anônima e usada apenas para liberar seu acesso.
             </p>
 
             <div className="space-y-3">
-              {QUESTION.options.map((opt) => (
+              {question.options.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => handleAnswer(opt)}
@@ -132,7 +140,7 @@ const Pressel = () => {
               Acesso liberado!
             </h1>
             <p className="text-[13px] text-[#8696a0] mb-6 text-center">
-              Sua resposta foi confirmada. Toque abaixo para continuar com segurança.
+              Suas respostas foram confirmadas. Toque abaixo para continuar com segurança.
             </p>
 
             <div className="bg-[#1a242b] rounded-2xl p-4 border border-white/5 mb-6 space-y-2">
