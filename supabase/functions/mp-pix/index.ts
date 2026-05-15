@@ -122,11 +122,25 @@ async function createPix(body: any) {
   }
   const data = raw?.transaction || raw?.data || raw;
 
+  const qrCode = pickQrCode(data);
+  let qrBase64 = pickQrBase64(data);
+  if (!qrBase64 && qrCode) {
+    try {
+      const qrRes = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrCode)}`);
+      if (qrRes.ok) {
+        const buf = new Uint8Array(await qrRes.arrayBuffer());
+        let bin = "";
+        for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+        qrBase64 = btoa(bin);
+      }
+    } catch (e) { console.error("qr gen err", e); }
+  }
+
   return {
     id: pickId(data),
     status: normalizeStatus(data?.status),
-    qr_code: pickQrCode(data),
-    qr_code_base64: pickQrBase64(data),
+    qr_code: qrCode,
+    qr_code_base64: qrBase64,
     ticket_url: data?.ticket_url || data?.payment_url || "",
   };
 }
