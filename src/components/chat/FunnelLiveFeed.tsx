@@ -82,11 +82,13 @@ export const FunnelLiveFeed: React.FC = () => {
       if (e.session_id) uniqueByEvent[e.event_name].add(e.session_id);
     });
 
-    // Compras aprovadas
-    const purchases = await fetchAllPaged<{ session_id: string }>((f, t) =>
+    // Compras aprovadas (sessões únicas + vendas sem session_id contam como 1 cada)
+    const purchases = await fetchAllPaged<{ session_id: string | null }>((f, t) =>
       supabase.from('purchases').select('session_id').gte('approved_at', fromIso).eq('status', 'approved').range(f, t)
     );
-    const uniquePurchases = new Set(purchases.map(p => p.session_id).filter(Boolean)).size;
+    const sessionsWithId = new Set(purchases.map(p => p.session_id).filter((s): s is string => !!s)).size;
+    const purchasesWithoutSession = purchases.filter(p => !p.session_id).length;
+    const uniquePurchases = sessionsWithId + purchasesWithoutSession;
 
     setCounts({
       Visited: uniqueVisits,
