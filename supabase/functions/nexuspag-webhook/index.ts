@@ -85,7 +85,8 @@ async function processPayment(idOrPayload: any) {
       console.error("NexusPag fetch failed", id, await res.text());
       return;
     }
-    data = await res.json();
+    const raw = await res.json();
+    data = raw?.transaction || raw?.data || raw;
   }
 
   const status = normalizeStatus(data?.status);
@@ -136,8 +137,8 @@ Deno.serve(async (req) => {
     let body: any = {};
     try { body = await req.json(); } catch { /* noop */ }
 
-    // O webhook pode vir com o objeto da transação direto, ou aninhado em data/transaction
-    const payload = body?.data || body?.transaction || body?.pix || body;
+    // O webhook pode vir com o objeto da transação direto, ou aninhado
+    const payload = body?.transaction || body?.data?.transaction || body?.data || body?.pix || body;
     await processPayment(payload);
 
     return json({ ok: true });

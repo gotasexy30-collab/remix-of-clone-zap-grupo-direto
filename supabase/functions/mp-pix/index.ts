@@ -115,17 +115,32 @@ async function createPix(body: any) {
     body: JSON.stringify(payload),
   });
 
-  const data = await res.json().catch(() => ({}));
+  const raw = await res.json().catch(() => ({}));
   if (!res.ok) {
-    console.error("NexusPag create error", res.status, data);
-    return { error: data?.message || data?.error || "Erro ao criar PIX", details: data };
+    console.error("NexusPag create error", res.status, raw);
+    return { error: raw?.message || raw?.error || "Erro ao criar PIX", details: raw };
+  }
+  const data = raw?.transaction || raw?.data || raw;
+
+  const qrCode = pickQrCode(data);
+  let qrBase64 = pickQrBase64(data);
+  if (!qrBase64 && qrCode) {
+    try {
+      const qrRes = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrCode)}`);
+      if (qrRes.ok) {
+        const buf = new Uint8Array(await qrRes.arrayBuffer());
+        let bin = "";
+        for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+        qrBase64 = btoa(bin);
+      }
+    } catch (e) { console.error("qr gen err", e); }
   }
 
   return {
     id: pickId(data),
     status: normalizeStatus(data?.status),
-    qr_code: pickQrCode(data),
-    qr_code_base64: pickQrBase64(data),
+    qr_code: qrCode,
+    qr_code_base64: qrBase64,
     ticket_url: data?.ticket_url || data?.payment_url || "",
   };
 }
@@ -138,8 +153,9 @@ async function checkStatus(body: any) {
   const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
     headers: { "x-api-key": NEXUS_KEY },
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { error: data?.message || data?.error || "Erro ao consultar" };
+  const raw = await res.json().catch(() => ({}));
+  if (!res.ok) return { error: raw?.message || raw?.error || "Erro ao consultar" };
+  const data = raw?.transaction || raw?.data || raw;
 
   const status = normalizeStatus(data?.status);
 
