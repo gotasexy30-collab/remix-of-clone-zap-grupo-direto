@@ -24,6 +24,11 @@ const QUESTIONS: Question[] = [
     options: ['Sim, sou maior', 'Não'],
   },
   {
+    id: 'region',
+    text: 'Quer conhecer pessoas da sua região?',
+    options: ['Sim, da minha cidade', 'Tanto faz'],
+  },
+  {
     id: 'gender',
     text: 'Você é homem ou mulher?',
     options: ['Homem', 'Mulher'],
