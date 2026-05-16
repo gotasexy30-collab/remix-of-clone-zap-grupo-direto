@@ -15,6 +15,7 @@ const json = (b: unknown, s = 200) =>
 
 const NEXUS_KEY = Deno.env.get("NEXUSPAG_API_KEY")!;
 const NEXUS_API = "https://nexuspag.com";
+const PROJECT_TAG = "projeto2"; // a MESMA tag usada no mp-pix (nexuspag-pix)
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
