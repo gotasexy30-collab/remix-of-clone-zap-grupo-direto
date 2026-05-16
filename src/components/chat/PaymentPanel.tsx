@@ -161,7 +161,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        const eventId = `mp_${pix.id}`;
+        const eventId = `np_${pix.id}`;
         fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
@@ -224,7 +224,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
-        const eventId = `mp_${pix.id}`;
+        const eventId = `np_${pix.id}`;
         fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
