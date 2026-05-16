@@ -43,14 +43,23 @@ export const ChatDashboard: React.FC = () => {
 
   const loadPresselPassed = async () => {
     const start = new Date(); start.setHours(0, 0, 0, 0);
-    const { data } = await supabase
-      .from('tracked_events')
-      .select('session_id')
-      .eq('event_name', 'PresselPassed')
-      .gte('created_at', start.toISOString())
-      .limit(1000);
-    const unique = new Set((data || []).map((r: any) => r.session_id).filter(Boolean));
-    setPresselPassed(unique.size);
+    const iso = start.toISOString();
+    const PAGE = 1000;
+    let from = 0;
+    const sessions = new Set<string>();
+    while (true) {
+      const { data, error } = await supabase
+        .from('tracked_events')
+        .select('session_id')
+        .eq('event_name', 'PresselPassed')
+        .gte('created_at', iso)
+        .range(from, from + PAGE - 1);
+      if (error || !data) break;
+      data.forEach((r: any) => { if (r.session_id) sessions.add(r.session_id); });
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    setPresselPassed(sessions.size);
   };
 
   useEffect(() => {
