@@ -88,7 +88,8 @@ function normalizeStatus(s: any): string {
 async function createPix(body: any) {
   const amount = Number(body.amount) || 19.9;
   const description = body.description || "Acesso Clube Secreto VIP";
-  const externalId = body.external_id || `cs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const sessionId = body.session_id || "";
+  const externalId = body.external_id || `${sessionId || "anon"}_${PROJECT_TAG}_${Date.now()}`;
 
   const projectUrl = Deno.env.get("SUPABASE_URL");
   const webhookUrl = `${projectUrl}/functions/v1/nexuspag-webhook`;
