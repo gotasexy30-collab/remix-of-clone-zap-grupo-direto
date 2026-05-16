@@ -15,6 +15,7 @@ const json = (b: unknown, s = 200) =>
 
 const NEXUS_KEY = Deno.env.get("NEXUSPAG_API_KEY")!;
 const NEXUS_API = "https://nexuspag.com";
+const PROJECT_TAG = "projeto2"; // a MESMA tag usada no mp-pix (nexuspag-pix)
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -78,6 +79,12 @@ async function processPayment(idOrPayload: any) {
       console.log("webhook sem id, payload:", idOrPayload);
       return;
     }
+    // Early filter: se já temos external_id no payload e não é deste projeto, ignora
+    const earlyExt = (typeof data === "object" ? (data?.external_id || "") : "").toString();
+    if (earlyExt && !earlyExt.includes(`_${PROJECT_TAG}_`)) {
+      console.log(`webhook ignorado (outro projeto): ${earlyExt}`);
+      return;
+    }
     const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
       headers: { "x-api-key": NEXUS_KEY },
     });
@@ -87,6 +94,13 @@ async function processPayment(idOrPayload: any) {
     }
     const raw = await res.json();
     data = raw?.transaction || raw?.data || raw;
+  }
+
+  // Filtro definitivo por tag de projeto no external_id
+  const extIdStr = (data?.external_id || "").toString();
+  if (extIdStr && !extIdStr.includes(`_${PROJECT_TAG}_`)) {
+    console.log(`webhook ignorado (outro projeto): ${extIdStr}`);
+    return;
   }
 
   const status = normalizeStatus(data?.status);
