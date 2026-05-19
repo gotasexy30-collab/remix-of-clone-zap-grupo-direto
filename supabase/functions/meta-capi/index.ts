@@ -65,9 +65,19 @@ Deno.serve(async (req) => {
       return json({ skipped: true, reason: "pixel_or_token_not_configured" });
     }
 
-    // Get client IP
+    // Get client IP — prefer IPv6 over IPv4 (Meta recommends IPv6 for better match quality)
     const fwd = req.headers.get("x-forwarded-for") || "";
-    const clientIp = fwd.split(",")[0].trim() || req.headers.get("cf-connecting-ip") || "";
+    const cfIp = req.headers.get("cf-connecting-ip") || "";
+    const realIp = req.headers.get("x-real-ip") || "";
+    const candidates = [
+      ...fwd.split(",").map((s) => s.trim()),
+      cfIp,
+      realIp,
+    ].filter(Boolean);
+    // IPv6 contains ":", IPv4 doesn't. Prefer IPv6 if available.
+    const ipv6 = candidates.find((ip) => ip.includes(":"));
+    const ipv4 = candidates.find((ip) => /^\d+\.\d+\.\d+\.\d+$/.test(ip));
+    const clientIp = ipv6 || ipv4 || "";
 
     const userData: Record<string, unknown> = {
       client_user_agent: user_agent || req.headers.get("user-agent") || "",
