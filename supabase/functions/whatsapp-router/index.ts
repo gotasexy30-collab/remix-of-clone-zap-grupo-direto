@@ -92,16 +92,17 @@ async function getBestNumber() {
 }
 
 async function logLead(body: any) {
-  const {
-    whatsapp_number_id,
-    whatsapp_phone = "",
-    message_text = "",
-    user_agent = "",
-    referer = "",
-    session_id = "",
-  } = body;
-
-  if (!whatsapp_number_id) return { success: false, error: "missing id" };
+  const whatsapp_number_id = body?.whatsapp_number_id;
+  if (!whatsapp_number_id || typeof whatsapp_number_id !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(whatsapp_number_id)) {
+    return { success: false, error: "invalid id" };
+  }
+  const clip = (v: any, n: number) => String(v ?? "").slice(0, n);
+  const whatsapp_phone = clip(body.whatsapp_phone, 30);
+  const message_text   = clip(body.message_text, 500);
+  const user_agent     = clip(body.user_agent, 500);
+  const referer        = clip(body.referer, 2000);
+  const session_id     = clip(body.session_id, 200);
 
   await supabase.from("lead_logs").insert({
     whatsapp_number_id,
