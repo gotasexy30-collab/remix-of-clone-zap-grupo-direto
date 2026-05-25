@@ -41,10 +41,9 @@ export const ChatDashboard: React.FC = () => {
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
-  const [presselPassed, setPresselPassed] = useState(0);
-
-  // presselPassed agora vem do daily_funnel (calculado pela edge function)
+  // presselPassed vem do daily_funnel (calculado pela edge function)
   const presselPassed = funnel.pressel_passed;
+
 
 
   // PIX preview state
@@ -524,11 +523,12 @@ export const ChatDashboard: React.FC = () => {
                 <input type="text" placeholder="Ex: 1234567890123456" value={metaPixelId} onChange={(e) => setMetaPixelId(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
               </div>
-              <div>
-                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
-                <input type="password" placeholder="EAAxxxxxxxxxxxxxxxxxx..." value={metaCapiToken} onChange={(e) => setMetaCapiToken(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
-                <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                <p className="text-[11px] text-yellow-200/90 leading-relaxed">
+                  🔒 <strong>Access Token CAPI</strong> agora está protegido como secret no servidor (<code>META_CAPI_TOKEN</code>). Para trocar, peça ao Lovable para atualizar o secret.
+                </p>
               </div>
+
               <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
                 <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
                   <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView, ViewContent, InitiateCheckout, Lead.
