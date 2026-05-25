@@ -479,10 +479,13 @@ Deno.serve(async (req) => {
       case "track_visit":
         return json(await trackVisit(body));
       case "daily_funnel":
+        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await dailyFunnel());
       case "funnel_feed":
+        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await funnelFeed(body));
       case "desktop_redirects_count":
+        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await desktopRedirectsCount());
 
       // Admin auth
