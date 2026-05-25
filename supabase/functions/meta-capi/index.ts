@@ -44,9 +44,27 @@ Deno.serve(async (req) => {
       test_event_code,
     } = body;
 
-    if (!event_name || !event_id) {
+    // Whitelist event names the client app is allowed to send.
+    // Server-only events (e.g. Purchase) come from mp-pix/webhooks, not this endpoint.
+    const ALLOWED_EVENTS = new Set([
+      "PageView", "ViewContent", "Lead", "Contact",
+      "ChatStarted", "InitiateCheckout", "PixGenerated", "PixCopied",
+      "TutorialOpened", "AlreadyPaid", "PresselPassed", "RedirectDesktop",
+    ]);
+
+    if (!event_name || !event_id || typeof event_name !== "string" || typeof event_id !== "string") {
       return json({ error: "event_name and event_id required" }, 400);
     }
+    if (event_name.length > 64 || event_id.length > 128) {
+      return json({ error: "invalid field length" }, 400);
+    }
+    if (!ALLOWED_EVENTS.has(event_name)) {
+      return json({ skipped: true, reason: "event_not_allowed" });
+    }
+    // Cap value to a sane range to prevent ROAS poisoning
+    const safeValue = typeof value === "number" && isFinite(value) && value >= 0 && value <= 10000
+      ? value
+      : undefined;
 
     const pixelId = await getSetting("meta_pixel_id");
     const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
