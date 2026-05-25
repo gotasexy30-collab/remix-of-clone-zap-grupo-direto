@@ -16,19 +16,12 @@ const STAGES: { key: StageKey; label: string; color: string; emoji: string }[] =
 ];
 
 const RANGES = [
-  { key: 'today', label: 'Hoje', hours: 24, useToday: true },
-  { key: '7d',    label: '7 dias', hours: 24*7, useToday: false },
-  { key: '30d',   label: '30 dias', hours: 24*30, useToday: false },
+  { key: 'today', label: 'Hoje' },
+  { key: '7d',    label: '7 dias' },
+  { key: '30d',   label: '30 dias' },
 ] as const;
 
 type FeedItem = { id: string; event: string; session: string; time: Date };
-
-const startOfToday = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-const startOfHoursAgo = (h: number) => new Date(Date.now() - h * 3600 * 1000);
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -42,111 +35,32 @@ export const FunnelLiveFeed: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const feedRef = useRef<HTMLDivElement>(null);
 
-  const fromDate = () => {
-    const r = RANGES.find(x => x.key === range)!;
-    return r.useToday ? startOfToday() : startOfHoursAgo(r.hours);
-  };
-
-  const fetchAllPaged = async <T,>(builder: (from: number, to: number) => any): Promise<T[]> => {
-    const PAGE = 1000;
-    let from = 0;
-    const all: T[] = [];
-    while (true) {
-      const { data, error } = await builder(from, from + PAGE - 1);
-      if (error || !data) break;
-      all.push(...(data as T[]));
-      if (data.length < PAGE) break;
-      from += PAGE;
-    }
-    return all;
-  };
-
-  const loadCounts = async () => {
+  const load = async () => {
     setLoading(true);
-    const fromIso = fromDate().toISOString();
-
-    // Visitas (sessões únicas) — paginado para passar do limite de 1000
-    const visits = await fetchAllPaged<{ session_id: string }>((f, t) =>
-      supabase.from('page_visits').select('session_id').gte('visited_at', fromIso).range(f, t)
-    );
-    const uniqueVisits = new Set(visits.map(v => v.session_id).filter(Boolean)).size;
-
-    // Eventos rastreados (sessões únicas por evento)
-    const events = await fetchAllPaged<{ event_name: string; session_id: string }>((f, t) =>
-      supabase.from('tracked_events').select('event_name, session_id').gte('created_at', fromIso).range(f, t)
-    );
-
-    const uniqueByEvent: Record<string, Set<string>> = {};
-    events.forEach(e => {
-      if (!uniqueByEvent[e.event_name]) uniqueByEvent[e.event_name] = new Set();
-      if (e.session_id) uniqueByEvent[e.event_name].add(e.session_id);
+    const { data, error } = await supabase.functions.invoke('whatsapp-router', {
+      body: { action: 'funnel_feed', range },
     });
-
-    // Compras aprovadas (sessões únicas + vendas sem session_id contam como 1 cada)
-    const purchases = await fetchAllPaged<{ session_id: string | null }>((f, t) =>
-      supabase.from('purchases').select('session_id').gte('approved_at', fromIso).eq('status', 'approved').range(f, t)
-    );
-    const sessionsWithId = new Set(purchases.map(p => p.session_id).filter((s): s is string => !!s)).size;
-    const purchasesWithoutSession = purchases.filter(p => !p.session_id).length;
-    const uniquePurchases = sessionsWithId + purchasesWithoutSession;
-
-    setCounts({
-      Visited: uniqueVisits,
-      ChatStarted: uniqueByEvent['ChatStarted']?.size || 0,
-      InitiateCheckout: uniqueByEvent['InitiateCheckout']?.size || 0,
-      PixGenerated: uniqueByEvent['PixGenerated']?.size || 0,
-      PixCopied: uniqueByEvent['PixCopied']?.size || 0,
-      TutorialOpened: uniqueByEvent['TutorialOpened']?.size || 0,
-      AlreadyPaid: uniqueByEvent['AlreadyPaid']?.size || 0,
-      Purchase: uniquePurchases || (uniqueByEvent['Purchase']?.size || 0),
-    });
+    if (!error && data) {
+      if (data.counts) setCounts(data.counts);
+      if (data.feed) {
+        setFeed(data.feed.map((e: any) => ({
+          id: e.id,
+          event: e.event,
+          session: e.session || '—',
+          time: new Date(e.time),
+        })));
+      }
+    }
     setLoading(false);
   };
 
-  const loadInitialFeed = async () => {
-    const { data } = await supabase
-      .from('tracked_events')
-      .select('id, event_name, session_id, created_at')
-      .order('created_at', { ascending: false })
-      .limit(30);
-    if (data) {
-      setFeed(data.map(e => ({
-        id: e.id,
-        event: e.event_name,
-        session: e.session_id || '—',
-        time: new Date(e.created_at),
-      })));
-    }
-  };
-
-  useEffect(() => { loadCounts(); }, [range]);
   useEffect(() => {
-    loadInitialFeed();
-    const interval = setInterval(() => loadCounts(), 15000);
-
-    // Realtime: novos eventos
-    const ch = supabase
-      .channel('funnel-live-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tracked_events' }, (payload) => {
-        const r: any = payload.new;
-        setFeed(prev => [{
-          id: r.id,
-          event: r.event_name,
-          session: r.session_id || '—',
-          time: new Date(r.created_at),
-        }, ...prev].slice(0, 50));
-        // Atualiza contador se for evento conhecido
-        loadCounts();
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'page_visits' }, () => loadCounts())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'purchases' }, () => loadCounts())
-      .subscribe();
-
-    return () => { clearInterval(interval); supabase.removeChannel(ch); };
-  }, []);
+    load();
+    const interval = setInterval(load, 15000);
+    return () => clearInterval(interval);
+  }, [range]);
 
   const max = Math.max(1, ...STAGES.map(s => counts[s.key]));
-  const stageMeta = (k: StageKey) => STAGES.find(s => s.key === k)!;
 
   return (
     <div className="space-y-5">
@@ -216,7 +130,7 @@ export const FunnelLiveFeed: React.FC = () => {
         </p>
       </div>
 
-      {/* Feed ao vivo */}
+      {/* Feed (atualiza a cada 15s) */}
       <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5">
         <div className="flex items-center gap-2 mb-3">
           <span className="relative flex h-2 w-2">
@@ -224,7 +138,7 @@ export const FunnelLiveFeed: React.FC = () => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
           <Radio size={14} className="text-red-400" />
-          <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Movimentação ao vivo</span>
+          <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Movimentação recente</span>
         </div>
         <div ref={feedRef} className="max-h-[320px] overflow-y-auto space-y-1.5">
           {feed.length === 0 && (

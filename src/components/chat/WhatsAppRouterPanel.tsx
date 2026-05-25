@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Smartphone, Plus, Trash2, Loader2, Pause, Play, Save, X, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getSetting } from "../../services/settings";
+
 
 interface WaNumber {
   id: string;
@@ -27,7 +27,7 @@ export const WhatsAppRouterPanel: React.FC = () => {
   const [editing, setEditing] = useState<Record<string, Partial<WaNumber>>>({});
 
   const callAdmin = async (action: string, payload: Record<string, unknown> = {}) => {
-    const password = await getSetting("admin_password");
+    const password = sessionStorage.getItem("admin_pwd") || "";
     const { data, error } = await supabase.functions.invoke("whatsapp-router", {
       body: { action, password, ...payload },
     });
@@ -35,6 +35,7 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (data?.error) throw new Error(data.error);
     return data;
   };
+
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
