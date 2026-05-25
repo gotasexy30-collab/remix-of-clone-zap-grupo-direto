@@ -4,8 +4,10 @@ import { AdminLogin } from '../components/auth/AdminLogin';
 
 const Dashboard = () => {
   const [authenticated, setAuthenticated] = useState(
-    sessionStorage.getItem('admin_auth') === 'true'
+    sessionStorage.getItem('admin_auth') === 'true' &&
+      !!sessionStorage.getItem('admin_pwd')
   );
+
 
   if (!authenticated) {
     return <AdminLogin onLogin={() => setAuthenticated(true)} />;
