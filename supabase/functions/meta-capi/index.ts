@@ -17,14 +17,6 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-async function sha256(value: string): Promise<string> {
-  const data = new TextEncoder().encode(value.trim().toLowerCase());
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 async function getSetting(key: string): Promise<string | null> {
   const { data } = await supabase
     .from("app_settings")
@@ -56,16 +48,13 @@ Deno.serve(async (req) => {
       return json({ error: "event_name and event_id required" }, 400);
     }
 
-    const [pixelId, accessToken] = await Promise.all([
-      getSetting("meta_pixel_id"),
-      getSetting("meta_capi_token"),
-    ]);
+    const pixelId = await getSetting("meta_pixel_id");
+    const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
 
     if (!pixelId || !accessToken) {
       return json({ skipped: true, reason: "pixel_or_token_not_configured" });
     }
 
-    // Get client IP — prefer IPv6 over IPv4 (Meta recommends IPv6 for better match quality)
     const fwd = req.headers.get("x-forwarded-for") || "";
     const cfIp = req.headers.get("cf-connecting-ip") || "";
     const realIp = req.headers.get("x-real-ip") || "";
@@ -74,7 +63,6 @@ Deno.serve(async (req) => {
       cfIp,
       realIp,
     ].filter(Boolean);
-    // IPv6 contains ":", IPv4 doesn't. Prefer IPv6 if available.
     const ipv6 = candidates.find((ip) => ip.includes(":"));
     const ipv4 = candidates.find((ip) => /^\d+\.\d+\.\d+\.\d+$/.test(ip));
     const clientIp = ipv6 || ipv4 || "";

@@ -33,11 +33,10 @@ async function getSetting(key: string): Promise<string | null> {
 
 async function sendCapiPurchase(paymentId: string, amount: number, metadata: Record<string, string> = {}) {
   try {
-    const [pixelId, accessToken] = await Promise.all([
-      getSetting("meta_pixel_id"),
-      getSetting("meta_capi_token"),
-    ]);
+    const pixelId = await getSetting("meta_pixel_id");
+    const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
     if (!pixelId || !accessToken) return;
+
 
     const userData: Record<string, string> = {};
     if (metadata.user_agent) userData.client_user_agent = metadata.user_agent;
