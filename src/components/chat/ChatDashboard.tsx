@@ -117,10 +117,11 @@ export const ChatDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    const password = sessionStorage.getItem('admin_pwd') || '';
     const [data, settings, funnelRes] = await Promise.all([
       getStats(),
       adminGetAllSettings(),
-      supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel' } }),
+      supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel', password } }),
     ]);
     setStats(data);
     if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
@@ -140,9 +141,10 @@ export const ChatDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
     const interval = setInterval(async () => {
+      const password = sessionStorage.getItem('admin_pwd') || '';
       const [data, funnelRes] = await Promise.all([
         getStats(),
-        supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel' } }),
+        supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel', password } }),
       ]);
       setStats(data);
       if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
