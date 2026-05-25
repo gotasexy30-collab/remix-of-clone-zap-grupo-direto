@@ -101,8 +101,8 @@ Deno.serve(async (req) => {
       user_data: userData,
     };
 
-    if (typeof value === "number") {
-      eventPayload.custom_data = { value, currency };
+    if (typeof safeValue === "number") {
+      eventPayload.custom_data = { value: safeValue, currency };
     }
 
     const fbPayload: Record<string, unknown> = { data: [eventPayload] };
