@@ -37,8 +37,9 @@ export const FunnelLiveFeed: React.FC = () => {
 
   const load = async () => {
     setLoading(true);
+    const password = sessionStorage.getItem('admin_pwd') || '';
     const { data, error } = await supabase.functions.invoke('whatsapp-router', {
-      body: { action: 'funnel_feed', range },
+      body: { action: 'funnel_feed', range, password },
     });
     if (!error && data) {
       if (data.counts) setCounts(data.counts);
