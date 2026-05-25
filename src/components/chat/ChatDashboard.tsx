@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle, Smartphone, Monitor, Split } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getUserLocation } from '../../services/location';
-import { getAllSettings, setSetting } from '../../services/settings';
+import { adminGetAllSettings, setSetting } from '../../services/settings';
 import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +22,9 @@ export const ChatDashboard: React.FC = () => {
     initiate_checkout: 0,
     lead: 0,
     purchase: 0,
+    pressel_passed: 0,
   });
+
   const [loading, setLoading] = useState(true);
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
   const [pixSuccessUrl, setPixSuccessUrl] = useState(localStorage.getItem('pix_success_url') || '');
@@ -30,7 +32,7 @@ export const ChatDashboard: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
-  const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
+
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
   const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
@@ -39,34 +41,10 @@ export const ChatDashboard: React.FC = () => {
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
-  const [presselPassed, setPresselPassed] = useState(0);
+  // presselPassed vem do daily_funnel (calculado pela edge function)
+  const presselPassed = funnel.pressel_passed;
 
-  const loadPresselPassed = async () => {
-    const start = new Date(); start.setHours(0, 0, 0, 0);
-    const iso = start.toISOString();
-    const PAGE = 1000;
-    let from = 0;
-    const sessions = new Set<string>();
-    while (true) {
-      const { data, error } = await supabase
-        .from('tracked_events')
-        .select('session_id')
-        .eq('event_name', 'PresselPassed')
-        .gte('created_at', iso)
-        .range(from, from + PAGE - 1);
-      if (error || !data) break;
-      data.forEach((r: any) => { if (r.session_id) sessions.add(r.session_id); });
-      if (data.length < PAGE) break;
-      from += PAGE;
-    }
-    setPresselPassed(sessions.size);
-  };
 
-  useEffect(() => {
-    loadPresselPassed();
-    const i = setInterval(loadPresselPassed, 15000);
-    return () => clearInterval(i);
-  }, []);
 
   // PIX preview state
   const [previewPix, setPreviewPix] = useState<{ id: number; qr_code: string; qr_code_base64: string } | null>(null);
@@ -78,12 +56,12 @@ export const ChatDashboard: React.FC = () => {
   }, []);
 
   const loadDesktopRedirects = async () => {
-    const { count } = await supabase
-      .from('tracked_events')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_name', 'RedirectDesktop');
-    setDesktopRedirects(count ?? 0);
+    const { data } = await supabase.functions.invoke('whatsapp-router', {
+      body: { action: 'desktop_redirects_count' },
+    });
+    setDesktopRedirects(data?.count ?? 0);
   };
+
 
   useEffect(() => {
     if (activeTab === 'redirect') loadDesktopRedirects();
@@ -141,7 +119,7 @@ export const ChatDashboard: React.FC = () => {
     setLoading(true);
     const [data, settings, funnelRes] = await Promise.all([
       getStats(),
-      getAllSettings(),
+      adminGetAllSettings(),
       supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel' } }),
     ]);
     setStats(data);
@@ -152,12 +130,12 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
     if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
-    if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
     if (settings.pix_tutorial_video_url) setPixTutorialVideoUrl(settings.pix_tutorial_video_url);
     if (settings.redirect_mobile_url) setRedirectMobileUrl(settings.redirect_mobile_url);
     if (settings.redirect_desktop_url) setRedirectDesktopUrl(settings.redirect_desktop_url);
     setLoading(false);
   };
+
 
   useEffect(() => {
     loadData();
@@ -174,33 +152,37 @@ export const ChatDashboard: React.FC = () => {
 
   const handleSaveAll = async () => {
     setSaving(true);
-    await Promise.all([
-      setSetting('payment_redirect_link', redirectLink),
-      setSetting('pix_success_url', pixSuccessUrl),
-      setSetting('chat_profile_name', profileName),
-      setSetting('chat_profile_photo', profilePhoto),
-      setSetting('chat_location_image', locationImage),
-      setSetting('meta_pixel_id', metaPixelId),
-      setSetting('meta_capi_token', metaCapiToken),
-      setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
-      setSetting('redirect_mobile_url', redirectMobileUrl),
-      setSetting('redirect_desktop_url', redirectDesktopUrl),
-    ]);
-    // Also update localStorage for immediate use by chat components
-    localStorage.setItem('payment_redirect_link', redirectLink);
-    localStorage.setItem('pix_success_url', pixSuccessUrl);
-    localStorage.setItem('chat_profile_name', profileName);
-    localStorage.setItem('chat_profile_photo', profilePhoto);
-    localStorage.setItem('chat_location_image', locationImage);
-    localStorage.setItem('meta_pixel_id', metaPixelId);
-    localStorage.setItem('meta_capi_token', metaCapiToken);
-    localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
-    localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
-    localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
-    setSaving(false);
-    setAllSaved(true);
-    setTimeout(() => setAllSaved(false), 2000);
+    try {
+      await Promise.all([
+        setSetting('payment_redirect_link', redirectLink),
+        setSetting('pix_success_url', pixSuccessUrl),
+        setSetting('chat_profile_name', profileName),
+        setSetting('chat_profile_photo', profilePhoto),
+        setSetting('chat_location_image', locationImage),
+        setSetting('meta_pixel_id', metaPixelId),
+        setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
+        setSetting('redirect_mobile_url', redirectMobileUrl),
+        setSetting('redirect_desktop_url', redirectDesktopUrl),
+      ]);
+      // Cache local para uso imediato pelos componentes do chat
+      localStorage.setItem('payment_redirect_link', redirectLink);
+      localStorage.setItem('pix_success_url', pixSuccessUrl);
+      localStorage.setItem('chat_profile_name', profileName);
+      localStorage.setItem('chat_profile_photo', profilePhoto);
+      localStorage.setItem('chat_location_image', locationImage);
+      localStorage.setItem('meta_pixel_id', metaPixelId);
+      localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
+      localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
+      localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
+      setAllSaved(true);
+      setTimeout(() => setAllSaved(false), 2000);
+    } catch (e) {
+      console.error('save settings error', e);
+    } finally {
+      setSaving(false);
+    }
   };
+
 
   const calcPct = (part: number, total: number) => {
     if (!total || total === 0) return "0.0";
@@ -541,11 +523,12 @@ export const ChatDashboard: React.FC = () => {
                 <input type="text" placeholder="Ex: 1234567890123456" value={metaPixelId} onChange={(e) => setMetaPixelId(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
               </div>
-              <div>
-                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Access Token CAPI (opcional)</label>
-                <input type="password" placeholder="EAAxxxxxxxxxxxxxxxxxx..." value={metaCapiToken} onChange={(e) => setMetaCapiToken(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
-                <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Configurações → API de Conversões → Gerar token</p>
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                <p className="text-[11px] text-yellow-200/90 leading-relaxed">
+                  🔒 <strong>Access Token CAPI</strong> agora está protegido como secret no servidor (<code>META_CAPI_TOKEN</code>). Para trocar, peça ao Lovable para atualizar o secret.
+                </p>
               </div>
+
               <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
                 <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
                   <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView, ViewContent, InitiateCheckout, Lead.
