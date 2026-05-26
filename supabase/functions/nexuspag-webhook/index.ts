@@ -36,6 +36,8 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
     const pixelId = await getSetting("meta_pixel_id");
     const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
     if (!pixelId || !accessToken) return;
+    // Cap value to prevent ROAS poisoning from upstream bugs
+    const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
 
 
     const userData: Record<string, string> = {};
@@ -51,7 +53,7 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
         action_source: "website",
         event_source_url: metadata.event_source_url || "",
         user_data: userData,
-        custom_data: { value: amount, currency: "BRL" },
+        custom_data: { value: safeAmount, currency: "BRL" },
       }],
     };
     await fetch(
@@ -70,30 +72,33 @@ function normalizeStatus(s: any): string {
 }
 
 async function processPayment(idOrPayload: any) {
-  let data = idOrPayload;
-  // Se só recebemos id, busca os detalhes
-  if (typeof data === "string" || (data && !data.amount && !data.transaction_amount)) {
-    const id = typeof data === "string" ? data : (data.id || data.uuid || data.transaction_id || data.txid || data.external_id);
-    if (!id) {
-      console.log("webhook sem id, payload:", idOrPayload);
-      return;
-    }
-    // Early filter: se já temos external_id no payload e não é deste projeto, ignora
-    const earlyExt = (typeof data === "object" ? (data?.external_id || "") : "").toString();
-    if (earlyExt && !earlyExt.includes(`_${PROJECT_TAG}_`)) {
-      console.log(`webhook ignorado (outro projeto): ${earlyExt}`);
-      return;
-    }
-    const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
-      headers: { "x-api-key": NEXUS_KEY },
-    });
-    if (!res.ok) {
-      console.error("NexusPag fetch failed", id, await res.text());
-      return;
-    }
-    const raw = await res.json();
-    data = raw?.transaction || raw?.data || raw;
+  // ALWAYS re-fetch the transaction from NexusPag API to prevent
+  // webhook spoofing (attackers crafting payloads with fake amounts).
+  const initial = idOrPayload;
+  const id = typeof initial === "string"
+    ? initial
+    : (initial?.id || initial?.uuid || initial?.transaction_id || initial?.txid || initial?.external_id);
+  if (!id) {
+    console.log("webhook sem id, payload:", idOrPayload);
+    return;
   }
+
+  // Early filter by external_id tag, if present in the inbound payload
+  const earlyExt = (typeof initial === "object" ? (initial?.external_id || "") : "").toString();
+  if (earlyExt && !earlyExt.includes(`_${PROJECT_TAG}_`)) {
+    console.log(`webhook ignorado (outro projeto): ${earlyExt}`);
+    return;
+  }
+
+  const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
+    headers: { "x-api-key": NEXUS_KEY },
+  });
+  if (!res.ok) {
+    console.error("NexusPag fetch failed", id, await res.text());
+    return;
+  }
+  const raw = await res.json();
+  const data = raw?.transaction || raw?.data || raw;
 
   // Filtro definitivo por tag de projeto no external_id
   const extIdStr = (data?.external_id || "").toString();

@@ -145,17 +145,12 @@ async function logLead(body: any) {
 }
 
 async function trackVisit(body: any) {
-  const {
-    session_id = "",
-    slug = "",
-    user_agent = "",
-    referer = "",
-  } = body;
+  const clip = (v: any, n: number) => String(v ?? "").slice(0, n);
   await supabase.from("page_visits").insert({
-    session_id,
-    slug,
-    user_agent,
-    referer,
+    session_id: clip(body.session_id, 200),
+    slug: clip(body.slug, 200),
+    user_agent: clip(body.user_agent, 1000),
+    referer: clip(body.referer, 2000),
   });
   return { success: true };
 }
