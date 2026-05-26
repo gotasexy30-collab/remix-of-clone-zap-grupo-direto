@@ -36,6 +36,8 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
     const pixelId = await getSetting("meta_pixel_id");
     const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
     if (!pixelId || !accessToken) return;
+    // Cap value to prevent ROAS poisoning from upstream bugs
+    const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
 
 
     const userData: Record<string, string> = {};
