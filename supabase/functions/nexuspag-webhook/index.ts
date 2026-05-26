@@ -53,7 +53,7 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
         action_source: "website",
         event_source_url: metadata.event_source_url || "",
         user_data: userData,
-        custom_data: { value: amount, currency: "BRL" },
+        custom_data: { value: safeAmount, currency: "BRL" },
       }],
     };
     await fetch(
