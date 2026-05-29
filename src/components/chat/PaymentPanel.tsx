@@ -153,7 +153,16 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   useEffect(() => {
     if (!pix?.id || paymentStatus === 'approved') return;
+    const startedAt = Date.now();
+    const MAX_POLL_MS = 12 * 60 * 1000; // para PIX abandonado: não consulta para sempre
     pollRef.current = setInterval(async () => {
+      // Encerra o polling de sessões abandonadas para economizar chamadas
+      if (Date.now() - startedAt > MAX_POLL_MS) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        return;
+      }
+      // Não consulta com a aba em segundo plano (lead saiu da tela)
+      if (typeof document !== 'undefined' && document.hidden) return;
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
       const { data } = await supabase.functions.invoke('mp-pix', {
         body: { action: 'check_status', id: pix.id, session_id: sessionId },
