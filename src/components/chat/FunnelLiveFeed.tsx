@@ -57,7 +57,7 @@ export const FunnelLiveFeed: React.FC = () => {
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 15000);
+    const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
   }, [range]);
 
