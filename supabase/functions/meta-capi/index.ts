@@ -17,13 +17,20 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
+const settingCache = new Map<string, { value: string | null; exp: number }>();
+const SETTING_TTL_MS = 5 * 60 * 1000; // 5 min em memória p/ reduzir leituras ao banco
+
 async function getSetting(key: string): Promise<string | null> {
+  const cached = settingCache.get(key);
+  if (cached && cached.exp > Date.now()) return cached.value;
   const { data } = await supabase
     .from("app_settings")
     .select("value")
     .eq("key", key)
     .maybeSingle();
-  return data?.value ?? null;
+  const value = data?.value ?? null;
+  settingCache.set(key, { value, exp: Date.now() + SETTING_TTL_MS });
+  return value;
 }
 
 Deno.serve(async (req) => {
