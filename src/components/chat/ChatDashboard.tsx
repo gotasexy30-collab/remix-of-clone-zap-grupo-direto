@@ -57,7 +57,10 @@ export const ChatDashboard: React.FC = () => {
 
   const loadDesktopRedirects = async () => {
     const { data } = await supabase.functions.invoke('whatsapp-router', {
-      body: { action: 'desktop_redirects_count' },
+      body: {
+        action: 'desktop_redirects_count',
+        password: sessionStorage.getItem('admin_pwd') || '',
+      },
     });
     setDesktopRedirects(data?.count ?? 0);
   };
