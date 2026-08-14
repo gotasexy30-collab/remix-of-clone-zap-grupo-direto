@@ -17,9 +17,9 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-function requireAdmin(password: string | undefined): boolean {
-  const saved = Deno.env.get("ADMIN_PASSWORD") || "";
-  return !!saved && !!password && password === saved;
+// Senha de administrador removida: painel de acesso aberto.
+function requireAdmin(_password?: string): boolean {
+  return true;
 }
 
 const PUBLIC_SETTING_KEYS = new Set([
