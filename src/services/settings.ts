@@ -21,7 +21,7 @@ export async function getAllSettings(): Promise<Record<string, string>> {
 
 // ---------- Admin (via edge function) ----------
 function getAdminPassword(): string {
-  return sessionStorage.getItem('admin_pwd') || '';
+  return 'removed';
 }
 
 export async function adminGetAllSettings(): Promise<Record<string, string>> {
