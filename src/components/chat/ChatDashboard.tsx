@@ -144,7 +144,7 @@ export const ChatDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
     const interval = setInterval(async () => {
-      const password = sessionStorage.getItem('admin_pwd') || '';
+      const password = 'removed';
       const [data, funnelRes] = await Promise.all([
         getStats(),
         supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel', password } }),
