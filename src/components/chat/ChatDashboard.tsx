@@ -59,7 +59,7 @@ export const ChatDashboard: React.FC = () => {
     const { data } = await supabase.functions.invoke('whatsapp-router', {
       body: {
         action: 'desktop_redirects_count',
-        password: sessionStorage.getItem('admin_pwd') || '',
+        password: 'removed',
       },
     });
     setDesktopRedirects(data?.count ?? 0);
@@ -120,7 +120,7 @@ export const ChatDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const password = sessionStorage.getItem('admin_pwd') || '';
+    const password = 'removed';
     const [data, settings, funnelRes] = await Promise.all([
       getStats(),
       adminGetAllSettings(),
@@ -144,7 +144,7 @@ export const ChatDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
     const interval = setInterval(async () => {
-      const password = sessionStorage.getItem('admin_pwd') || '';
+      const password = 'removed';
       const [data, funnelRes] = await Promise.all([
         getStats(),
         supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel', password } }),
@@ -205,10 +205,10 @@ export const ChatDashboard: React.FC = () => {
             <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
           </div>
           <button
-            onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload(); }}
+            onClick={() => { window.location.href = '/'; }}
             className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
           >
-            <LogOut size={16} /> Sair
+            <LogOut size={16} /> Voltar para o Site
           </button>
         </div>
 
