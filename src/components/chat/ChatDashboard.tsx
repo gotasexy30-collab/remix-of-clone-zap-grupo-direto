@@ -120,7 +120,7 @@ export const ChatDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const password = sessionStorage.getItem('admin_pwd') || '';
+    const password = 'removed';
     const [data, settings, funnelRes] = await Promise.all([
       getStats(),
       adminGetAllSettings(),
