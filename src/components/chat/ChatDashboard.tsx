@@ -205,10 +205,10 @@ export const ChatDashboard: React.FC = () => {
             <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
           </div>
           <button
-            onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload(); }}
+            onClick={() => { window.location.href = '/'; }}
             className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
           >
-            <LogOut size={16} /> Sair
+            <LogOut size={16} /> Voltar para o Site
           </button>
         </div>
 
