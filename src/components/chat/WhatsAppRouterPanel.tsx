@@ -68,7 +68,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (!form.phone || !form.link) return;
     setAdding(true);
     try {
-      await callAdmin("add_number", form);
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .insert([form]);
+      
+      if (error) throw error;
+      
       setForm({ label: "", phone: "", link: "", hourly_limit: 30 });
       setShowForm(false);
       await load();
@@ -82,7 +87,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Deletar este número?")) return;
     try {
-      await callAdmin("delete_number", { id });
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
       await load();
     } catch (e: any) {
       console.error(e);
@@ -92,11 +102,15 @@ export const WhatsAppRouterPanel: React.FC = () => {
 
   const handleToggle = async (n: WaNumber) => {
     try {
-      await callAdmin("update_number", {
-        id: n.id,
-        manually_disabled: !n.manually_disabled,
-        status: !n.manually_disabled ? "inactive" : "active",
-      });
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .update({
+          manually_disabled: !n.manually_disabled,
+          status: !n.manually_disabled ? "inactive" : "active",
+        })
+        .eq("id", n.id);
+
+      if (error) throw error;
       await load();
     } catch (e: any) {
       console.error(e);
@@ -109,7 +123,13 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (!changes) return;
     setSavingId(id);
     try {
-      await callAdmin("update_number", { id, ...changes });
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .update(changes)
+        .eq("id", id);
+
+      if (error) throw error;
+      
       setEditing((e) => {
         const c = { ...e };
         delete c[id];
