@@ -591,11 +591,6 @@ export const ChatDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'router' && (
-          <div className="animate-fadeIn mb-6">
-            <WhatsAppRouterPanel />
-          </div>
-        )}
 
         {activeTab === 'redirect' && (
           <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
