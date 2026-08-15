@@ -205,8 +205,8 @@ export const ChatDashboard: React.FC = () => {
             <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
           </div>
           <button
-            onClick={() => { 
-              localStorage.removeItem('admin_session');
+            onClick={async () => { 
+              await supabase.auth.signOut();
               window.location.href = '/'; 
             }}
             className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
