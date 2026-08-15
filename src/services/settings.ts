@@ -35,13 +35,14 @@ export async function adminGetAllSettings(): Promise<Record<string, string>> {
 }
 
 export async function setSetting(key: string, value: string): Promise<void> {
-  const password = getAdminPassword();
-  if (!password) throw new Error('admin not authenticated');
-  const { data, error } = await supabase.functions.invoke('whatsapp-router', {
-    body: { action: 'admin_set_setting', password, key, value },
-  });
-  if (error) throw error;
-  if (data?.error) throw new Error(data.error);
+  const { error } = await supabase
+    .from('app_settings')
+    .upsert({ key, value }, { onConflict: 'key' });
+
+  if (error) {
+    console.error(`Error saving setting ${key}:`, error);
+    throw error;
+  }
 }
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {

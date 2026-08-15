@@ -88,25 +88,36 @@ export const WhatsAppRouterPanel: React.FC = () => {
       setForm({ label: "", phone: "", link: "", hourly_limit: 30 });
       setShowForm(false);
       await load();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert(`Erro ao adicionar número: ${e.message || 'Erro desconhecido'}`);
     }
     setAdding(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deletar este número?")) return;
-    await callAdmin("delete_number", { id });
-    await load();
+    try {
+      await callAdmin("delete_number", { id });
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      alert(`Erro ao deletar número: ${e.message || 'Erro desconhecido'}`);
+    }
   };
 
   const handleToggle = async (n: WaNumber) => {
-    await callAdmin("update_number", {
-      id: n.id,
-      manually_disabled: !n.manually_disabled,
-      status: !n.manually_disabled ? "inactive" : "active",
-    });
-    await load();
+    try {
+      await callAdmin("update_number", {
+        id: n.id,
+        manually_disabled: !n.manually_disabled,
+        status: !n.manually_disabled ? "inactive" : "active",
+      });
+      await load();
+    } catch (e: any) {
+      console.error(e);
+      alert(`Erro ao alterar status: ${e.message || 'Erro desconhecido'}`);
+    }
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -121,10 +132,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
         return c;
       });
       await load();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert(`Erro ao salvar alterações: ${e.message || 'Erro desconhecido'}`);
+    } finally {
+      setSavingId(null);
     }
-    setSavingId(null);
   };
 
   const updateField = (id: string, field: keyof WaNumber, value: string | number) => {
