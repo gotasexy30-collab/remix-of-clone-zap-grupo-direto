@@ -37,21 +37,25 @@ export function useWhatsAppRouter() {
       if (pending.current) return;
       pending.current = true;
       try {
-        const { data } = await supabase.functions.invoke("whatsapp-router", {
-          body: { action: "get_best_number" },
-        });
+        // Obter todos os números ativos
+        const { data: numbers, error } = await supabase
+          .from("whatsapp_numbers")
+          .select("*")
+          .eq("status", "active")
+          .eq("manually_disabled", false);
 
-        const link = data?.number?.link;
-
-        if (!link) {
+        if (error || !numbers || numbers.length === 0) {
           if (fallbackUrl) window.location.assign(fallbackUrl);
           return;
         }
 
-        logLeadInBackground({
-          action: "log_lead",
-          whatsapp_number_id: data.number.id,
-          whatsapp_phone: data.number.phone || "",
+        // Selecionar um número aleatório (round-robin simples ou random)
+        const bestNumber = numbers[Math.floor(Math.random() * numbers.length)];
+        const link = bestNumber.link;
+
+        await logLead({
+          whatsapp_number_id: bestNumber.id,
+          whatsapp_phone: bestNumber.phone || "",
           message_text: messageText,
           user_agent: navigator.userAgent,
           referer: document.referrer,
