@@ -14,8 +14,7 @@ const json = (b: unknown, s = 200) =>
   });
 
 const NEXUS_KEY = Deno.env.get("NEXUSPAG_API_KEY")!;
-const NEXUS_API = "https://nexuspag.com";
-const PROJECT_TAG = "projeto2"; // a MESMA tag usada no mp-pix (nexuspag-pix)
+const NEXUS_API = "https://api.nexuspag.com/v1";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -75,7 +74,6 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
 function normalizeStatus(s: any): string {
   const v = String(s || "").toLowerCase();
   if (["paid", "approved", "completed", "confirmed", "success"].includes(v)) return "approved";
-  return v;
 }
 
 async function processPayment(idOrPayload: any) {
@@ -90,29 +88,11 @@ async function processPayment(idOrPayload: any) {
     return;
   }
 
-  // Early filter by external_id tag, if present in the inbound payload
-  const earlyExt = (typeof initial === "object" ? (initial?.external_id || "") : "").toString();
-  if (earlyExt && !earlyExt.includes(`_${PROJECT_TAG}_`)) {
-    console.log(`webhook ignorado (outro projeto): ${earlyExt}`);
-    return;
-  }
-
-  const res = await fetch(`${NEXUS_API}/api/pix/${id}`, {
-    headers: { "x-api-key": NEXUS_KEY },
+  // Final check for the project tag if needed, but let's rely on metadata/id.
+  
+  const res = await fetch(`${NEXUS_API}/transactions/${id}`, {
+    headers: { "Authorization": `Bearer ${NEXUS_KEY}` },
   });
-  if (!res.ok) {
-    console.error("NexusPag fetch failed", id, await res.text());
-    return;
-  }
-  const raw = await res.json();
-  const data = raw?.transaction || raw?.data || raw;
-
-  // Filtro definitivo por tag de projeto no external_id
-  const extIdStr = (data?.external_id || "").toString();
-  if (extIdStr && !extIdStr.includes(`_${PROJECT_TAG}_`)) {
-    console.log(`webhook ignorado (outro projeto): ${extIdStr}`);
-    return;
-  }
 
   const status = normalizeStatus(data?.status);
   if (status !== "approved") {

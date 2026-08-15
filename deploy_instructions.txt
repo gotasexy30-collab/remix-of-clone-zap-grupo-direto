@@ -1,0 +1,17 @@
+Comandos para implantar as Edge Functions no seu projeto Supabase:
+
+1. Faça login na CLI do Supabase (se ainda não fez):
+   supabase login
+
+2. Link o projeto (substitua <project-ref> pelo ID do seu projeto Supabase):
+   supabase link --project-ref <project-ref>
+
+3. Defina a chave da API da NexusPag como um segredo:
+   supabase secrets set NEXUSPAG_API_KEY=sua_chave_aqui
+
+4. Implante as funções:
+   supabase functions deploy generate-pix-nexus
+   supabase functions deploy nexuspag-webhook
+
+Observação: Como você está usando o Lovable Cloud, as Edge Functions e as políticas de RLS foram configuradas automaticamente por mim. 
+Se você estiver conectando um projeto externo futuramente, use os scripts SQL e comandos CLI mencionados acima.
