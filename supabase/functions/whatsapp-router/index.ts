@@ -17,9 +17,13 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-// Senha de administrador removida: painel de acesso aberto.
-function requireAdmin(_password?: string): boolean {
-  return true;
+// A validação de administrador agora é feita via Supabase Auth.
+// O backend verifica se a requisição contém um token JWT válido.
+async function getAuthUser(req: Request) {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return null;
+  const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+  return user;
 }
 
 const PUBLIC_SETTING_KEYS = new Set([
