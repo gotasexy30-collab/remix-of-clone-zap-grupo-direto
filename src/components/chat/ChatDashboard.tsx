@@ -428,7 +428,7 @@ export const ChatDashboard: React.FC = () => {
                       <div className="w-full bg-gray-50 rounded-xl p-2 flex flex-col items-center">
                         {previewPix.qr_code_base64 && (
                           <img
-                            src={`data:image/png;base64,${previewPix.qr_code_base64}`}
+                            src={previewPix.qr_code_base64}
                             alt="QR Code PIX"
                             className="w-36 h-36 object-contain"
                           />
