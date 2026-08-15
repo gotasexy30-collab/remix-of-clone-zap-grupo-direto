@@ -42,7 +42,7 @@ export const ChatDashboard: React.FC = () => {
   const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'router' | 'redirect' | 'pressel'>('funil');
+  const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'redirect' | 'pressel'>('funil');
   // presselPassed vem do daily_funnel (calculado pela edge function)
   const presselPassed = funnel.pressel_passed;
 
@@ -248,13 +248,12 @@ export const ChatDashboard: React.FC = () => {
         </div>
 
         {/* Tabs de navegação rápida */}
-        <div className="grid grid-cols-7 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
+        <div className="grid grid-cols-6 gap-1 mb-5 bg-[#202c33] p-1 rounded-2xl border border-white/5 sticky top-0 z-10">
           {[
             { id: 'funil', label: 'Funil', icon: TrendingUp },
             { id: 'pagamento', label: 'Pagamento', icon: Link2 },
             { id: 'perfil', label: 'Perfil', icon: User },
             { id: 'pixel', label: 'Pixel', icon: Activity },
-            { id: 'router', label: 'Router', icon: Target },
             { id: 'redirect', label: 'Redirect', icon: Split },
             { id: 'pressel', label: 'Pressel', icon: Smartphone },
           ].map((t) => {
