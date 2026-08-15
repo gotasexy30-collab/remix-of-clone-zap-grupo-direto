@@ -32,25 +32,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Bloqueio de menu de contexto (clique direito / toque longo)
-      document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
-      document.addEventListener('selectstart', function(e) {
-        var t = e.target;
-        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
-        e.preventDefault();
-      }, true);
-      document.addEventListener('dragstart', function(e) { e.preventDefault(); }, true);
-      document.addEventListener('copy', function(e) { e.preventDefault(); }, true);
-
-      // Bloqueio de atalhos para abrir o inspecionar / ver código fonte / salvar
-      document.addEventListener('keydown', function(e) {
-        var k = (e.key || '').toLowerCase();
-        if (k === 'f12') { e.preventDefault(); return false; }
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i','j','c','k','s','e'].includes(k)) { e.preventDefault(); return false; }
-        if ((e.ctrlKey || e.metaKey) && ['u','s','p','a'].includes(k)) { e.preventDefault(); return false; }
-      }, true);
-
-    </script>
   </body>
 </html>
