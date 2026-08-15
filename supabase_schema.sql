@@ -108,9 +108,10 @@ ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
 
 -- 4. Criar Políticas de RLS
 
--- app_settings: Público pode ler chaves não sensíveis (ou todas se preferir), apenas admins editam.
+-- app_settings: Público pode ler chaves não sensíveis, usuários autenticados têm controle total.
 CREATE POLICY "Public read settings" ON public.app_settings FOR SELECT TO anon USING (true);
-CREATE POLICY "Admins full access settings" ON public.app_settings FOR ALL TO authenticated USING (true);
+CREATE POLICY "Authenticated full access settings" ON public.app_settings FOR ALL TO authenticated USING (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.app_settings TO authenticated;
 
 -- whatsapp_numbers: Público pode ler para o roteador, apenas admins editam.
 CREATE POLICY "Public read numbers" ON public.whatsapp_numbers FOR SELECT TO anon USING (true);

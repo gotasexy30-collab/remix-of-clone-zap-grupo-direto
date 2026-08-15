@@ -7,6 +7,7 @@ import { WhatsAppRouterPanel } from './WhatsAppRouterPanel';
 import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
 import { PresselTest } from './PresselTest';
+import { toast } from 'sonner';
 
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
@@ -184,9 +185,11 @@ export const ChatDashboard: React.FC = () => {
       localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
       localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
       setAllSaved(true);
+      toast.success('Configurações salvas com sucesso!');
       setTimeout(() => setAllSaved(false), 2000);
-    } catch (e) {
+    } catch (e: any) {
       console.error('save settings error', e);
+      toast.error(`Erro ao salvar: ${e.message || 'Erro desconhecido'}`);
     } finally {
       setSaving(false);
     }
