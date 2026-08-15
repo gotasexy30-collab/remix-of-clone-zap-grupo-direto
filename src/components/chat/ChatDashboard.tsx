@@ -32,6 +32,7 @@ export const ChatDashboard: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
+  const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
 
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
@@ -134,6 +135,7 @@ export const ChatDashboard: React.FC = () => {
     if (settings.chat_profile_photo) setProfilePhoto(settings.chat_profile_photo);
     if (settings.chat_location_image) setLocationImage(settings.chat_location_image);
     if (settings.meta_pixel_id) setMetaPixelId(settings.meta_pixel_id);
+    if (settings.meta_capi_token) setMetaCapiToken(settings.meta_capi_token);
     if (settings.pix_tutorial_video_url) setPixTutorialVideoUrl(settings.pix_tutorial_video_url);
     if (settings.redirect_mobile_url) setRedirectMobileUrl(settings.redirect_mobile_url);
     if (settings.redirect_desktop_url) setRedirectDesktopUrl(settings.redirect_desktop_url);
@@ -165,6 +167,7 @@ export const ChatDashboard: React.FC = () => {
         setSetting('chat_profile_photo', profilePhoto),
         setSetting('chat_location_image', locationImage),
         setSetting('meta_pixel_id', metaPixelId),
+        setSetting('meta_capi_token', metaCapiToken),
         setSetting('pix_tutorial_video_url', pixTutorialVideoUrl),
         setSetting('redirect_mobile_url', redirectMobileUrl),
         setSetting('redirect_desktop_url', redirectDesktopUrl),
@@ -176,6 +179,7 @@ export const ChatDashboard: React.FC = () => {
       localStorage.setItem('chat_profile_photo', profilePhoto);
       localStorage.setItem('chat_location_image', locationImage);
       localStorage.setItem('meta_pixel_id', metaPixelId);
+      localStorage.setItem('meta_capi_token', metaCapiToken);
       localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
       localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
       localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
@@ -531,9 +535,23 @@ export const ChatDashboard: React.FC = () => {
                 <input type="text" placeholder="Ex: 1234567890123456" value={metaPixelId} onChange={(e) => setMetaPixelId(e.target.value.trim())} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" />
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">Gerenciador de Eventos → Fontes de dados → seu Pixel</p>
               </div>
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
-                <p className="text-[11px] text-yellow-200/90 leading-relaxed">
-                  🔒 <strong>Access Token CAPI</strong> agora está protegido como secret no servidor (<code>META_CAPI_TOKEN</code>). Para trocar, peça ao Lovable para atualizar o secret.
+              <div>
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Meta CAPI Access Token (opcional)</label>
+                <input 
+                  type="password" 
+                  placeholder="EAA..." 
+                  value={metaCapiToken} 
+                  onChange={(e) => setMetaCapiToken(e.target.value.trim())} 
+                  className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50" 
+                />
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">
+                  Gerenciador de Eventos → Configurações → Conversions API → Gerar token de acesso
+                </p>
+              </div>
+
+              <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
+                <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
+                  <strong className="text-[#1877F2]">Segurança Backend:</strong> O token é enviado apenas para a Edge Function e nunca exposto no navegador dos visitantes.
                 </p>
               </div>
 
