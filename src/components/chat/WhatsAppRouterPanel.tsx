@@ -123,9 +123,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (!changes) return;
     setSavingId(id);
     try {
+      // Remover propriedades que não pertencem à tabela no banco de dados
+      const { leads_last_hour, leads_today, ...dbChanges } = changes as any;
+      
       const { error } = await supabase
         .from("whatsapp_numbers")
-        .update(changes)
+        .update(dbChanges)
         .eq("id", id);
 
       if (error) throw error;
