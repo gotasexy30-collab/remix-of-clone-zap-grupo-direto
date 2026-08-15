@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Lock, KeyRound, Loader2, Eye, EyeOff } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -11,37 +12,40 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const session = localStorage.getItem('admin_session');
-    if (session === 'active') {
-      onLogin();
-    }
-  }, [onLogin]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Usamos um e-mail fixo conforme solicitado pelo usuário
+      const ADMIN_EMAIL = 'admin@meusistema.com';
+      
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: password,
+      });
 
-    // Get password from environment variable (Vite prefix required for client-side access)
-    // If not set, it defaults to checking against a hardcoded string or fails
-    const expectedPassword = import.meta.env.VITE_SENHA_DE_ADMINISTRADOR;
+      if (authError) {
+        // Se o erro for de credenciais inválidas ou usuário não encontrado
+        if (authError.message.includes('Invalid login credentials')) {
+          setError('Senha incorreta');
+        } else {
+          setError(authError.message);
+        }
+        setLoading(false);
+        return;
+      }
 
-    if (password === expectedPassword) {
-      localStorage.setItem('admin_session', 'active');
       onLogin();
-    } else {
-      setError('Senha incorreta');
+    } catch (err: any) {
+      setError('Ocorreu um erro ao tentar entrar. Tente novamente.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0b141a] flex items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-[#0b141a] flex items-center justify-center p-4 font-sans text-[#e9edef]">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-[#00a884]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
