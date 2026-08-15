@@ -129,11 +129,15 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setPixLoading(true);
     setPixError('');
     try {
-      // Chamando a nova Edge Function da NexusPag
-      const { data, error } = await supabase.functions.invoke('generate-pix-nexus', {
-        body: {
+      // Chamando a nova API Route interna da Vercel
+      const response = await fetch('/api/generate-pix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           amount: 19.90,
-          name: 'Cliente VIP', // Em um fluxo real, coletaríamos esses dados
+          name: 'Cliente VIP',
           cpf: '00000000000',
           email: 'cliente@exemplo.com',
           description: `Clube Secreto - ${userCity || 'VIP'}`,
@@ -141,16 +145,19 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
             session_id: sessionStorage.getItem('wa_session_id') || '',
             meta: getMetaTrackingContext(),
           },
-        },
+        }),
       });
       
-      if (error || !data || data.error) {
+      const data = await response.json();
+      
+      if (!response.ok || data.error) {
         setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
         return;
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
       logTrackedEvent('PixGenerated');
-    } catch {
+    } catch (err) {
+      console.error('Fetch error:', err);
       setPixError('Erro de conexão. Tente novamente.');
     } finally {
       setPixLoading(false);
@@ -170,9 +177,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       // Não consulta com a aba em segundo plano (lead saiu da tela)
       if (typeof document !== 'undefined' && document.hidden) return;
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
-      const { data } = await supabase.functions.invoke('generate-pix-nexus', {
-        body: { action: 'check_status', id: pix.id, session_id: sessionId },
+      const response = await fetch('/api/generate-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId }),
       });
+      const data = await response.json();
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
@@ -233,9 +243,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     logTrackedEvent('AlreadyPaid');
     try {
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
-      const { data } = await supabase.functions.invoke('generate-pix-nexus', {
-        body: { action: 'check_status', id: pix.id, session_id: sessionId },
+      const response = await fetch('/api/generate-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId }),
       });
+      const data = await response.json();
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
