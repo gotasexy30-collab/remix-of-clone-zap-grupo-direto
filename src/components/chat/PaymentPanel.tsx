@@ -170,7 +170,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       // Não consulta com a aba em segundo plano (lead saiu da tela)
       if (typeof document !== 'undefined' && document.hidden) return;
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
-      const { data } = await supabase.functions.invoke('mp-pix', {
+      const { data } = await supabase.functions.invoke('generate-pix-nexus', {
         body: { action: 'check_status', id: pix.id, session_id: sessionId },
       });
       if (data?.status === 'approved') {
