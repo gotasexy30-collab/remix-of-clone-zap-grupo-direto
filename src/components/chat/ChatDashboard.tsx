@@ -83,8 +83,14 @@ export const ChatDashboard: React.FC = () => {
     setPreviewError('');
     setPreviewPix(null);
     try {
-      const { data, error } = await supabase.functions.invoke('mp-pix', {
-        body: { action: 'create_pix', amount: 19.9, description: 'PREVIEW Dashboard' },
+      const { data, error } = await supabase.functions.invoke('generate-pix-nexus', {
+        body: { 
+          amount: 19.9, 
+          name: 'Preview Dashboard',
+          cpf: '00000000000',
+          email: 'admin@dashboard.com',
+          description: 'PREVIEW Dashboard' 
+        },
       });
       if (error || !data || data.error) {
         setPreviewError(data?.error || 'Erro ao gerar PIX.');
@@ -347,7 +353,7 @@ export const ChatDashboard: React.FC = () => {
           <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5 shadow-lg mb-6 animate-fadeIn">
             <div className="flex items-center gap-2 mb-3">
               <Link2 size={16} className="text-[#00a884]" />
-              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (Mercado Pago)</span>
+              <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pagamento PIX (NexusPag)</span>
             </div>
             <div className="space-y-3">
               <div>
