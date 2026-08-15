@@ -129,17 +129,21 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setPixLoading(true);
     setPixError('');
     try {
-      // A geração de PIX ainda usa a edge function 'mp-pix' pois contém segredos do Mercado Pago.
-      // O comando do usuário foi específico para deletar a edge function 'whatsapp-router'.
-      const { data, error } = await supabase.functions.invoke('mp-pix', {
+      // Chamando a nova Edge Function da NexusPag
+      const { data, error } = await supabase.functions.invoke('generate-pix-nexus', {
         body: {
-          action: 'create_pix',
           amount: 19.90,
+          name: 'Cliente VIP', // Em um fluxo real, coletaríamos esses dados
+          cpf: '00000000000',
+          email: 'cliente@exemplo.com',
           description: `Clube Secreto - ${userCity || 'VIP'}`,
-          session_id: sessionStorage.getItem('wa_session_id') || '',
-          meta: getMetaTrackingContext(),
+          metadata: {
+            session_id: sessionStorage.getItem('wa_session_id') || '',
+            meta: getMetaTrackingContext(),
+          },
         },
       });
+      
       if (error || !data || data.error) {
         setPixError(data?.error || 'Erro ao gerar PIX. Tente novamente.');
         return;
