@@ -1,88 +1,65 @@
-const API_BASE = "https://api.counterapi.dev/v1";
+import { supabase } from "@/integrations/supabase/client";
 
-const getSlug = () => {
-  try {
-    const path = window.location.pathname;
-    const cleanPath = path.replace(/\/painel\/?$/, '').replace(/\/$/, '');
-    const parts = cleanPath.split('/').filter(p => p.length > 0);
-    const slug = parts.length > 0 ? parts[parts.length - 1] : 'main';
-    return slug;
-  } catch {
-    return 'main';
+const getSessionId = () => {
+  let sid = sessionStorage.getItem("wa_session_id");
+  if (!sid) {
+    sid = crypto.randomUUID();
+    sessionStorage.setItem("wa_session_id", sid);
   }
+  return sid;
 };
 
-const getNamespace = () => {
-  const slug = getSlug();
-  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]/g, '_');
-  return `vott_v4_${cleanSlug}`;
-};
-
-const fetchWithFallback = async (targetUrl: string): Promise<any> => {
-  // Try direct first
+export const trackEvent = async (eventName: string, slug?: string) => {
   try {
-    const res = await fetch(targetUrl, { cache: 'no-cache' });
-    if (res.ok) return await res.json();
-  } catch {}
-
-  // Fallback to allorigins proxy
-  try {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
-    const res = await fetch(proxyUrl, { mode: 'cors', cache: 'no-cache' });
-    if (res.ok) {
-      const wrapper = await res.json();
-      return JSON.parse(wrapper.contents);
-    }
-  } catch {}
-
-  // Fallback to corsproxy.io
-  try {
-    const proxyUrl2 = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-    const res = await fetch(proxyUrl2, { cache: 'no-cache' });
-    if (res.ok) return await res.json();
-  } catch {}
-
-  return null;
-};
-
-export const trackEvent = async (key: 'h1' | 'h2' | 'h3' | 'h4' | 'h5') => {
-  const namespace = getNamespace();
-  const targetUrl = `${API_BASE}/${namespace}/${key}/up`;
-
-  try {
-    await fetchWithFallback(targetUrl);
-    console.log(`[Track] Evento ${key} disparado com sucesso.`);
-  } catch {
-    console.warn(`[Track] Falha silenciosa no evento ${key}`);
+    const sessionId = getSessionId();
+    const { error } = await supabase
+      .from("tracked_events")
+      .insert([
+        {
+          event_name: eventName,
+          session_id: sessionId,
+          slug: slug || "main",
+        },
+      ]);
+    
+    if (error) throw error;
+    console.log(`[Track] Evento ${eventName} disparado com sucesso no Supabase.`);
+  } catch (error) {
+    console.warn(`[Track] Falha no evento ${eventName}:`, error);
   }
 };
 
 export const getStats = async () => {
-  const namespace = getNamespace();
-  const keys = ['h1', 'h2', 'h3', 'h4', 'h5'];
-
   try {
-    const results = await Promise.all(
-      keys.map(async (key) => {
-        try {
-          const targetUrl = `${API_BASE}/${namespace}/${key}`;
-          const data = await fetchWithFallback(targetUrl);
-          return { count: data?.count || 0 };
-        } catch {
-          return { count: 0 };
-        }
-      })
-    );
+    // Definimos os mapeamentos de eventos
+    const eventMapping = {
+      h1: "page_view",
+      h2: "chat_start",
+      h3: "checkout",
+      h4: "sale_approved",
+      h5: "lead",
+    };
+
+    const { data, error } = await supabase
+      .from("tracked_events")
+      .select("event_name");
+
+    if (error) throw error;
+
+    const counts = (data || []).reduce((acc: Record<string, number>, curr) => {
+      acc[curr.event_name] = (acc[curr.event_name] || 0) + 1;
+      return acc;
+    }, {});
 
     return {
-      visits: Number(results[0]?.count || 0),
-      chat: Number(results[1]?.count || 0),
-      checkout: Number(results[2]?.count || 0),
-      sale1: Number(results[3]?.count || 0),
-      sale2: Number(results[4]?.count || 0),
+      visits: counts["page_view"] || 0,
+      chat: counts["chat_start"] || 0,
+      checkout: counts["checkout"] || 0,
+      sale1: counts["sale_approved"] || 0,
+      sale2: counts["lead"] || 0,
     };
   } catch (e) {
-    console.error("[Dashboard] Erro ao buscar estatísticas:", e);
+    console.error("[Dashboard] Erro ao buscar estatísticas do Supabase:", e);
     return { visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 };
   }
 };

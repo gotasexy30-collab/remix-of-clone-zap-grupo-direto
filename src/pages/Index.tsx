@@ -35,27 +35,30 @@ const Index = () => {
 
   useEffect(() => {
     if (!visitTracked.current) {
-      trackEvent('h1');
+      trackEvent('page_view');
       visitTracked.current = true;
       captureUTMs();
       initMetaPixel();
-      // Registra visita no banco (funil diário)
+      
+      // Registra visita no banco usando a tabela page_visits
       try {
         let sid = sessionStorage.getItem('wa_session_id');
         if (!sid) {
           sid = crypto.randomUUID();
           sessionStorage.setItem('wa_session_id', sid);
         }
-        supabase.functions.invoke('whatsapp-router', {
-          body: {
-            action: 'track_visit',
-            session_id: sid,
-            slug: getSlug(),
-            user_agent: navigator.userAgent,
-            referer: document.referrer,
-          },
-        }).catch(() => {});
-      } catch { /* noop */ }
+        
+        supabase.from('page_visits').insert([{
+          session_id: sid,
+          slug: getSlug(),
+          user_agent: navigator.userAgent,
+          referer: document.referrer,
+        }]).then(({ error }) => {
+          if (error) console.error('Erro ao registrar visita:', error);
+        });
+      } catch (err) {
+        console.error('Erro ao registrar visita:', err);
+      }
     }
     getUserLocation().then(data => setLocationData(data));
   }, []);
@@ -80,7 +83,7 @@ const Index = () => {
     processedSteps.current.add(currentStepId);
 
     if (currentStepId === 'AWAITING_CITY') {
-      trackEvent('h2');
+      trackEvent('chat_start');
       fbqTrack('ViewContent', { content_name: 'chat_started' });
       import('../services/pixel').then(({ logTrackedEvent }) => logTrackedEvent('ChatStarted'));
     }
@@ -91,7 +94,7 @@ const Index = () => {
       if (step.action.type === 'open_payment') {
         setTimeout(() => {
           setShowPayment(true);
-          trackEvent('h3');
+          trackEvent('checkout');
         }, 500);
         return;
       }

@@ -26,26 +26,19 @@ export const WhatsAppRouterPanel: React.FC = () => {
   const [form, setForm] = useState({ label: "", phone: "", link: "", hourly_limit: 30 });
   const [editing, setEditing] = useState<Record<string, Partial<WaNumber>>>({});
 
-  const callAdmin = async (action: string, payload: Record<string, unknown> = {}) => {
-    const password = sessionStorage.getItem("admin_pwd") || "";
-    const { data, error } = await supabase.functions.invoke("whatsapp-router", {
-      body: { action, password, ...payload },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    return data;
-  };
-
-
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const data = await callAdmin("list_numbers");
-      const fresh: WaNumber[] = data?.numbers || [];
+      const { data: fresh, error } = await supabase
+        .from("whatsapp_numbers")
+        .select("*");
+      
+      if (error) throw error;
+
       setNumbers((prev) => {
-        if (prev.length === 0) return fresh;
-        // Merge: mantém a ordem antiga e só atualiza métricas/status dos itens existentes.
-        // Adiciona novos no final e remove os que sumiram.
+        if (!fresh) return prev;
+        if (prev.length === 0) return fresh as WaNumber[];
+        
         const freshMap = new Map(fresh.map((n) => [n.id, n]));
         const merged = prev
           .filter((p) => freshMap.has(p.id))
@@ -54,19 +47,10 @@ export const WhatsAppRouterPanel: React.FC = () => {
             freshMap.delete(p.id);
             return {
               ...p,
-              status: f.status,
-              manually_disabled: f.manually_disabled,
-              total_leads: f.total_leads,
-              last_lead_at: f.last_lead_at,
-              leads_last_hour: f.leads_last_hour,
-              leads_today: f.leads_today,
-              hourly_limit: f.hourly_limit,
-              label: f.label,
-              phone: f.phone,
-              link: f.link,
-            };
+              ...f,
+            } as WaNumber;
           });
-        return [...merged, ...Array.from(freshMap.values())];
+        return [...merged, ...Array.from(freshMap.values())] as WaNumber[];
       });
     } catch (e) {
       console.error(e);
@@ -84,7 +68,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (!form.phone || !form.link) return;
     setAdding(true);
     try {
-      await callAdmin("add_number", form);
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .insert([form]);
+      
+      if (error) throw error;
+      
       setForm({ label: "", phone: "", link: "", hourly_limit: 30 });
       setShowForm(false);
       await load();
@@ -98,7 +87,12 @@ export const WhatsAppRouterPanel: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Deletar este número?")) return;
     try {
-      await callAdmin("delete_number", { id });
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
       await load();
     } catch (e: any) {
       console.error(e);
@@ -108,11 +102,15 @@ export const WhatsAppRouterPanel: React.FC = () => {
 
   const handleToggle = async (n: WaNumber) => {
     try {
-      await callAdmin("update_number", {
-        id: n.id,
-        manually_disabled: !n.manually_disabled,
-        status: !n.manually_disabled ? "inactive" : "active",
-      });
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .update({
+          manually_disabled: !n.manually_disabled,
+          status: !n.manually_disabled ? "inactive" : "active",
+        })
+        .eq("id", n.id);
+
+      if (error) throw error;
       await load();
     } catch (e: any) {
       console.error(e);
@@ -125,7 +123,16 @@ export const WhatsAppRouterPanel: React.FC = () => {
     if (!changes) return;
     setSavingId(id);
     try {
-      await callAdmin("update_number", { id, ...changes });
+      // Remover propriedades que não pertencem à tabela no banco de dados
+      const { leads_last_hour, leads_today, ...dbChanges } = changes as any;
+      
+      const { error } = await supabase
+        .from("whatsapp_numbers")
+        .update(dbChanges)
+        .eq("id", id);
+
+      if (error) throw error;
+      
       setEditing((e) => {
         const c = { ...e };
         delete c[id];
