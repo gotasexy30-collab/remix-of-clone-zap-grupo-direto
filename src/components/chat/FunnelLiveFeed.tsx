@@ -37,20 +37,60 @@ export const FunnelLiveFeed: React.FC = () => {
 
   const load = async () => {
     setLoading(true);
-    const password = sessionStorage.getItem('admin_pwd') || '';
-    const { data, error } = await supabase.functions.invoke('whatsapp-router', {
-      body: { action: 'funnel_feed', range, password },
-    });
-    if (!error && data) {
-      if (data.counts) setCounts(data.counts);
-      if (data.feed) {
-        setFeed(data.feed.map((e: any) => ({
-          id: e.id,
-          event: e.event,
-          session: e.session || '—',
-          time: new Date(e.time),
-        })));
-      }
+    try {
+      // Get counts from tracked_events
+      const { data: events } = await supabase.from('tracked_events').select('event_name, created_at');
+      const { data: sales } = await supabase.from('purchases').select('amount, status, created_at').eq('status', 'approved');
+
+      const now = new Date();
+      const isToday = (d: Date) => d.toDateString() === now.toDateString();
+      const isLast7d = (d: Date) => (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+      const isLast30d = (d: Date) => (now.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
+
+      const filterDate = (d: Date) => {
+        if (range === 'today') return isToday(d);
+        if (range === '7d') return isLast7d(d);
+        return isLast30d(d);
+      };
+
+      const filteredEvents = (events || []).filter(e => filterDate(new Date(e.created_at)));
+      
+      const newCounts: Record<StageKey, number> = {
+        Visited: 0, ChatStarted: 0, InitiateCheckout: 0, PixGenerated: 0,
+        PixCopied: 0, TutorialOpened: 0, AlreadyPaid: 0, Purchase: 0,
+      };
+
+      filteredEvents.forEach(e => {
+        const key = e.event_name as StageKey;
+        if (newCounts[key] !== undefined) newCounts[key]++;
+      });
+
+      // Special handling for legacy names if any
+      filteredEvents.forEach(e => {
+        if (e.event_name === 'page_view') newCounts.Visited++;
+        if (e.event_name === 'chat_start') newCounts.ChatStarted++;
+        if (e.event_name === 'checkout') newCounts.InitiateCheckout++;
+      });
+
+      const filteredSales = (sales || []).filter(s => filterDate(new Date(s.created_at)));
+      newCounts.Purchase = filteredSales.length;
+
+      setCounts(newCounts);
+
+      // Latest feed items
+      const latest = (events || [])
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 20)
+        .map((e: any) => ({
+          id: e.id || Math.random().toString(),
+          event: e.event_name,
+          session: e.session_id || '—',
+          time: new Date(e.created_at),
+        }));
+      setFeed(latest);
+
+    } catch (err) {
+      console.error('Error loading funnel feed:', err);
     }
     setLoading(false);
   };
