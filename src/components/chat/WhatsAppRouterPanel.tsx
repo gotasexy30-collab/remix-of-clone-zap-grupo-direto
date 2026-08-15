@@ -26,26 +26,19 @@ export const WhatsAppRouterPanel: React.FC = () => {
   const [form, setForm] = useState({ label: "", phone: "", link: "", hourly_limit: 30 });
   const [editing, setEditing] = useState<Record<string, Partial<WaNumber>>>({});
 
-  const callAdmin = async (action: string, payload: Record<string, unknown> = {}) => {
-    const password = sessionStorage.getItem("admin_pwd") || "";
-    const { data, error } = await supabase.functions.invoke("whatsapp-router", {
-      body: { action, password, ...payload },
-    });
-    if (error) throw error;
-    if (data?.error) throw new Error(data.error);
-    return data;
-  };
-
-
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const data = await callAdmin("list_numbers");
-      const fresh: WaNumber[] = data?.numbers || [];
+      const { data: fresh, error } = await supabase
+        .from("whatsapp_numbers")
+        .select("*");
+      
+      if (error) throw error;
+
       setNumbers((prev) => {
-        if (prev.length === 0) return fresh;
-        // Merge: mantém a ordem antiga e só atualiza métricas/status dos itens existentes.
-        // Adiciona novos no final e remove os que sumiram.
+        if (!fresh) return prev;
+        if (prev.length === 0) return fresh as WaNumber[];
+        
         const freshMap = new Map(fresh.map((n) => [n.id, n]));
         const merged = prev
           .filter((p) => freshMap.has(p.id))
@@ -54,19 +47,10 @@ export const WhatsAppRouterPanel: React.FC = () => {
             freshMap.delete(p.id);
             return {
               ...p,
-              status: f.status,
-              manually_disabled: f.manually_disabled,
-              total_leads: f.total_leads,
-              last_lead_at: f.last_lead_at,
-              leads_last_hour: f.leads_last_hour,
-              leads_today: f.leads_today,
-              hourly_limit: f.hourly_limit,
-              label: f.label,
-              phone: f.phone,
-              link: f.link,
-            };
+              ...f,
+            } as WaNumber;
           });
-        return [...merged, ...Array.from(freshMap.values())];
+        return [...merged, ...Array.from(freshMap.values())] as WaNumber[];
       });
     } catch (e) {
       console.error(e);
