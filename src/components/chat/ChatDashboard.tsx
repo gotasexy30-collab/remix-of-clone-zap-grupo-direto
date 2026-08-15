@@ -122,14 +122,42 @@ export const ChatDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const password = 'removed';
-    const [data, settings, funnelRes] = await Promise.all([
+    const [data, settings] = await Promise.all([
       getStats(),
       adminGetAllSettings(),
-      supabase.functions.invoke('whatsapp-router', { body: { action: 'daily_funnel', password } }),
     ]);
     setStats(data);
-    if (funnelRes?.data && !funnelRes.error) setFunnel(funnelRes.data);
+    
+    // Simular o funil diário localmente já que removemos a edge function
+    // Em um sistema real, faríamos queries agregadas no tracked_events e purchases
+    try {
+      const { data: events } = await supabase.from('tracked_events').select('event_name');
+      const { data: sales } = await supabase.from('purchases').select('amount, status').eq('status', 'approved');
+      
+      const eventCounts = (events || []).reduce((acc: any, e: any) => {
+        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
+        return acc;
+      }, {});
+
+      const totalRevenue = (sales || []).reduce((acc: number, s: any) => acc + Number(s.amount), 0);
+
+      setFunnel({
+        total_visits: eventCounts['page_view'] || 0,
+        unique_visitors: eventCounts['page_view'] || 0,
+        total_clicks: eventCounts['chat_start'] || 0,
+        unique_clickers: eventCounts['chat_start'] || 0,
+        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
+        total_sales: (sales || []).length,
+        revenue: totalRevenue,
+        sales_conversion_pct: Number(calcPct((sales || []).length, eventCounts['page_view'] || 0)),
+        initiate_checkout: eventCounts['checkout'] || 0,
+        lead: eventCounts['checkout_button_click'] || 0,
+        purchase: (sales || []).length,
+        pressel_passed: eventCounts['chat_start'] || 0,
+      });
+    } catch (err) {
+      console.error('Erro ao carregar dados do funil:', err);
+    }
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
     if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
