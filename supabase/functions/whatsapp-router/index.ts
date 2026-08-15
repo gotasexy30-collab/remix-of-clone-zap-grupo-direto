@@ -469,51 +469,40 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body.action;
 
+    // Ações públicas
+    if (action === "get_best_number") return json(await getBestNumber());
+    if (action === "log_lead") return json(await logLead(body));
+    if (action === "track_visit") return json(await trackVisit(body));
+
+    // Ações administrativas requerem autenticação via Supabase
+    const user = await getAuthUser(req);
+    if (!user) {
+      return json({ error: "unauthorized" }, 401);
+    }
+
     switch (action) {
-      // Public
-      case "get_best_number":
-        return json(await getBestNumber());
-      case "log_lead":
-        return json(await logLead(body));
-      case "track_visit":
-        return json(await trackVisit(body));
       case "daily_funnel":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await dailyFunnel());
       case "funnel_feed":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await funnelFeed(body));
       case "desktop_redirects_count":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await desktopRedirectsCount());
-
-      // Admin auth
       case "verify_admin":
-        return json({ ok: requireAdmin(body.password) });
-
-      // Admin
+        return json({ ok: true });
       case "list_numbers":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await listNumbers());
       case "add_number":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await addNumber(body));
       case "update_number":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await updateNumber(body));
       case "delete_number":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await deleteNumber(body));
       case "get_logs":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await getLogs(body));
       case "admin_get_settings":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await adminGetAllSettings());
       case "admin_set_setting":
-        if (!requireAdmin(body.password)) return json({ error: "unauthorized" }, 401);
         return json(await adminSetSetting(body));
-
       default:
         return json({ error: "unknown action" }, 400);
     }
