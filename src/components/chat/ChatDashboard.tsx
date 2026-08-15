@@ -83,16 +83,19 @@ export const ChatDashboard: React.FC = () => {
     setPreviewError('');
     setPreviewPix(null);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-pix-nexus', {
-        body: { 
+      const response = await fetch('/api/generate-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
           amount: 19.9, 
           name: 'Preview Dashboard',
           cpf: '00000000000',
           email: 'admin@dashboard.com',
           description: 'PREVIEW Dashboard' 
-        },
+        }),
       });
-      if (error || !data || data.error) {
+      const data = await response.json();
+      if (!response.ok || data.error) {
         setPreviewError(data?.error || 'Erro ao gerar PIX.');
       } else {
         setPreviewPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
