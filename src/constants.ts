@@ -1,6 +1,6 @@
 import { DialogueMap } from './types';
 
-export const BASE_URL = 'https://whatsapp-backend-vott.onrender.com';
+export const BASE_URL = 'https://clone-zap-grupo-direto-20.vercel.app';
 
 export const DIALOGUE: DialogueMap = {
   START: {
