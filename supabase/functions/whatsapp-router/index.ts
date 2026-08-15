@@ -442,7 +442,7 @@ async function adminSetSetting(body: any) {
   if (!key || typeof key !== "string") return { error: "key required" };
   if (typeof value !== "string") return { error: "value must be string" };
   // Block sensitive keys via this endpoint — they live in secrets now
-  if (key === "admin_password" || key === "meta_capi_token") {
+  if (key === "admin_password") {
     return { error: "this key is managed as a secret, not editable here" };
   }
   const { data: existing } = await supabase

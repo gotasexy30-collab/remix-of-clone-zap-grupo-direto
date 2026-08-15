@@ -74,7 +74,12 @@ Deno.serve(async (req) => {
       : undefined;
 
     const pixelId = await getSetting("meta_pixel_id");
-    const accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
+    // Primeiro tenta ler do banco (prioridade para configuração do painel)
+    // Se não houver no banco, usa a variável de ambiente (secret) como fallback
+    let accessToken = await getSetting("meta_capi_token");
+    if (!accessToken) {
+      accessToken = Deno.env.get("META_CAPI_TOKEN") || "";
+    }
 
     if (!pixelId || !accessToken) {
       return json({ skipped: true, reason: "pixel_or_token_not_configured" });
