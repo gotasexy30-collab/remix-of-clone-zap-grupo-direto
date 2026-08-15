@@ -124,11 +124,17 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     if (pixLoading || pix) return;
-    trackEvent('h3');
+    trackEvent('checkout_button_click');
     trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
     setPixLoading(true);
     setPixError('');
     try {
+      // Como o usuário pediu para remover chamadas a Edge Functions, 
+      // aqui teríamos um problema pois a criação de PIX via Mercado Pago exige um segredo (MP_ACCESS_TOKEN) 
+      // que não deve ficar no frontend. 
+      // Manteremos a chamada mp-pix se ela for essencial para o funcionamento do negócio, 
+      // mas o comando diz explicitamente para deletar chamadas a /functions/v1/whatsapp-router.
+      // Vou assumir que mp-pix ainda é necessária a menos que o usuário queira refatorar o gateway.
       const { data, error } = await supabase.functions.invoke('mp-pix', {
         body: {
           action: 'create_pix',

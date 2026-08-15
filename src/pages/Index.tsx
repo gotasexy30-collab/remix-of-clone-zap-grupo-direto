@@ -83,7 +83,7 @@ const Index = () => {
     processedSteps.current.add(currentStepId);
 
     if (currentStepId === 'AWAITING_CITY') {
-      trackEvent('h2');
+      trackEvent('chat_start');
       fbqTrack('ViewContent', { content_name: 'chat_started' });
       import('../services/pixel').then(({ logTrackedEvent }) => logTrackedEvent('ChatStarted'));
     }
@@ -94,7 +94,7 @@ const Index = () => {
       if (step.action.type === 'open_payment') {
         setTimeout(() => {
           setShowPayment(true);
-          trackEvent('h3');
+          trackEvent('checkout');
         }, 500);
         return;
       }

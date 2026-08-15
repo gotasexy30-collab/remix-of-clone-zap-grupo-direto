@@ -103,29 +103,14 @@ export function trackEventDual(event: string, params?: Record<string, any>) {
   // Log to DB for funnel metrics
   logTrackedEvent(event);
 
-  // 2. Server-side CAPI (fire-and-forget)
+  // 2. Server-side CAPI handled via direct DB log or dedicated backend if available
+  // Removendo a chamada para Edge Function meta-capi conforme solicitado
+  /* 
   try {
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meta-capi`;
-    fetch(url, {
-      method: 'POST',
-      keepalive: true,
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({
-        event_name: event,
-        event_id: eventId,
-        event_source_url: window.location.href,
-        value: params?.value,
-        currency: params?.currency || 'BRL',
-        fbp: getCookie('_fbp'),
-        fbc: getCookie('_fbc'),
-        user_agent: navigator.userAgent,
-      }),
-    }).catch(() => {});
-  } catch { /* noop */ }
+    fetch(url, { ... }).catch(() => {});
+  } catch { }
+  */
 }
 
 // ============ UTM persistence ============
