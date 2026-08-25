@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle, Smartphone, Monitor, Split } from 'lucide-react';
+import { Target, TrendingUp, Link2, Save, User, Loader2, LogOut, Activity, QrCode, Copy, Check, RefreshCw, ShieldCheck, Play, Pause, Volume2, VolumeX, X, HelpCircle, Smartphone, Monitor, Split, UploadCloud } from 'lucide-react';
 import { getStats } from '../../services/tracking';
 import { getUserLocation } from '../../services/location';
 import { adminGetAllSettings, setSetting } from '../../services/settings';
@@ -42,6 +42,7 @@ export const ChatDashboard: React.FC = () => {
   const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<'profile' | 'location' | null>(null);
   const [activeTab, setActiveTab] = useState<'funil' | 'pagamento' | 'perfil' | 'pixel' | 'redirect' | 'pressel'>('funil');
   // presselPassed vem do daily_funnel (calculado pela edge function)
   const presselPassed = funnel.pressel_passed;
@@ -191,6 +192,61 @@ export const ChatDashboard: React.FC = () => {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleImageUpload = async (
+    file: File | undefined,
+    imageType: 'profile' | 'location',
+  ) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione um arquivo de imagem válido.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5 MB.');
+      return;
+    }
+
+    setUploadingImage(imageType);
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const filePath = `${imageType}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from('admin-uploads')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('admin-uploads')
+        .getPublicUrl(filePath);
+      const publicUrl = publicUrlData.publicUrl;
+
+      if (imageType === 'profile') {
+        setProfilePhoto(publicUrl);
+        localStorage.setItem('chat_profile_photo', publicUrl);
+        await setSetting('chat_profile_photo', publicUrl);
+      } else {
+        setLocationImage(publicUrl);
+        localStorage.setItem('chat_location_image', publicUrl);
+        await setSetting('chat_location_image', publicUrl);
+      }
+
+      toast.success('Imagem enviada e salva com sucesso!');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível enviar a imagem.';
+      console.error('image upload error', error);
+      toast.error(`Erro no upload: ${message}`);
+    } finally {
+      setUploadingImage(null);
+    }
+  };
 
   const handleSaveAll = async () => {
     setSaving(true);
@@ -541,12 +597,46 @@ export const ChatDashboard: React.FC = () => {
                 <input type="text" placeholder="Ex: Thaisinha" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
               </div>
               <div>
-                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da foto de perfil</label>
-                <input type="url" placeholder="https://exemplo.com/foto.jpg" value={profilePhoto} onChange={(e) => setProfilePhoto(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+                <label htmlFor="profile-photo-upload" className="text-[11px] text-[#8696a0] font-bold mb-1 block">Foto de perfil</label>
+                <label
+                  htmlFor="profile-photo-upload"
+                  className="flex min-h-24 cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-[#00a884]/40 bg-[#2a3942] px-4 py-4 text-center transition-colors hover:border-[#00a884]"
+                >
+                  {uploadingImage === 'profile' ? <Loader2 size={20} className="animate-spin text-[#00a884]" /> : <UploadCloud size={20} className="text-[#00a884]" />}
+                  <span className="text-xs text-[#e9edef]">{uploadingImage === 'profile' ? 'Enviando imagem...' : 'Selecionar imagem'}</span>
+                </label>
+                <input
+                  id="profile-photo-upload"
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingImage !== null}
+                  onChange={(event) => {
+                    void handleImageUpload(event.target.files?.[0], 'profile');
+                    event.target.value = '';
+                  }}
+                  className="sr-only"
+                />
               </div>
               <div>
-                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">URL da imagem com localização (base)</label>
-                <input type="url" placeholder="https://exemplo.com/imagem-base.jpg" value={locationImage} onChange={(e) => setLocationImage(e.target.value)} className="w-full bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#00a884] transition-colors placeholder:text-[#8696a0]/50" />
+                <label htmlFor="location-image-upload" className="text-[11px] text-[#8696a0] font-bold mb-1 block">Imagem com localização (base)</label>
+                <label
+                  htmlFor="location-image-upload"
+                  className="flex min-h-24 cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-[#00a884]/40 bg-[#2a3942] px-4 py-4 text-center transition-colors hover:border-[#00a884]"
+                >
+                  {uploadingImage === 'location' ? <Loader2 size={20} className="animate-spin text-[#00a884]" /> : <UploadCloud size={20} className="text-[#00a884]" />}
+                  <span className="text-xs text-[#e9edef]">{uploadingImage === 'location' ? 'Enviando imagem...' : 'Selecionar imagem'}</span>
+                </label>
+                <input
+                  id="location-image-upload"
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingImage !== null}
+                  onChange={(event) => {
+                    void handleImageUpload(event.target.files?.[0], 'location');
+                    event.target.value = '';
+                  }}
+                  className="sr-only"
+                />
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">A cidade do usuário será sobreposta automaticamente nesta imagem</p>
               </div>
               {profilePhoto && (
