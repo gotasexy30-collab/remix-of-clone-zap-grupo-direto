@@ -60,6 +60,8 @@ export const ChatDashboard: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
+  const funnelPeriodMeta = FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
   const [pixSuccessUrl, setPixSuccessUrl] = useState(localStorage.getItem('pix_success_url') || '');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
