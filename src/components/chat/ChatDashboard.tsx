@@ -233,6 +233,13 @@ export const ChatDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Recarrega as métricas do funil sempre que o período selecionado mudar
+  useEffect(() => {
+    loadFunnel(funnelPeriod);
+    const interval = setInterval(() => loadFunnel(funnelPeriod), 30000);
+    return () => clearInterval(interval);
+  }, [funnelPeriod]);
+
   const handleImageUpload = async (
     file: File | undefined,
     imageType: 'profile' | 'location',
