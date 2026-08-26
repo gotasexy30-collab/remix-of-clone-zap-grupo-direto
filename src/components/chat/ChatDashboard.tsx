@@ -386,12 +386,25 @@ export const ChatDashboard: React.FC = () => {
 
         {activeTab === 'funil' && (
           <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6 animate-fadeIn">
-            <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
-              <Target size={16} /> Etapas do Funil
-            </h2>
+            <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+              <h2 className="text-sm font-black text-white/50 uppercase flex items-center gap-2 tracking-widest">
+                <Target size={16} /> Etapas do Funil
+              </h2>
+              <select
+                value={funnelPeriod}
+                onChange={(e) => setFunnelPeriod(e.target.value as FunnelPeriod)}
+                className="bg-[#2a3942] text-[#e9edef] text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl outline-none border border-white/5 focus:border-[#00a884] transition-colors cursor-pointer"
+              >
+                {FUNNEL_PERIODS.map(p => (
+                  <option key={p.key} value={p.key}>{p.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
+                <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">
+                  {funnelPeriod === 'today' ? 'Hoje (00:00 – 23:59 BRT)' : funnelPeriodMeta.label}
+                </span>
                 <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
