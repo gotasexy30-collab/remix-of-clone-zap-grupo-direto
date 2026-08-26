@@ -175,12 +175,10 @@ export const ChatDashboard: React.FC = () => {
     ]);
     setStats(data);
     
-    // Simular o funil diário localmente já que removemos a edge function
-    // Em um sistema real, faríamos queries agregadas no tracked_events e purchases
-    try {
-      const { data: events } = await supabase.from('tracked_events').select('event_name');
-      const { data: sales } = await supabase.from('purchases').select('amount, status').eq('status', 'approved');
-      
+    await loadFunnel(funnelPeriod);
+    if (false) {
+      const events: any[] = [];
+      const sales: any[] = [];
       const eventCounts = (events || []).reduce((acc: any, e: any) => {
         acc[e.event_name] = (acc[e.event_name] || 0) + 1;
         return acc;
