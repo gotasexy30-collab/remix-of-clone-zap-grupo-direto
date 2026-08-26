@@ -9,6 +9,39 @@ import { supabase } from '@/integrations/supabase/client';
 import { PresselTest } from './PresselTest';
 import { toast } from 'sonner';
 
+type FunnelPeriod = 'today' | 'yesterday' | '7d' | '30d' | 'all';
+
+const FUNNEL_PERIODS: { key: FunnelPeriod; label: string; short: string }[] = [
+  { key: 'today',     label: 'Hoje',           short: 'hoje' },
+  { key: 'yesterday', label: 'Ontem',          short: 'ontem' },
+  { key: '7d',        label: 'Últimos 7 dias',  short: 'nos últimos 7 dias' },
+  { key: '30d',       label: 'Últimos 30 dias', short: 'nos últimos 30 dias' },
+  { key: 'all',       label: 'Todo o período',  short: 'em todo o período' },
+];
+
+// Retorna o intervalo [start, end) em instantes absolutos, usando fuso BRT (UTC-3)
+const getFunnelPeriodRange = (period: FunnelPeriod): { start: Date | null; end: Date | null } => {
+  const now = new Date();
+  if (period === 'all') return { start: null, end: null };
+  if (period === '7d') return { start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), end: null };
+  if (period === '30d') return { start: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), end: null };
+  // 00:00 BRT = 03:00 UTC
+  const brtNow = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const startOfToday = new Date(Date.UTC(brtNow.getUTCFullYear(), brtNow.getUTCMonth(), brtNow.getUTCDate(), 3, 0, 0, 0));
+  if (period === 'today') return { start: startOfToday, end: new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000) };
+  // yesterday
+  return { start: new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000), end: startOfToday };
+};
+
+const isInFunnelPeriod = (dateStr: string, period: FunnelPeriod): boolean => {
+  const { start, end } = getFunnelPeriodRange(period);
+  if (!start) return true;
+  const t = new Date(dateStr).getTime();
+  if (t < start.getTime()) return false;
+  if (end && t >= end.getTime()) return false;
+  return true;
+};
+
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
   const [funnel, setFunnel] = useState({
