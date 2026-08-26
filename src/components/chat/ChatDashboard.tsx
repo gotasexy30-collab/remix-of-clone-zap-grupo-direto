@@ -426,7 +426,7 @@ export const ChatDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-[#1877F2]/30 to-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
                   <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
-                  <div className="text-[9px] text-[#8696a0]">hoje</div>
+                  <div className="text-[9px] text-[#8696a0]">{funnelPeriodMeta.short}</div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-3">
@@ -459,7 +459,7 @@ export const ChatDashboard: React.FC = () => {
                 );
               })()}
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-                <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
+                <strong className="text-white/80">Pagou</strong> = PIX confirmados {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
               </p>
             </div>
 
