@@ -9,6 +9,39 @@ import { supabase } from '@/integrations/supabase/client';
 import { PresselTest } from './PresselTest';
 import { toast } from 'sonner';
 
+type FunnelPeriod = 'today' | 'yesterday' | '7d' | '30d' | 'all';
+
+const FUNNEL_PERIODS: { key: FunnelPeriod; label: string; short: string }[] = [
+  { key: 'today',     label: 'Hoje',           short: 'hoje' },
+  { key: 'yesterday', label: 'Ontem',          short: 'ontem' },
+  { key: '7d',        label: 'Últimos 7 dias',  short: 'nos últimos 7 dias' },
+  { key: '30d',       label: 'Últimos 30 dias', short: 'nos últimos 30 dias' },
+  { key: 'all',       label: 'Todo o período',  short: 'em todo o período' },
+];
+
+// Retorna o intervalo [start, end) em instantes absolutos, usando fuso BRT (UTC-3)
+const getFunnelPeriodRange = (period: FunnelPeriod): { start: Date | null; end: Date | null } => {
+  const now = new Date();
+  if (period === 'all') return { start: null, end: null };
+  if (period === '7d') return { start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), end: null };
+  if (period === '30d') return { start: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), end: null };
+  // 00:00 BRT = 03:00 UTC
+  const brtNow = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const startOfToday = new Date(Date.UTC(brtNow.getUTCFullYear(), brtNow.getUTCMonth(), brtNow.getUTCDate(), 3, 0, 0, 0));
+  if (period === 'today') return { start: startOfToday, end: new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000) };
+  // yesterday
+  return { start: new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000), end: startOfToday };
+};
+
+const isInFunnelPeriod = (dateStr: string, period: FunnelPeriod): boolean => {
+  const { start, end } = getFunnelPeriodRange(period);
+  if (!start) return true;
+  const t = new Date(dateStr).getTime();
+  if (t < start.getTime()) return false;
+  if (end && t >= end.getTime()) return false;
+  return true;
+};
+
 export const ChatDashboard: React.FC = () => {
   const [stats, setStats] = useState({ visits: 0, chat: 0, checkout: 0, sale1: 0, sale2: 0 });
   const [funnel, setFunnel] = useState({
@@ -27,6 +60,8 @@ export const ChatDashboard: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
+  const funnelPeriodMeta = FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
   const [pixSuccessUrl, setPixSuccessUrl] = useState(localStorage.getItem('pix_success_url') || '');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
@@ -132,6 +167,40 @@ export const ChatDashboard: React.FC = () => {
     setTimeout(() => setPreviewCopied(false), 2000);
   };
 
+  const loadFunnel = async (period: FunnelPeriod) => {
+    try {
+      const { data: events } = await supabase.from('tracked_events').select('event_name, created_at');
+      const { data: sales } = await supabase.from('purchases').select('amount, status, created_at').eq('status', 'approved');
+
+      const filteredEvents = (events || []).filter((e: any) => isInFunnelPeriod(e.created_at, period));
+      const filteredSales = (sales || []).filter((s: any) => isInFunnelPeriod(s.created_at, period));
+
+      const eventCounts = filteredEvents.reduce((acc: any, e: any) => {
+        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
+        return acc;
+      }, {});
+
+      const totalRevenue = filteredSales.reduce((acc: number, s: any) => acc + Number(s.amount), 0);
+
+      setFunnel({
+        total_visits: eventCounts['page_view'] || 0,
+        unique_visitors: eventCounts['page_view'] || 0,
+        total_clicks: eventCounts['chat_start'] || 0,
+        unique_clickers: eventCounts['chat_start'] || 0,
+        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
+        total_sales: filteredSales.length,
+        revenue: totalRevenue,
+        sales_conversion_pct: Number(calcPct(filteredSales.length, eventCounts['page_view'] || 0)),
+        initiate_checkout: eventCounts['checkout'] || 0,
+        lead: eventCounts['checkout_button_click'] || 0,
+        purchase: filteredSales.length,
+        pressel_passed: eventCounts['chat_start'] || 0,
+      });
+    } catch (err) {
+      console.error('Erro ao carregar dados do funil:', err);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     const [data, settings] = await Promise.all([
@@ -140,36 +209,7 @@ export const ChatDashboard: React.FC = () => {
     ]);
     setStats(data);
     
-    // Simular o funil diário localmente já que removemos a edge function
-    // Em um sistema real, faríamos queries agregadas no tracked_events e purchases
-    try {
-      const { data: events } = await supabase.from('tracked_events').select('event_name');
-      const { data: sales } = await supabase.from('purchases').select('amount, status').eq('status', 'approved');
-      
-      const eventCounts = (events || []).reduce((acc: any, e: any) => {
-        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
-        return acc;
-      }, {});
-
-      const totalRevenue = (sales || []).reduce((acc: number, s: any) => acc + Number(s.amount), 0);
-
-      setFunnel({
-        total_visits: eventCounts['page_view'] || 0,
-        unique_visitors: eventCounts['page_view'] || 0,
-        total_clicks: eventCounts['chat_start'] || 0,
-        unique_clickers: eventCounts['chat_start'] || 0,
-        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
-        total_sales: (sales || []).length,
-        revenue: totalRevenue,
-        sales_conversion_pct: Number(calcPct((sales || []).length, eventCounts['page_view'] || 0)),
-        initiate_checkout: eventCounts['checkout'] || 0,
-        lead: eventCounts['checkout_button_click'] || 0,
-        purchase: (sales || []).length,
-        pressel_passed: eventCounts['chat_start'] || 0,
-      });
-    } catch (err) {
-      console.error('Erro ao carregar dados do funil:', err);
-    }
+    await loadFunnel(funnelPeriod);
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
     if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
@@ -192,6 +232,13 @@ export const ChatDashboard: React.FC = () => {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Recarrega as métricas do funil sempre que o período selecionado mudar
+  useEffect(() => {
+    loadFunnel(funnelPeriod);
+    const interval = setInterval(() => loadFunnel(funnelPeriod), 30000);
+    return () => clearInterval(interval);
+  }, [funnelPeriod]);
 
   const handleImageUpload = async (
     file: File | undefined,
@@ -339,12 +386,25 @@ export const ChatDashboard: React.FC = () => {
 
         {activeTab === 'funil' && (
           <div className="bg-[#202c33] rounded-3xl p-6 border border-white/5 shadow-xl mb-6 animate-fadeIn">
-            <h2 className="text-sm font-black text-white/50 uppercase mb-6 flex items-center gap-2 tracking-widest">
-              <Target size={16} /> Etapas do Funil
-            </h2>
+            <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+              <h2 className="text-sm font-black text-white/50 uppercase flex items-center gap-2 tracking-widest">
+                <Target size={16} /> Etapas do Funil
+              </h2>
+              <select
+                value={funnelPeriod}
+                onChange={(e) => setFunnelPeriod(e.target.value as FunnelPeriod)}
+                className="bg-[#2a3942] text-[#e9edef] text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl outline-none border border-white/5 focus:border-[#00a884] transition-colors cursor-pointer"
+              >
+                {FUNNEL_PERIODS.map(p => (
+                  <option key={p.key} value={p.key}>{p.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">Hoje (00:00 – 23:59 BRT)</span>
+                <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">
+                  {funnelPeriod === 'today' ? 'Hoje (00:00 – 23:59 BRT)' : funnelPeriodMeta.label}
+                </span>
                 <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
@@ -366,7 +426,7 @@ export const ChatDashboard: React.FC = () => {
                 <div className="bg-gradient-to-br from-[#1877F2]/30 to-[#1877F2]/10 border border-[#1877F2]/30 rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Faturamento</div>
                   <div className="text-2xl font-black text-[#1877F2]">R$ {funnel.revenue.toFixed(2).replace('.', ',')}</div>
-                  <div className="text-[9px] text-[#8696a0]">hoje</div>
+                  <div className="text-[9px] text-[#8696a0]">{funnelPeriodMeta.short}</div>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-3">
@@ -399,7 +459,7 @@ export const ChatDashboard: React.FC = () => {
                 );
               })()}
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-                <strong className="text-white/80">Pagou</strong> = PIX confirmados pelo Mercado Pago hoje. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas hoje. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
+                <strong className="text-white/80">Pagou</strong> = PIX confirmados {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
               </p>
             </div>
 
