@@ -167,6 +167,40 @@ export const ChatDashboard: React.FC = () => {
     setTimeout(() => setPreviewCopied(false), 2000);
   };
 
+  const loadFunnel = async (period: FunnelPeriod) => {
+    try {
+      const { data: events } = await supabase.from('tracked_events').select('event_name, created_at');
+      const { data: sales } = await supabase.from('purchases').select('amount, status, created_at').eq('status', 'approved');
+
+      const filteredEvents = (events || []).filter((e: any) => isInFunnelPeriod(e.created_at, period));
+      const filteredSales = (sales || []).filter((s: any) => isInFunnelPeriod(s.created_at, period));
+
+      const eventCounts = filteredEvents.reduce((acc: any, e: any) => {
+        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
+        return acc;
+      }, {});
+
+      const totalRevenue = filteredSales.reduce((acc: number, s: any) => acc + Number(s.amount), 0);
+
+      setFunnel({
+        total_visits: eventCounts['page_view'] || 0,
+        unique_visitors: eventCounts['page_view'] || 0,
+        total_clicks: eventCounts['chat_start'] || 0,
+        unique_clickers: eventCounts['chat_start'] || 0,
+        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
+        total_sales: filteredSales.length,
+        revenue: totalRevenue,
+        sales_conversion_pct: Number(calcPct(filteredSales.length, eventCounts['page_view'] || 0)),
+        initiate_checkout: eventCounts['checkout'] || 0,
+        lead: eventCounts['checkout_button_click'] || 0,
+        purchase: filteredSales.length,
+        pressel_passed: eventCounts['chat_start'] || 0,
+      });
+    } catch (err) {
+      console.error('Erro ao carregar dados do funil:', err);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     const [data, settings] = await Promise.all([
