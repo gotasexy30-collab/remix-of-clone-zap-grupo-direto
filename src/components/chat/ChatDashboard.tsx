@@ -176,33 +176,6 @@ export const ChatDashboard: React.FC = () => {
     setStats(data);
     
     await loadFunnel(funnelPeriod);
-    if (false) {
-      const events: any[] = [];
-      const sales: any[] = [];
-      const eventCounts = (events || []).reduce((acc: any, e: any) => {
-        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
-        return acc;
-      }, {});
-
-      const totalRevenue = (sales || []).reduce((acc: number, s: any) => acc + Number(s.amount), 0);
-
-      setFunnel({
-        total_visits: eventCounts['page_view'] || 0,
-        unique_visitors: eventCounts['page_view'] || 0,
-        total_clicks: eventCounts['chat_start'] || 0,
-        unique_clickers: eventCounts['chat_start'] || 0,
-        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
-        total_sales: (sales || []).length,
-        revenue: totalRevenue,
-        sales_conversion_pct: Number(calcPct((sales || []).length, eventCounts['page_view'] || 0)),
-        initiate_checkout: eventCounts['checkout'] || 0,
-        lead: eventCounts['checkout_button_click'] || 0,
-        purchase: (sales || []).length,
-        pressel_passed: eventCounts['chat_start'] || 0,
-      });
-    } catch (err) {
-      console.error('Erro ao carregar dados do funil:', err);
-    }
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
     if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
