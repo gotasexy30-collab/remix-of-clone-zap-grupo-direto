@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
-import { DIALOGUE, BASE_URL } from '../constants';
+import { DIALOGUE, BASE_URL, AUDIO_BASE_URL } from '../constants';
 import { ChatMessage, ButtonOption } from '../types';
 import { getUserLocation, getCurrentTime } from '../services/location';
 import { ChatBubble } from '../components/chat/ChatBubble';
@@ -147,7 +147,7 @@ const Index = () => {
         };
 
         try {
-          const audio = new Audio(`${BASE_URL}/audios/notification.mp3`);
+          const audio = new Audio(`${AUDIO_BASE_URL}/audios/notification.mp3`);
           audio.volume = 0.4;
           await audio.play().catch(() => {});
         } catch { /* silent */ }
