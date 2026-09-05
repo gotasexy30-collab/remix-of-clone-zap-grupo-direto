@@ -92,12 +92,12 @@ export function logTrackedEvent(event: string) {
   } catch { /* noop */ }
 }
 
-export function trackEventDual(event: string, params?: Record<string, any>) {
-  const eventId = genEventId();
+export function trackEventDual(event: string, params?: Record<string, any>, eventId?: string) {
+  const finalEventId = eventId || genEventId();
 
   // 1. Client-side pixel with eventID
   if (window.fbq) {
-    window.fbq('track', event, params || {}, { eventID: eventId });
+    window.fbq('track', event, params || {}, { eventID: finalEventId });
   }
 
   // Log to DB for funnel metrics
@@ -111,7 +111,7 @@ export function trackEventDual(event: string, params?: Record<string, any>) {
     const payload = {
       pixelId,
       event_name: event,
-      event_id: eventId,
+      event_id: finalEventId,
       event_time: Math.floor(Date.now() / 1000),
       action_source: 'website',
       user_data: {
