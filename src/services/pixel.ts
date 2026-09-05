@@ -92,25 +92,42 @@ export function logTrackedEvent(event: string) {
   } catch { /* noop */ }
 }
 
-export function trackEventDual(event: string, params?: Record<string, any>) {
-  const eventId = genEventId();
+export function trackEventDual(event: string, params?: Record<string, any>, eventId?: string) {
+  const finalEventId = eventId || genEventId();
 
   // 1. Client-side pixel with eventID
   if (window.fbq) {
-    window.fbq('track', event, params || {}, { eventID: eventId });
+    window.fbq('track', event, params || {}, { eventID: finalEventId });
   }
 
   // Log to DB for funnel metrics
   logTrackedEvent(event);
 
-  // 2. Server-side CAPI handled via direct DB log or dedicated backend if available
-  // Removendo a chamada para Edge Function meta-capi conforme solicitado
-  /* 
+  // 2. Server-side CAPI via Vercel API Route
   try {
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/meta-capi`;
-    fetch(url, { ... }).catch(() => {});
-  } catch { }
-  */
+    const pixelId = currentPixelId || localStorage.getItem('meta_pixel_id') || '';
+    if (!pixelId) return;
+
+    const payload = {
+      pixelId,
+      event_name: event,
+      event_id: finalEventId,
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: 'website',
+      user_data: {
+        client_user_agent: navigator.userAgent,
+        fbp: getCookie('_fbp'),
+        fbc: getCookie('_fbc'),
+      },
+      custom_data: params || {},
+    };
+
+    fetch('/api/meta-capi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  } catch { /* noop */ }
 }
 
 // ============ UTM persistence ============
