@@ -780,7 +780,7 @@ export const ChatDashboard: React.FC = () => {
                 <p className="text-3xl font-black text-white tabular-nums">
                   {desktopRedirects === null ? '—' : desktopRedirects}
                 </p>
-                <p className="text-[10px] text-[#8696a0] italic mt-1">Total acumulado de cliques no link /r vindos de desktop.</p>
+                <p className="text-[10px] text-[#8696a0] italic mt-1">Cliques de hoje (00:00 – 23:59 BRT) no link /r vindos de desktop.</p>
               </div>
               <button
                 onClick={loadDesktopRedirects}
