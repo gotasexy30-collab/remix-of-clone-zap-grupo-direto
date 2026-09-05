@@ -16,6 +16,33 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const amount = body?.amount || 19.90;
 
+    // ---- Consulta de status (NÃO gera um novo PIX) ----
+    if (body?.action === 'check_status') {
+      const id = String(body?.id || '');
+      if (!id) return res.status(400).json({ error: 'id obrigatório' });
+
+      const endpoints = [
+        `https://nexuspag.com/api/pix/status/${encodeURIComponent(id)}`,
+        `https://nexuspag.com/api/transactions/${encodeURIComponent(id)}`,
+      ];
+
+      for (const url of endpoints) {
+        try {
+          const r = await fetch(url, { headers: { 'x-api-key': NEXUSPAG_API_KEY } });
+          const t = await r.text();
+          let d;
+          try { d = JSON.parse(t); } catch { continue; }
+          if (!r.ok) continue;
+          const raw = String(
+            d?.transaction?.status ?? d?.data?.status ?? d?.status ?? ''
+          ).toLowerCase();
+          const approved = ['paid', 'approved', 'completed', 'confirmed', 'success'].includes(raw);
+          return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
+        } catch { /* tenta o próximo endpoint */ }
+      }
+      return res.status(200).json({ status: 'pending' });
+    }
+
     // Novo payload no formato exato exigido pela documentação da NexusPag
     const payload = {
       amount: Number(amount), // Valor em reais, não em centavos

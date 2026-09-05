@@ -95,10 +95,15 @@ export const ChatDashboard: React.FC = () => {
 
   const loadDesktopRedirects = async () => {
     try {
-      // Simulação: contar visitas marcadas como desktop no banco
-      const { count } = await supabase
-        .from('page_visits')
-        .select('*', { count: 'exact', head: true });
+      // Somente os redirecionamentos de HOJE (00:00–23:59 BRT)
+      const { start, end } = getFunnelPeriodRange('today');
+      let query = supabase
+        .from('tracked_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_name', 'RedirectDesktop');
+      if (start) query = query.gte('created_at', start.toISOString());
+      if (end) query = query.lt('created_at', end.toISOString());
+      const { count } = await query;
       setDesktopRedirects(count || 0);
     } catch (err) {
       console.error(err);
@@ -775,7 +780,7 @@ export const ChatDashboard: React.FC = () => {
                 <p className="text-3xl font-black text-white tabular-nums">
                   {desktopRedirects === null ? '—' : desktopRedirects}
                 </p>
-                <p className="text-[10px] text-[#8696a0] italic mt-1">Total acumulado de cliques no link /r vindos de desktop.</p>
+                <p className="text-[10px] text-[#8696a0] italic mt-1">Cliques de hoje (00:00 – 23:59 BRT) no link /r vindos de desktop.</p>
               </div>
               <button
                 onClick={loadDesktopRedirects}
