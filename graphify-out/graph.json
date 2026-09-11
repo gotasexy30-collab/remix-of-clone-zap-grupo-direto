@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T23:12:52.934473+00:00",
+  "generated_at": "2026-09-11T23:16:30.548156+00:00",
   "files": [
     {
       "path": "components.json",
@@ -74,8 +74,12 @@
       "bytes": 715
     },
     {
+      "path": ".lovasiri/sync.json",
+      "bytes": 80
+    },
+    {
       "path": "api/meta-capi.ts",
-      "bytes": 3245
+      "bytes": 3592
     },
     {
       "path": "api/generate-pix.ts",
