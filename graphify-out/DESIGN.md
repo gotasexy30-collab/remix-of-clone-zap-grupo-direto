@@ -1,0 +1,170 @@
+# Design system
+
+Generated: 2026-09-11T23:12:52.934473+00:00
+
+## Tokens
+- --background: 0 0% 100% (src/index.css)
+- --foreground: 222.2 84% 4.9% (src/index.css)
+- --card: 0 0% 100% (src/index.css)
+- --card-foreground: 222.2 84% 4.9% (src/index.css)
+- --popover: 0 0% 100% (src/index.css)
+- --popover-foreground: 222.2 84% 4.9% (src/index.css)
+- --primary: 222.2 47.4% 11.2% (src/index.css)
+- --primary-foreground: 210 40% 98% (src/index.css)
+- --secondary: 210 40% 96.1% (src/index.css)
+- --secondary-foreground: 222.2 47.4% 11.2% (src/index.css)
+- --muted: 210 40% 96.1% (src/index.css)
+- --muted-foreground: 215.4 16.3% 46.9% (src/index.css)
+- --accent: 210 40% 96.1% (src/index.css)
+- --accent-foreground: 222.2 47.4% 11.2% (src/index.css)
+- --destructive: 0 84.2% 60.2% (src/index.css)
+- --destructive-foreground: 210 40% 98% (src/index.css)
+- --border: 214.3 31.8% 91.4% (src/index.css)
+- --input: 214.3 31.8% 91.4% (src/index.css)
+- --ring: 222.2 84% 4.9% (src/index.css)
+- --radius: 0.5rem (src/index.css)
+- --sidebar-background: 0 0% 98% (src/index.css)
+- --sidebar-foreground: 240 5.3% 26.1% (src/index.css)
+- --sidebar-primary: 240 5.9% 10% (src/index.css)
+- --sidebar-primary-foreground: 0 0% 98% (src/index.css)
+- --sidebar-accent: 240 4.8% 95.9% (src/index.css)
+- --sidebar-accent-foreground: 240 5.9% 10% (src/index.css)
+- --sidebar-border: 220 13% 91% (src/index.css)
+- --sidebar-ring: 217.2 91.2% 59.8% (src/index.css)
+- --background: 222.2 84% 4.9% (src/index.css)
+- --foreground: 210 40% 98% (src/index.css)
+- --card: 222.2 84% 4.9% (src/index.css)
+- --card-foreground: 210 40% 98% (src/index.css)
+- --popover: 222.2 84% 4.9% (src/index.css)
+- --popover-foreground: 210 40% 98% (src/index.css)
+- --primary: 210 40% 98% (src/index.css)
+- --primary-foreground: 222.2 47.4% 11.2% (src/index.css)
+- --secondary: 217.2 32.6% 17.5% (src/index.css)
+- --secondary-foreground: 210 40% 98% (src/index.css)
+- --muted: 217.2 32.6% 17.5% (src/index.css)
+- --muted-foreground: 215 20.2% 65.1% (src/index.css)
+- --accent: 217.2 32.6% 17.5% (src/index.css)
+- --accent-foreground: 210 40% 98% (src/index.css)
+- --destructive: 0 62.8% 30.6% (src/index.css)
+- --destructive-foreground: 210 40% 98% (src/index.css)
+- --border: 217.2 32.6% 17.5% (src/index.css)
+- --input: 217.2 32.6% 17.5% (src/index.css)
+- --ring: 212.7 26.8% 83.9% (src/index.css)
+- --sidebar-background: 240 5.9% 10% (src/index.css)
+- --sidebar-foreground: 240 4.8% 95.9% (src/index.css)
+- --sidebar-primary: 224.3 76.3% 48% (src/index.css)
+- --sidebar-primary-foreground: 0 0% 100% (src/index.css)
+- --sidebar-accent: 240 3.7% 15.9% (src/index.css)
+- --sidebar-accent-foreground: 240 4.8% 95.9% (src/index.css)
+- --sidebar-border: 240 3.7% 15.9% (src/index.css)
+- --sidebar-ring: 217.2 91.2% 59.8% (src/index.css)
+
+## UI components
+- accordion
+- alert
+- alert-dialog
+- aspect-ratio
+- avatar
+- badge
+- breadcrumb
+- button
+- calendar
+- card
+- carousel
+- chart
+- checkbox
+- collapsible
+- command
+- context-menu
+- dialog
+- drawer
+- dropdown-menu
+- form
+- hover-card
+- input
+- input-otp
+- label
+- menubar
+- navigation-menu
+- pagination
+- popover
+- progress
+- radio-group
+- resizable
+- scroll-area
+- select
+- separator
+- sheet
+- sidebar
+- skeleton
+- slider
+- sonner
+- switch
+- table
+- tabs
+- textarea
+- toast
+- toaster
+- toggle
+- toggle-group
+- tooltip
+
+## Project components
+- src/components/NavLink.tsx
+- src/components/auth/AdminLogin.tsx
+- src/components/chat/AudioBubble.tsx
+- src/components/chat/ChatBubble.tsx
+- src/components/chat/ChatDashboard.tsx
+- src/components/chat/ChatHeader.tsx
+- src/components/chat/FunnelLiveFeed.tsx
+- src/components/chat/PaymentPanel.tsx
+- src/components/chat/PresselTest.tsx
+- src/components/chat/WhatsAppRouterPanel.tsx
+- src/components/ui/accordion.tsx
+- src/components/ui/alert-dialog.tsx
+- src/components/ui/alert.tsx
+- src/components/ui/aspect-ratio.tsx
+- src/components/ui/avatar.tsx
+- src/components/ui/badge.tsx
+- src/components/ui/breadcrumb.tsx
+- src/components/ui/button.tsx
+- src/components/ui/calendar.tsx
+- src/components/ui/card.tsx
+- src/components/ui/carousel.tsx
+- src/components/ui/chart.tsx
+- src/components/ui/checkbox.tsx
+- src/components/ui/collapsible.tsx
+- src/components/ui/command.tsx
+- src/components/ui/context-menu.tsx
+- src/components/ui/dialog.tsx
+- src/components/ui/drawer.tsx
+- src/components/ui/dropdown-menu.tsx
+- src/components/ui/form.tsx
+- src/components/ui/hover-card.tsx
+- src/components/ui/input-otp.tsx
+- src/components/ui/input.tsx
+- src/components/ui/label.tsx
+- src/components/ui/menubar.tsx
+- src/components/ui/navigation-menu.tsx
+- src/components/ui/pagination.tsx
+- src/components/ui/popover.tsx
+- src/components/ui/progress.tsx
+- src/components/ui/radio-group.tsx
+- src/components/ui/resizable.tsx
+- src/components/ui/scroll-area.tsx
+- src/components/ui/select.tsx
+- src/components/ui/separator.tsx
+- src/components/ui/sheet.tsx
+- src/components/ui/sidebar.tsx
+- src/components/ui/skeleton.tsx
+- src/components/ui/slider.tsx
+- src/components/ui/sonner.tsx
+- src/components/ui/switch.tsx
+- src/components/ui/table.tsx
+- src/components/ui/tabs.tsx
+- src/components/ui/textarea.tsx
+- src/components/ui/toast.tsx
+- src/components/ui/toaster.tsx
+- src/components/ui/toggle-group.tsx
+- src/components/ui/toggle.tsx
+- src/components/ui/tooltip.tsx
