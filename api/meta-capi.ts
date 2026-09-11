@@ -45,12 +45,14 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'pixelId é obrigatório' });
     }
 
-    let token = process.env.META_CAPI_TOKEN || '';
+    // Prepara e flexibiliza a leitura do novo token CAPI
+    let token = process.env.META_CAPI_TOKEN || process.env.VITE_META_CAPI_TOKEN || '';
     if (!token) {
       token = (await getCapiTokenFromDb()) || '';
     }
 
     if (!token) {
+      console.error('[Meta CAPI] Token não configurado no banco ou nas variáveis de ambiente.');
       return res.status(500).json({
         error:
           'Token CAPI não configurado. Adicione META_CAPI_TOKEN nas variáveis de ambiente da Vercel, ou garanta que SUPABASE_SERVICE_ROLE_KEY esteja configurada para ler o token salvo no painel.',
@@ -89,14 +91,16 @@ export default async function handler(req: any, res: any) {
     }
 
     if (!fbRes.ok || fbData.error) {
+      console.error('[Meta CAPI] Erro ao enviar evento:', fbData.error || fbData);
       return res.status(fbRes.status || 500).json({
         error: 'Erro ao enviar evento para Meta CAPI',
-        details: fbData,
+        details: fbData.error || fbData,
       });
     }
 
     return res.status(200).json({ success: true, ...fbData });
   } catch (error: any) {
+    console.error('[Meta CAPI] Erro interno:', error);
     return res.status(500).json({ error: error.message || 'Erro interno no servidor' });
   }
 }
