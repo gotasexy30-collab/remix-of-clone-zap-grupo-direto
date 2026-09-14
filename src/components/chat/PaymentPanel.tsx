@@ -124,8 +124,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     if (pixLoading || pix) return;
-    trackEvent('checkout_button_click');
-    trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
     setPixLoading(true);
     setPixError('');
     try {
@@ -155,6 +153,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         return;
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+      trackEvent('checkout_button_click');
+      trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
       logTrackedEvent('PixGenerated');
     } catch (err) {
       console.error('Fetch error:', err);
@@ -187,8 +187,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
         const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' });
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' }, eventId);
+        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
@@ -254,8 +253,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
         const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' });
-        trackEventDual('Purchase', { value: 19.90, currency: 'BRL' }, eventId);
+        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
