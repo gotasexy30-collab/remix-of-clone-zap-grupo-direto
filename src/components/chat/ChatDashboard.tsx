@@ -132,7 +132,7 @@ export const ChatDashboard: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          amount: 19.9, 
+          amount: 1.00, 
           name: 'Preview Dashboard',
           cpf: '00000000000',
           email: 'admin@dashboard.com',
@@ -388,7 +388,7 @@ export const ChatDashboard: React.FC = () => {
           action_source: 'website',
           event_source_url: window.location.href,
           user_data: { client_user_agent: navigator.userAgent },
-          custom_data: { value: 19.9, currency: 'BRL' },
+          custom_data: { value: 1.00, currency: 'BRL' },
           test_event_code: testEventCode,
         }),
       });
@@ -575,7 +575,7 @@ export const ChatDashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <QrCode size={16} className="text-[#00a884]" />
-                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Prévia do Checkout (R$ 19,90)</span>
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Prévia do Checkout (R$ 1,00)</span>
                 </div>
                 <button
                   onClick={handlePreviewPix}
@@ -616,7 +616,7 @@ export const ChatDashboard: React.FC = () => {
                         <p className="text-gray-500 text-sm">Últimas vagas para {previewCity || 'sua região'}!</p>
                         <div className="my-2">
                           <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                          <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                          <span className="text-4xl font-black text-[#16A349]">R$ 1,00</span>
                         </div>
                       </div>
 
