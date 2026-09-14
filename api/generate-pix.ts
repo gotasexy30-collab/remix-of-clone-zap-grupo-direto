@@ -33,6 +33,31 @@ async function getMetaPixelId(): Promise<string> {
   return Array.isArray(rows) ? String(rows[0]?.value || '') : '';
 }
 
+async function getMetaCapiToken(): Promise<string> {
+  const environmentToken = process.env.META_CAPI_TOKEN || '';
+  if (environmentToken) return environmentToken;
+
+  const { url, serviceKey } = getSupabaseConfig();
+  if (!url || !serviceKey) return '';
+
+  const response = await fetch(
+    `${url}/rest/v1/app_settings?key=eq.meta_capi_token&select=value&limit=1`,
+    {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+    },
+  );
+  if (!response.ok) {
+    console.error('[Meta CAPI Purchase] Não foi possível ler o token CAPI:', response.status);
+    return '';
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? String(rows[0]?.value || '') : '';
+}
+
 async function recordApprovedPurchase({
   paymentId,
   amount,
@@ -96,9 +121,9 @@ async function sendCapiPurchase({
   amount: number;
   req: any;
 }): Promise<void> {
-  const accessToken = process.env.META_CAPI_TOKEN || '';
+  const accessToken = await getMetaCapiToken();
   if (!accessToken) {
-    console.error('[Meta CAPI Purchase] META_CAPI_TOKEN não configurado.');
+    console.error('[Meta CAPI Purchase] Token não configurado na Vercel nem no painel.');
     return;
   }
 
