@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T03:52:02.577385+00:00",
+  "generated_at": "2026-09-14T14:52:31.808850+00:00",
   "files": [
     {
       "path": "components.json",
@@ -83,7 +83,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 8656
+      "bytes": 9408
     },
     {
       "path": "src/App.css",
