@@ -174,32 +174,23 @@ export const ChatDashboard: React.FC = () => {
 
   const loadFunnel = async (period: FunnelPeriod) => {
     try {
-      const { data: events } = await supabase.from('tracked_events').select('event_name, created_at');
-      const { data: sales } = await supabase.from('purchases').select('amount, status, created_at').eq('status', 'approved');
-
-      const filteredEvents = (events || []).filter((e: any) => isInFunnelPeriod(e.created_at, period));
-      const filteredSales = (sales || []).filter((s: any) => isInFunnelPeriod(s.created_at, period));
-
-      const eventCounts = filteredEvents.reduce((acc: any, e: any) => {
-        acc[e.event_name] = (acc[e.event_name] || 0) + 1;
-        return acc;
-      }, {});
-
-      const totalRevenue = filteredSales.reduce((acc: number, s: any) => acc + Number(s.amount), 0);
+      const response = await fetch(`/api/funnel-metrics?period=${encodeURIComponent(period)}`);
+      if (!response.ok) throw new Error('Falha ao consultar métricas');
+      const metrics = await response.json();
 
       setFunnel({
-        total_visits: eventCounts['page_view'] || 0,
-        unique_visitors: eventCounts['page_view'] || 0,
-        total_clicks: eventCounts['chat_start'] || 0,
-        unique_clickers: eventCounts['chat_start'] || 0,
-        conversion_pct: Number(calcPct(eventCounts['chat_start'] || 0, eventCounts['page_view'] || 0)),
-        total_sales: filteredSales.length,
-        revenue: totalRevenue,
-        sales_conversion_pct: Number(calcPct(filteredSales.length, eventCounts['page_view'] || 0)),
-        initiate_checkout: eventCounts['checkout'] || 0,
-        lead: eventCounts['checkout_button_click'] || 0,
-        purchase: filteredSales.length,
-        pressel_passed: eventCounts['PresselPassed'] || 0,
+        total_visits: metrics.total_visits || 0,
+        unique_visitors: metrics.total_visits || 0,
+        total_clicks: metrics.total_clicks || 0,
+        unique_clickers: metrics.total_clicks || 0,
+        conversion_pct: Number(calcPct(metrics.total_clicks || 0, metrics.total_visits || 0)),
+        total_sales: metrics.total_sales || 0,
+        revenue: Number(metrics.revenue) || 0,
+        sales_conversion_pct: Number(calcPct(metrics.total_sales || 0, metrics.total_visits || 0)),
+        initiate_checkout: metrics.initiate_checkout || 0,
+        lead: metrics.lead || 0,
+        purchase: metrics.purchase || 0,
+        pressel_passed: metrics.pressel_passed || 0,
       });
     } catch (err) {
       console.error('Erro ao carregar dados do funil:', err);
