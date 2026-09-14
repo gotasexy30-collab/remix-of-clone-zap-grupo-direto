@@ -1,3 +1,97 @@
+const META_GRAPH_VERSION = 'v19.0';
+
+function getSupabaseConfig() {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  return { url, key };
+}
+
+async function getMetaPixelId(): Promise<string> {
+  const { url, key } = getSupabaseConfig();
+  if (!url || !key) return '';
+
+  const response = await fetch(
+    `${url}/rest/v1/app_settings?key=eq.meta_pixel_id&select=value&limit=1`,
+    {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+    },
+  );
+  if (!response.ok) {
+    console.error('[Meta CAPI Purchase] Não foi possível ler o Pixel ID:', response.status);
+    return '';
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? String(rows[0]?.value || '') : '';
+}
+
+async function sendCapiPurchase({
+  paymentId,
+  amount,
+  req,
+}: {
+  paymentId: string;
+  amount: number;
+  req: any;
+}): Promise<void> {
+  const accessToken = process.env.META_CAPI_TOKEN || '';
+  if (!accessToken) {
+    console.error('[Meta CAPI Purchase] META_CAPI_TOKEN não configurado.');
+    return;
+  }
+
+  const pixelId = await getMetaPixelId();
+  if (!pixelId) {
+    console.error('[Meta CAPI Purchase] Pixel ID não configurado.');
+    return;
+  }
+
+  const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
+  const forwardedFor = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  const userAgent = String(req.headers?.['user-agent'] || '');
+  const userData: Record<string, string> = {};
+  if (forwardedFor) userData.client_ip_address = forwardedFor;
+  if (userAgent) userData.client_user_agent = userAgent;
+
+  const payload = {
+    data: [
+      {
+        event_name: 'Purchase',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: `np_${paymentId}`,
+        action_source: 'website',
+        event_source_url: String(req.headers?.referer || req.headers?.origin || ''),
+        user_data: userData,
+        custom_data: {
+          value: safeAmount,
+          currency: 'BRL',
+        },
+      },
+    ],
+  };
+
+  const response = await fetch(
+    `https://graph.facebook.com/${META_GRAPH_VERSION}/${encodeURIComponent(pixelId)}/events`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, access_token: accessToken }),
+    },
+  );
+
+  if (!response.ok) {
+    console.error('[Meta CAPI Purchase] Envio recusado pela Meta:', response.status, await response.text());
+    return;
+  }
+  console.log('[Meta CAPI Purchase] Evento enviado:', `np_${paymentId}`);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,6 +131,16 @@ export default async function handler(req, res) {
             d?.transaction?.status ?? d?.data?.status ?? d?.status ?? ''
           ).toLowerCase();
           const approved = ['paid', 'approved', 'completed', 'confirmed', 'success'].includes(raw);
+          if (approved) {
+            const transaction = d?.transaction ?? d?.data ?? d;
+            const paymentId = String(
+              transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id,
+            );
+            const paidAmount = Number(
+              transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90,
+            );
+            await sendCapiPurchase({ paymentId, amount: paidAmount, req });
+          }
           return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
         } catch { /* tenta o próximo endpoint */ }
       }
