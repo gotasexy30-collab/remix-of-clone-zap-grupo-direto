@@ -100,7 +100,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (currentMsgIndex >= dynamicMessages.length) {
         timeoutId = setTimeout(() => {
           setShowModal(true);
-          fbqTrack('InitiateCheckout', { value: 19.90, currency: 'BRL' });
+          fbqTrack('InitiateCheckout', { value: 1.00, currency: 'BRL' });
           logTrackedEvent('InitiateCheckout');
         }, 1500);
         return;
@@ -134,7 +134,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: 19.90,
+          amount: 1.00,
           name: 'Cliente VIP',
           cpf: '00000000000',
           email: 'cliente@exemplo.com',
@@ -154,7 +154,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
       trackEvent('checkout_button_click');
-      trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
+      trackEventDual('Lead', { value: 1.00, currency: 'BRL' });
       logTrackedEvent('PixGenerated');
     } catch (err) {
       console.error('Fetch error:', err);
@@ -187,7 +187,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
         const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
+        fbqTrack('Purchase', { value: 1.00, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
@@ -253,7 +253,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
         const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 19.90, currency: 'BRL' }, { eventID: eventId });
+        fbqTrack('Purchase', { value: 1.00, currency: 'BRL' }, { eventID: eventId });
         let url = localStorage.getItem('pix_success_url') || '';
         if (!url) url = (await getSetting('pix_success_url')) || '';
         if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
@@ -322,7 +322,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
                     <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 1,00</span>
                   </div>
                 </div>
 
