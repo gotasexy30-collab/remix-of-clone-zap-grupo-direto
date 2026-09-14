@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T03:08:43.553496+00:00",
+  "generated_at": "2026-09-14T03:52:02.577385+00:00",
   "files": [
     {
       "path": "components.json",
@@ -74,12 +74,16 @@
       "bytes": 80
     },
     {
+      "path": "api/funnel-metrics.ts",
+      "bytes": 2783
+    },
+    {
       "path": "api/meta-capi.ts",
       "bytes": 3592
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 6709
+      "bytes": 8656
     },
     {
       "path": "src/App.css",
@@ -407,7 +411,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 46768
+      "bytes": 46248
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
@@ -427,7 +431,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 22279
+      "bytes": 22167
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
