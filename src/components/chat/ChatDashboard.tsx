@@ -61,6 +61,7 @@ export const ChatDashboard: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
   const funnelPeriodMeta = FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
   const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
@@ -177,27 +178,58 @@ export const ChatDashboard: React.FC = () => {
 
   const loadFunnel = async (period: FunnelPeriod) => {
     try {
-      const { data: metrics, error } = await supabase.functions.invoke('funnel-metrics', {
-        body: { period },
-      });
-      if (error || !metrics) throw error || new Error('Falha ao consultar métricas');
+      const { start, end } = getFunnelPeriodRange(period);
+      let eventsQuery = supabase
+        .from('tracked_events')
+        .select('event_name, session_id, created_at');
+      let salesQuery = supabase
+        .from('purchases')
+        .select('amount, status, created_at')
+        .eq('status', 'approved');
+
+      if (start) {
+        eventsQuery = eventsQuery.gte('created_at', start.toISOString());
+        salesQuery = salesQuery.gte('created_at', start.toISOString());
+      }
+      if (end) {
+        eventsQuery = eventsQuery.lt('created_at', end.toISOString());
+        salesQuery = salesQuery.lt('created_at', end.toISOString());
+      }
+
+      const [eventsResult, salesResult] = await Promise.all([eventsQuery, salesQuery]);
+      if (eventsResult.error) throw eventsResult.error;
+      if (salesResult.error) throw salesResult.error;
+
+      const events = eventsResult.data || [];
+      const sales = salesResult.data || [];
+      const countEvents = (...names: string[]) => events.filter(event => names.includes(event.event_name)).length;
+      const visitEvents = events.filter(event => event.event_name === 'page_view' || event.event_name === 'Visited');
+      const uniqueVisitors = new Set(visitEvents.map(event => event.session_id).filter(Boolean)).size;
+      const chatEvents = events.filter(event => event.event_name === 'chat_start' || event.event_name === 'ChatStarted');
+      const uniqueClickers = new Set(chatEvents.map(event => event.session_id).filter(Boolean)).size;
+      const totalVisits = visitEvents.length;
+      const totalClicks = chatEvents.length;
+      const totalSales = sales.length;
+      const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
 
       setFunnel({
-        total_visits: metrics.total_visits || 0,
-        unique_visitors: metrics.total_visits || 0,
-        total_clicks: metrics.total_clicks || 0,
-        unique_clickers: metrics.total_clicks || 0,
-        conversion_pct: Number(calcPct(metrics.total_clicks || 0, metrics.total_visits || 0)),
-        total_sales: metrics.total_sales || 0,
-        revenue: Number(metrics.revenue) || 0,
-        sales_conversion_pct: Number(calcPct(metrics.total_sales || 0, metrics.total_visits || 0)),
-        initiate_checkout: metrics.initiate_checkout || 0,
-        lead: metrics.lead || 0,
-        purchase: metrics.purchase || 0,
-        pressel_passed: metrics.pressel_passed || 0,
+        total_visits: totalVisits,
+        unique_visitors: uniqueVisitors || totalVisits,
+        total_clicks: totalClicks,
+        unique_clickers: uniqueClickers || totalClicks,
+        conversion_pct: Number(calcPct(totalClicks, totalVisits)),
+        total_sales: totalSales,
+        revenue,
+        sales_conversion_pct: Number(calcPct(totalSales, totalVisits)),
+        initiate_checkout: countEvents('checkout', 'InitiateCheckout'),
+        lead: countEvents('checkout_button_click', 'Lead', 'PixGenerated'),
+        purchase: totalSales,
+        pressel_passed: countEvents('PresselPassed'),
       });
+      setFunnelError('');
     } catch (err) {
       console.error('Erro ao carregar dados do funil:', err);
+      setFunnelError('Não foi possível ler os dados deste banco. Verifique as permissões do usuário administrador.');
     }
   };
 
@@ -442,6 +474,11 @@ export const ChatDashboard: React.FC = () => {
                 ))}
               </select>
             </div>
+            {funnelError && (
+              <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-semibold text-red-300">
+                {funnelError}
+              </div>
+            )}
             <div className="mb-5 bg-gradient-to-br from-[#00a884]/15 to-[#1877F2]/10 border border-[#00a884]/20 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">

@@ -1,4 +1,9 @@
 const META_GRAPH_VERSION = 'v19.0';
+const APPROVED_STATUSES = new Set(['paid', 'approved', 'completed', 'confirmed', 'success', 'pago', 'confirmado', 'concluido']);
+
+function normalizeStatus(value: unknown): string {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
 
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -67,16 +72,17 @@ async function recordApprovedPurchase({
   amount: number;
   sessionId: string;
 }): Promise<boolean> {
-  const { url, serviceKey } = getSupabaseConfig();
-  if (!url || !serviceKey) {
-    console.error('[Purchase] SUPABASE_SERVICE_ROLE_KEY não configurada na Vercel.');
+  const { url, publicKey, serviceKey } = getSupabaseConfig();
+  const databaseKey = serviceKey || publicKey;
+  if (!url || !databaseKey) {
+    console.error('[Purchase] Banco não configurado na Vercel.');
     return false;
   }
 
   const lookup = await fetch(
     `${url}/rest/v1/purchases?mp_payment_id=eq.${encodeURIComponent(paymentId)}&select=id&limit=1`,
     {
-      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+      headers: { apikey: databaseKey, Authorization: `Bearer ${databaseKey}` },
     },
   );
   if (!lookup.ok) {
@@ -89,8 +95,8 @@ async function recordApprovedPurchase({
   const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
+      apikey: databaseKey,
+      Authorization: `Bearer ${databaseKey}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
@@ -208,10 +214,10 @@ export default async function handler(req, res) {
           let d;
           try { d = JSON.parse(t); } catch { continue; }
           if (!r.ok) continue;
-          const raw = String(
+          const raw = normalizeStatus(
             d?.transaction?.status ?? d?.data?.status ?? d?.status ?? ''
-          ).toLowerCase();
-          const approved = ['paid', 'approved', 'completed', 'confirmed', 'success'].includes(raw);
+          );
+          const approved = APPROVED_STATUSES.has(raw);
           if (approved) {
             const transaction = d?.transaction ?? d?.data ?? d;
             const paymentId = String(

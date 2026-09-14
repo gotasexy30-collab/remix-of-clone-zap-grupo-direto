@@ -1,19 +1,28 @@
 const META_GRAPH_VERSION = 'v19.0';
-const APPROVED_STATUSES = new Set(['paid', 'approved', 'completed', 'confirmed', 'success']);
+const APPROVED_STATUSES = new Set(['paid', 'approved', 'completed', 'confirmed', 'success', 'pago', 'confirmado', 'concluido']);
+
+function normalizeStatus(value: unknown): string {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
 
 function getBackendConfig() {
   return {
     url: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    publicKey:
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   };
 }
 
 async function getSetting(key: string): Promise<string> {
-  const { url, serviceKey } = getBackendConfig();
-  if (!url || !serviceKey) return '';
+  const { url, publicKey, serviceKey } = getBackendConfig();
+  const key = serviceKey || publicKey;
+  if (!url || !key) return '';
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.${encodeURIComponent(key)}&select=value&limit=1`,
-    { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
+    { headers: { apikey: key, Authorization: `Bearer ${key}` } },
   );
   if (!response.ok) return '';
   const rows = await response.json().catch(() => []);
@@ -41,13 +50,14 @@ async function fetchVerifiedTransaction(id: string, apiKey: string): Promise<any
 }
 
 async function recordPurchase(paymentId: string, amount: number, sessionId: string): Promise<boolean> {
-  const { url, serviceKey } = getBackendConfig();
-  if (!url || !serviceKey) throw new Error('Banco não configurado na Vercel');
+  const { url, publicKey, serviceKey } = getBackendConfig();
+  const databaseKey = serviceKey || publicKey;
+  if (!url || !databaseKey) throw new Error('Banco não configurado na Vercel');
   const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
 
   const lookup = await fetch(
     `${url}/rest/v1/purchases?mp_payment_id=eq.${encodeURIComponent(paymentId)}&select=id&limit=1`,
-    { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } },
+    { headers: { apikey: databaseKey, Authorization: `Bearer ${databaseKey}` } },
   );
   if (!lookup.ok) throw new Error('Falha ao verificar venda existente');
   const existing = await lookup.json().catch(() => []);
@@ -56,8 +66,8 @@ async function recordPurchase(paymentId: string, amount: number, sessionId: stri
   const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
+      apikey: databaseKey,
+      Authorization: `Bearer ${databaseKey}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
@@ -125,7 +135,7 @@ export default async function handler(req: any, res: any) {
 
     const transaction = await fetchVerifiedTransaction(receivedId, apiKey);
     if (!transaction) return res.status(200).json({ ok: true, ignored: 'transação não localizada' });
-    const status = String(transaction?.status || '').toLowerCase();
+    const status = normalizeStatus(transaction?.status);
     if (!APPROVED_STATUSES.has(status)) return res.status(200).json({ ok: true, status: status || 'pending' });
 
     const paymentId = String(
