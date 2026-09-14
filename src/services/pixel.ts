@@ -10,9 +10,20 @@ declare global {
 
 let pixelLoaded = false;
 let currentPixelId = '';
+const eventQueue: Array<{ method: string, args: any[] }> = [];
 
 export async function initMetaPixel(): Promise<void> {
   if (pixelLoaded) return;
+  
+  // Criação de objeto temporário (dummy) para evitar falhas antes do script principal injetar fbq
+  if (!window.fbq) {
+    window.fbq = function() {
+      if ((window.fbq as any)?.callMethod) (window.fbq as any).callMethod.apply(window.fbq, arguments);
+      else (window.fbq as any)?.queue?.push(arguments);
+    } as any;
+    (window.fbq as any).queue = [];
+  }
+
   let pixelId = localStorage.getItem('meta_pixel_id') || '';
   if (!pixelId) {
     pixelId = (await getSetting('meta_pixel_id')) || '';
@@ -22,9 +33,9 @@ export async function initMetaPixel(): Promise<void> {
 
   currentPixelId = pixelId;
 
-  // Standard Meta Pixel snippet
+  // Standard Meta Pixel snippet com inserção mais resiliente
   (function (f: any, b, e, v, n?: any, t?: any, s?: any) {
-    if (f.fbq) return;
+    if (f.fbq && f.fbq.version) return;
     n = f.fbq = function () {
       n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
     };
@@ -37,18 +48,33 @@ export async function initMetaPixel(): Promise<void> {
     t.async = !0;
     t.src = v;
     s = b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t, s);
+    if (s && s.parentNode) {
+      s.parentNode.insertBefore(t, s);
+    } else {
+      b.head.appendChild(t);
+    }
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
   window.fbq?.('init', pixelId);
   window.fbq?.('track', 'PageView');
   pixelLoaded = true;
+
+  // Esvazia os eventos acumulados na fila de agendamento 
+  while (eventQueue.length > 0) {
+    const ev = eventQueue.shift();
+    if (ev && window.fbq) {
+      window.fbq(ev.method, ...ev.args);
+    }
+  }
 }
 
 export function fbqTrack(event: string, params?: Record<string, any>, options?: Record<string, any>) {
-  if (window.fbq) {
+  if (pixelLoaded && window.fbq) {
     if (options) window.fbq('track', event, params || {}, options);
     else window.fbq('track', event, params || {});
+  } else {
+    const args = options ? [event, params || {}, options] : [event, params || {}];
+    eventQueue.push({ method: 'track', args });
   }
 }
 
@@ -96,8 +122,10 @@ export function trackEventDual(event: string, params?: Record<string, any>, even
   const finalEventId = eventId || genEventId();
 
   // 1. Client-side pixel with eventID
-  if (window.fbq) {
+  if (pixelLoaded && window.fbq) {
     window.fbq('track', event, params || {}, { eventID: finalEventId });
+  } else {
+    eventQueue.push({ method: 'track', args: [event, params || {}, { eventID: finalEventId }] });
   }
 
   // Log to DB for funnel metrics
