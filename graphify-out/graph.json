@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T19:03:12.493401+00:00",
+  "generated_at": "2026-09-14T19:26:30.512712+00:00",
   "files": [
     {
       "path": "components.json",
@@ -62,16 +62,16 @@
       "bytes": 877
     },
     {
+      "path": "roadmap.md",
+      "bytes": 576
+    },
+    {
       "path": "vercel.json",
       "bytes": 136
     },
     {
       "path": "tsconfig.json",
       "bytes": 396
-    },
-    {
-      "path": ".lovable/plan.md",
-      "bytes": 1254
     },
     {
       "path": ".lovasiri/sync.json",
@@ -87,11 +87,11 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 9932
+      "bytes": 10219
     },
     {
       "path": "api/nexuspag-webhook.ts",
-      "bytes": 6164
+      "bytes": 6672
     },
     {
       "path": "src/App.css",
@@ -120,6 +120,10 @@
     {
       "path": "src/types.ts",
       "bytes": 852
+    },
+    {
+      "path": ".lovable/plan/unificar-painel-vendas-pix-e-meta-capi-2026-09-14.md",
+      "bytes": 1254
     },
     {
       "path": ".lovable/plan/plano-evento-purchase-na-meta-capi-2026-09-14.md",
@@ -423,7 +427,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 49409
+      "bytes": 51275
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
