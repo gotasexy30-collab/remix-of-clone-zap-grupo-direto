@@ -177,9 +177,10 @@ export const ChatDashboard: React.FC = () => {
 
   const loadFunnel = async (period: FunnelPeriod) => {
     try {
-      const response = await fetch(`/api/funnel-metrics?period=${encodeURIComponent(period)}`);
-      if (!response.ok) throw new Error('Falha ao consultar métricas');
-      const metrics = await response.json();
+      const { data: metrics, error } = await supabase.functions.invoke('funnel-metrics', {
+        body: { period },
+      });
+      if (error || !metrics) throw error || new Error('Falha ao consultar métricas');
 
       setFunnel({
         total_visits: metrics.total_visits || 0,
