@@ -748,7 +748,7 @@ export const ChatDashboard: React.FC = () => {
 
               <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
                 <p className="text-[11px] text-[#e9edef]/80 leading-relaxed">
-                  <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView, ViewContent, InitiateCheckout, Lead.
+                  <strong className="text-[#1877F2]">Eventos disparados:</strong> PageView, ViewContent, InitiateCheckout, Lead, Purchase.
                 </p>
               </div>
             </div>
