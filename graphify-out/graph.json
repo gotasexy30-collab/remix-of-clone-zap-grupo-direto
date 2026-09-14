@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T14:52:31.808850+00:00",
+  "generated_at": "2026-09-14T14:57:59.642055+00:00",
   "files": [
     {
       "path": "components.json",
@@ -79,7 +79,7 @@
     },
     {
       "path": "api/meta-capi.ts",
-      "bytes": 3592
+      "bytes": 4438
     },
     {
       "path": "api/generate-pix.ts",
@@ -411,7 +411,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 46248
+      "bytes": 49409
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
@@ -1514,6 +1514,10 @@
     {
       "source": "src/components/chat/ChatDashboard.tsx",
       "target": "sonner"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "@/components/ui/button"
     },
     {
       "source": "src/components/chat/FunnelLiveFeed.tsx",
