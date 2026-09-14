@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T03:06:53.351333+00:00",
+  "generated_at": "2026-09-14T03:08:43.553496+00:00",
   "files": [
     {
       "path": "components.json",
@@ -70,10 +70,6 @@
       "bytes": 396
     },
     {
-      "path": ".lovable/plan.md",
-      "bytes": 1161
-    },
-    {
       "path": ".lovasiri/sync.json",
       "bytes": 80
     },
@@ -83,7 +79,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 3497
+      "bytes": 6709
     },
     {
       "path": "src/App.css",
@@ -112,6 +108,10 @@
     {
       "path": "src/types.ts",
       "bytes": 852
+    },
+    {
+      "path": ".lovable/plan/plano-evento-purchase-na-meta-capi-2026-09-14.md",
+      "bytes": 1161
     },
     {
       "path": "supabase/functions/mp-webhook/index.ts",
@@ -407,7 +407,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 46758
+      "bytes": 46768
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
