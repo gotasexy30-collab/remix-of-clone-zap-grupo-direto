@@ -234,10 +234,16 @@ export default async function handler(req, res) {
     }
 
     // Novo payload no formato exato exigido pela documentação da NexusPag
+    const forwardedHost = String(req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim();
+    const forwardedProto = String(req.headers?.['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const webhookUrl = forwardedHost ? `${forwardedProto}://${forwardedHost}/api/nexuspag-webhook` : undefined;
+    const clientMetadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
     const payload = {
       amount: Number(amount), // Valor em reais, não em centavos
       description: body?.description || "Acesso Clube Secreto",
-      external_id: "pedido-" + Date.now() // Usado como chave de idempotência
+      external_id: "pedido-" + Date.now(), // Usado como chave de idempotência
+      metadata: clientMetadata,
+      ...(webhookUrl ? { webhook_url: webhookUrl } : {}),
     };
 
     // Nova URL e Headers corretos
