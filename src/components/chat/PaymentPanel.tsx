@@ -124,8 +124,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const handleAccessClick = async () => {
     if (pixLoading || pix) return;
-    trackEvent('checkout_button_click');
-    trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
     setPixLoading(true);
     setPixError('');
     try {
@@ -155,6 +153,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         return;
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
+      trackEvent('checkout_button_click');
+      trackEventDual('Lead', { value: 19.90, currency: 'BRL' });
       logTrackedEvent('PixGenerated');
     } catch (err) {
       console.error('Fetch error:', err);

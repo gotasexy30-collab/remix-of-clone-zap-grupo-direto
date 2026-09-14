@@ -11,15 +11,16 @@ function getSupabaseConfig() {
 }
 
 async function getMetaPixelId(): Promise<string> {
-  const { url, publicKey } = getSupabaseConfig();
-  if (!url || !publicKey) return '';
+  const { url, publicKey, serviceKey } = getSupabaseConfig();
+  const key = serviceKey || publicKey;
+  if (!url || !key) return '';
 
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.meta_pixel_id&select=value&limit=1`,
     {
       headers: {
-        apikey: publicKey,
-        Authorization: `Bearer ${publicKey}`,
+        apikey: key,
+        Authorization: `Bearer ${key}`,
       },
     },
   );
