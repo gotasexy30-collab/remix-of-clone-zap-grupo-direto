@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T15:17:42.264745+00:00",
+  "generated_at": "2026-09-14T15:25:58.867331+00:00",
   "files": [
     {
       "path": "components.json",
@@ -123,7 +123,7 @@
     },
     {
       "path": "supabase/functions/funnel-metrics/index.ts",
-      "bytes": 3542
+      "bytes": 3527
     },
     {
       "path": "supabase/functions/mp-webhook/index.ts",
@@ -577,7 +577,7 @@
     },
     {
       "source": "supabase/functions/funnel-metrics/index.ts",
-      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
+      "target": "npm:@supabase/supabase-js@2.45.0"
     },
     {
       "source": "supabase/functions/mp-webhook/index.ts",
