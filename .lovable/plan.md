@@ -1,13 +1,19 @@
-# Plano: Atualizar URL de Produção
+# Plano: Evento Purchase na Meta CAPI
 
-O objetivo é atualizar a URL base do backend para apontar para a nova infraestrutura na Vercel fornecida pelo usuário.
+## Objetivo
+Garantir que a confirmação de um PIX aprovado dispare o evento `Purchase` pelo servidor, usando o token `META_CAPI_TOKEN` já configurado na Vercel.
 
-## Alterações Propostas
+## Alterações
+- Atualizar a função da Vercel que consulta e confirma o pagamento PIX para enviar `Purchase` à Meta somente quando o status retornado for pago/aprovado.
+- Reutilizar um identificador estável baseado no ID do pagamento para a deduplicação do evento.
+- Enviar no CAPI `value` com o valor confirmado pela NexusPag e `currency: "BRL"`.
+- Obter o Pixel ID configurado no painel sem expor o token da CAPI ao navegador.
+- Atualizar somente o texto da aba PIXEL para listar `Purchase` entre os eventos disparados.
 
-### Frontend
-- **Configuração**: Atualizar `BASE_URL` em `src/constants.ts` para `https://clone-zap-grupo-direto-20.vercel.app`.
-- **Lógica de Chat**: Garantir que o `src/pages/Index.tsx` continue consumindo a `BASE_URL` corretamente para ativos como áudios e imagens dinâmicas.
+## Validação
+- Executar os testes aplicáveis à rota de pagamento.
+- Confirmar que respostas pendentes não disparam `Purchase` e respostas aprovadas montam o payload correto.
+- Verificar que nenhum arquivo de Chat, Gemini, personas ou upload de imagens foi alterado, exceto a linha de texto solicitada na aba PIXEL.
 
-## Detalhes Técnicos
-- A constante `BASE_URL` é centralizada e usada para construir caminhos de arquivos estáticos (áudios) e chamadas de geração de imagem.
-- A alteração reflete a mudança do Render para a Vercel conforme solicitado.
+## Fora do escopo
+- Nenhuma mudança na conversa, Gemini, personas, uploads ou aparência geral do painel.
