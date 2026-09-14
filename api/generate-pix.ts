@@ -2,23 +2,24 @@ const META_GRAPH_VERSION = 'v19.0';
 
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key =
+  const publicKey =
     process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  return { url, key };
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return { url, publicKey, serviceKey };
 }
 
 async function getMetaPixelId(): Promise<string> {
-  const { url, key } = getSupabaseConfig();
-  if (!url || !key) return '';
+  const { url, publicKey } = getSupabaseConfig();
+  if (!url || !publicKey) return '';
 
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.meta_pixel_id&select=value&limit=1`,
     {
       headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
+        apikey: publicKey,
+        Authorization: `Bearer ${publicKey}`,
       },
     },
   );
@@ -29,6 +30,47 @@ async function getMetaPixelId(): Promise<string> {
 
   const rows = await response.json().catch(() => []);
   return Array.isArray(rows) ? String(rows[0]?.value || '') : '';
+}
+
+async function recordApprovedPurchase({
+  paymentId,
+  amount,
+  sessionId,
+}: {
+  paymentId: string;
+  amount: number;
+  sessionId: string;
+}): Promise<boolean> {
+  const { url, serviceKey } = getSupabaseConfig();
+  if (!url || !serviceKey) {
+    console.error('[Purchase] SUPABASE_SERVICE_ROLE_KEY não configurada na Vercel.');
+    return false;
+  }
+
+  const response = await fetch(`${url}/rest/v1/purchases?on_conflict=mp_payment_id`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=ignore-duplicates,return=representation',
+    },
+    body: JSON.stringify({
+      mp_payment_id: paymentId,
+      amount: Math.max(0, Math.min(Number(amount) || 0, 10000)),
+      session_id: sessionId.slice(0, 200),
+      status: 'approved',
+      approved_at: new Date().toISOString(),
+    }),
+  });
+
+  if (!response.ok) {
+    console.error('[Purchase] Falha ao registrar venda:', response.status, await response.text());
+    return false;
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) && rows.length > 0;
 }
 
 async function sendCapiPurchase({
@@ -139,7 +181,12 @@ export default async function handler(req, res) {
             const paidAmount = Number(
               transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90,
             );
-            await sendCapiPurchase({ paymentId, amount: paidAmount, req });
+            const inserted = await recordApprovedPurchase({
+              paymentId,
+              amount: paidAmount,
+              sessionId: String(body?.session_id || ''),
+            });
+            if (inserted) await sendCapiPurchase({ paymentId, amount: paidAmount, req });
           }
           return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
         } catch { /* tenta o próximo endpoint */ }

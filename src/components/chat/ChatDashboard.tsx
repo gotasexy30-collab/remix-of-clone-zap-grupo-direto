@@ -199,7 +199,7 @@ export const ChatDashboard: React.FC = () => {
         initiate_checkout: eventCounts['checkout'] || 0,
         lead: eventCounts['checkout_button_click'] || 0,
         purchase: filteredSales.length,
-        pressel_passed: eventCounts['chat_start'] || 0,
+        pressel_passed: eventCounts['PresselPassed'] || 0,
       });
     } catch (err) {
       console.error('Erro ao carregar dados do funil:', err);
