@@ -47,13 +47,26 @@ async function recordApprovedPurchase({
     return false;
   }
 
-  const response = await fetch(`${url}/rest/v1/purchases?on_conflict=mp_payment_id`, {
+  const lookup = await fetch(
+    `${url}/rest/v1/purchases?mp_payment_id=eq.${encodeURIComponent(paymentId)}&select=id&limit=1`,
+    {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    },
+  );
+  if (!lookup.ok) {
+    console.error('[Purchase] Falha ao verificar venda:', lookup.status, await lookup.text());
+    return false;
+  }
+  const existing = await lookup.json().catch(() => []);
+  if (Array.isArray(existing) && existing.length > 0) return false;
+
+  const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: {
       apikey: serviceKey,
       Authorization: `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
-      Prefer: 'resolution=ignore-duplicates,return=representation',
+      Prefer: 'return=representation',
     },
     body: JSON.stringify({
       mp_payment_id: paymentId,
