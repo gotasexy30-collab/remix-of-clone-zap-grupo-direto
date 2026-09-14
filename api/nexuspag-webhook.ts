@@ -16,13 +16,19 @@ function getBackendConfig() {
   };
 }
 
+function databaseHeaders(key: string): Record<string, string> {
+  return key.startsWith('sb_publishable_')
+    ? { apikey: key }
+    : { apikey: key, Authorization: `Bearer ${key}` };
+}
+
 async function getSetting(key: string): Promise<string> {
   const { url, publicKey, serviceKey } = getBackendConfig();
   const key = serviceKey || publicKey;
   if (!url || !key) return '';
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.${encodeURIComponent(key)}&select=value&limit=1`,
-    { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+    { headers: databaseHeaders(key) },
   );
   if (!response.ok) return '';
   const rows = await response.json().catch(() => []);
@@ -57,7 +63,7 @@ async function recordPurchase(paymentId: string, amount: number, sessionId: stri
 
   const lookup = await fetch(
     `${url}/rest/v1/purchases?mp_payment_id=eq.${encodeURIComponent(paymentId)}&select=id&limit=1`,
-    { headers: { apikey: databaseKey, Authorization: `Bearer ${databaseKey}` } },
+    { headers: databaseHeaders(databaseKey) },
   );
   if (!lookup.ok) throw new Error('Falha ao verificar venda existente');
   const existing = await lookup.json().catch(() => []);
@@ -66,8 +72,7 @@ async function recordPurchase(paymentId: string, amount: number, sessionId: stri
   const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: {
-      apikey: databaseKey,
-      Authorization: `Bearer ${databaseKey}`,
+      ...databaseHeaders(databaseKey),
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },

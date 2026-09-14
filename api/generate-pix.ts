@@ -15,6 +15,12 @@ function getSupabaseConfig() {
   return { url, publicKey, serviceKey };
 }
 
+function databaseHeaders(key: string): Record<string, string> {
+  return key.startsWith('sb_publishable_')
+    ? { apikey: key }
+    : { apikey: key, Authorization: `Bearer ${key}` };
+}
+
 async function getMetaPixelId(): Promise<string> {
   const { url, publicKey, serviceKey } = getSupabaseConfig();
   const key = serviceKey || publicKey;
@@ -23,10 +29,7 @@ async function getMetaPixelId(): Promise<string> {
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.meta_pixel_id&select=value&limit=1`,
     {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-      },
+      headers: databaseHeaders(key),
     },
   );
   if (!response.ok) {
@@ -48,10 +51,7 @@ async function getMetaCapiToken(): Promise<string> {
   const response = await fetch(
     `${url}/rest/v1/app_settings?key=eq.meta_capi_token&select=value&limit=1`,
     {
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-      },
+      headers: databaseHeaders(serviceKey),
     },
   );
   if (!response.ok) {
@@ -82,7 +82,7 @@ async function recordApprovedPurchase({
   const lookup = await fetch(
     `${url}/rest/v1/purchases?mp_payment_id=eq.${encodeURIComponent(paymentId)}&select=id&limit=1`,
     {
-      headers: { apikey: databaseKey, Authorization: `Bearer ${databaseKey}` },
+      headers: databaseHeaders(databaseKey),
     },
   );
   if (!lookup.ok) {
@@ -95,8 +95,7 @@ async function recordApprovedPurchase({
   const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: {
-      apikey: databaseKey,
-      Authorization: `Bearer ${databaseKey}`,
+      ...databaseHeaders(databaseKey),
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     },
