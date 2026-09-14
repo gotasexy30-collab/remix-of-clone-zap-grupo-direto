@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T23:16:30.548156+00:00",
+  "generated_at": "2026-09-14T02:39:50.516133+00:00",
   "files": [
     {
       "path": "components.json",
@@ -135,7 +135,7 @@
     },
     {
       "path": "src/services/pixel.ts",
-      "bytes": 5280
+      "bytes": 6330
     },
     {
       "path": "src/services/imageOverlay.ts",
