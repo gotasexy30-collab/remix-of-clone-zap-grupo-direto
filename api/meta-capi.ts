@@ -45,6 +45,11 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'pixelId é obrigatório' });
     }
 
+    const testEventCode = String(body.test_event_code || '').trim();
+    if (testEventCode && !/^TEST\d{1,30}$/.test(testEventCode)) {
+      return res.status(400).json({ error: 'Código de teste inválido. Use o formato TEST seguido de números.' });
+    }
+
     // Prepara e flexibiliza a leitura do novo token CAPI
     let token = process.env.META_CAPI_TOKEN || process.env.VITE_META_CAPI_TOKEN || '';
     if (!token) {
@@ -59,19 +64,27 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const payload = {
+    const forwardedFor = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+    const userAgent = String(req.headers?.['user-agent'] || '');
+    const userData = { ...(body.user_data || {}) };
+    if (!userData.client_ip_address && forwardedFor) userData.client_ip_address = forwardedFor;
+    if (!userData.client_user_agent && userAgent) userData.client_user_agent = userAgent;
+
+    const payload: Record<string, unknown> = {
       data: [
         {
           action_source: body.action_source || 'website',
           event_name: body.event_name,
           event_time: body.event_time || Math.floor(Date.now() / 1000),
           event_id: body.event_id,
-          user_data: body.user_data || {},
+          event_source_url: body.event_source_url || String(req.headers?.referer || req.headers?.origin || ''),
+          user_data: userData,
           custom_data: body.custom_data || {},
         },
       ],
       access_token: token,
     };
+    if (testEventCode) payload.test_event_code = testEventCode;
 
     const fbRes = await fetch(
       `https://graph.facebook.com/v18.0/${encodeURIComponent(pixelId)}/events`,

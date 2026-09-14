@@ -8,6 +8,7 @@ import { FunnelLiveFeed } from './FunnelLiveFeed';
 import { supabase } from '@/integrations/supabase/client';
 import { PresselTest } from './PresselTest';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 type FunnelPeriod = 'today' | 'yesterday' | '7d' | '30d' | 'all';
 
@@ -69,6 +70,8 @@ export const ChatDashboard: React.FC = () => {
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
   const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
+  const [metaTestEventCode, setMetaTestEventCode] = useState('');
+  const [testingMetaPurchase, setTestingMetaPurchase] = useState(false);
 
   const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
@@ -325,6 +328,48 @@ export const ChatDashboard: React.FC = () => {
       toast.error(`Erro ao salvar: ${e.message || 'Erro desconhecido'}`);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleMetaPurchaseTest = async () => {
+    const testEventCode = metaTestEventCode.trim();
+    if (!metaPixelId.trim()) {
+      toast.error('Informe e salve o Pixel ID antes do teste.');
+      return;
+    }
+    if (!/^TEST\d{1,30}$/.test(testEventCode)) {
+      toast.error('Cole um código válido, como TEST20653.');
+      return;
+    }
+
+    setTestingMetaPurchase(true);
+    try {
+      const response = await fetch('/api/meta-capi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pixelId: metaPixelId.trim(),
+          event_name: 'Purchase',
+          event_id: `test_purchase_${crypto.randomUUID()}`,
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: 'website',
+          event_source_url: window.location.href,
+          user_data: { client_user_agent: navigator.userAgent },
+          custom_data: { value: 19.9, currency: 'BRL' },
+          test_event_code: testEventCode,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.error) {
+        const detail = result?.details?.message || result?.error || 'A Meta recusou o evento de teste.';
+        throw new Error(detail);
+      }
+      toast.success('Purchase de teste enviado. Confira em “Testar eventos” na Meta.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível enviar o teste.';
+      toast.error(`Falha no teste: ${message}`);
+    } finally {
+      setTestingMetaPurchase(false);
     }
   };
 
@@ -729,6 +774,29 @@ export const ChatDashboard: React.FC = () => {
                 <p className="text-[10px] text-[#8696a0] mt-1 italic">
                   Gerenciador de Eventos → Configurações → Conversions API → Gerar token de acesso
                 </p>
+              </div>
+
+              <div className="border-t border-white/5 pt-3">
+                <label className="text-[11px] text-[#8696a0] font-bold mb-1 block">Código para testar eventos</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ex: TEST20653"
+                    value={metaTestEventCode}
+                    onChange={(event) => setMetaTestEventCode(event.target.value.trim().toUpperCase())}
+                    className="min-w-0 flex-1 bg-[#2a3942] text-[#e9edef] px-4 py-3 rounded-xl text-sm outline-none border border-white/5 focus:border-[#1877F2] transition-colors placeholder:text-[#8696a0]/50"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleMetaPurchaseTest}
+                    disabled={testingMetaPurchase}
+                    className="h-auto bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
+                  >
+                    {testingMetaPurchase ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+                    Testar Purchase
+                  </Button>
+                </div>
+                <p className="text-[10px] text-[#8696a0] mt-1 italic">Cole o código exibido em “Testar eventos”. O teste não gera cobrança nem altera o faturamento.</p>
               </div>
 
               <div className="bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg p-3">
