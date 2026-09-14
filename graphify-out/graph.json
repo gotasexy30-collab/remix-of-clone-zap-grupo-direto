@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T19:26:30.512712+00:00",
+  "generated_at": "2026-09-14T19:41:55.411381+00:00",
   "files": [
     {
       "path": "components.json",
@@ -63,7 +63,7 @@
     },
     {
       "path": "roadmap.md",
-      "bytes": 576
+      "bytes": 502
     },
     {
       "path": "vercel.json",
@@ -87,7 +87,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 10219
+      "bytes": 10217
     },
     {
       "path": "api/nexuspag-webhook.ts",
@@ -427,7 +427,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 51275
+      "bytes": 51273
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 22167
+      "bytes": 22161
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
