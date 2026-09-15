@@ -31,6 +31,13 @@ interface GroupMessage {
   delay?: number;
 }
 
+// ID 1: Helper para identificar corretamente os status de aprovação de qualquer webhook ou API
+const isApprovedStatus = (status?: string | null): boolean => {
+  if (!status) return false;
+  const normalized = status.toLowerCase().trim();
+  return ['approved', 'paid', 'completed', 'confirmed', 'success', 'pago', 'confirmado', 'concluido'].includes(normalized);
+};
+
 export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD }) => {
   const [displayedMessages, setDisplayedMessages] = useState<GroupMessage[]>([]);
   const [isTyping, setIsTyping] = useState<string | null>(null);
@@ -62,6 +69,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   useEffect(() => {
     (async () => {
+      // ID 0: Garantindo que lemos a mesma chave que é salva pelo ChatDashboard
       const [videoUrl, configuredSuccessUrl, fallbackUrl] = await Promise.all([
         getSetting('pix_tutorial_video_url'),
         getSetting('pix_success_url'),
@@ -79,7 +87,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     })();
   }, []);
 
-  // Preload video in background para abrir instantaneamente
   useEffect(() => {
     if (!tutorialVideoUrl) return;
     const v = document.createElement('video');
@@ -187,7 +194,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const triggerRedirect = async () => {
     setIsRedirecting(true);
     try {
-      // ID 2: Fallback de segurança - tenta ler direto do banco se vazio localmente
       let primaryUrl = successUrl || localStorage.getItem('pix_success_url');
       if (!primaryUrl) {
         primaryUrl = await getSetting('pix_success_url') || '';
@@ -197,7 +203,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         }
       }
 
-      // Se tem URL de sucesso (entregável direto), vai para ela ignorando o roteador WA
       if (primaryUrl) {
         const finalUrl = primaryUrl.startsWith('http') ? primaryUrl : `https://${primaryUrl}`;
         console.log("Redirecionando para URL primária:", finalUrl);
@@ -205,7 +210,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         return;
       }
 
-      // Se não tem URL de sucesso específica, tenta o router/fallback legado
       let fallbackUrl = localStorage.getItem('payment_redirect_link');
       if (!fallbackUrl) {
         fallbackUrl = await getSetting('payment_redirect_link') || '';
@@ -240,10 +244,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
       
-      setTimeout(() => {
-        console.log("Disparando redirecionamento automático pós-pagamento aprovado...");
-        triggerRedirect();
-      }, 2000);
+      // ID 2: Forçar o redirecionamento imediato assim que detectado
+      console.log("Disparando redirecionamento imediato pós-pagamento aprovado...");
+      setTimeout(triggerRedirect, 100);
     };
 
     const checkPayment = async () => {
@@ -258,7 +261,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           .eq('mp_payment_id', String(pix.id))
           .maybeSingle();
 
-        if (dbData?.status === 'approved') {
+        // ID 1: Usando função de validação robusta para variações de status
+        if (isApprovedStatus(dbData?.status)) {
           finishApprovedPayment();
           return;
         }
@@ -270,7 +274,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
         });
         const data = await response.json();
-        if (data?.status === 'approved') finishApprovedPayment();
+        if (isApprovedStatus(data?.status)) finishApprovedPayment();
       } catch (error) {
         console.error('Erro ao verificar pagamento:', error);
       }
@@ -294,7 +298,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         ta.setAttribute('readonly', '');
         document.body.appendChild(ta);
         ta.select();
-        try { document.execCommand('copy'); } catch {}
+        try { document.execCommand('copy'); } catch {} 
         document.body.removeChild(ta);
       }
       setCopied(true);
@@ -340,13 +344,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         const eventId = `np_${pix.id}`;
         fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
         
-        setTimeout(() => {
-           console.log("Disparando redirecionamento manual pós-pagamento...");
-           triggerRedirect();
-        }, 2000);
+        console.log("Disparando redirecionamento manual imediato...");
+        await triggerRedirect();
       };
 
-      if (dbData?.status === 'approved') {
+      if (isApprovedStatus(dbData?.status)) {
         await finishAndRedirect();
         return;
       }
@@ -358,7 +360,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
       });
       const data = await response.json();
-      if (data?.status === 'approved') {
+      if (isApprovedStatus(data?.status)) {
         await finishAndRedirect();
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
@@ -485,8 +487,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                       <p className="text-[10px] text-gray-500 mt-1 text-center">Escaneie o QR Code no app do seu banco</p>
                     </div>
 
-                    {/* Video movido para modal — abre no clique do botão "Como pagar" */}
-
                     <div className="w-full">
                       <p className="text-xs font-bold text-gray-600 mb-1 text-center">Ou use PIX Copia e Cola:</p>
                       <div className="bg-gray-100 rounded-lg p-2 text-[10px] text-gray-700 break-all max-h-20 overflow-y-auto border">
@@ -520,7 +520,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                     <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
                       <Loader2 size={14} className="animate-spin text-yellow-700" />
-                      <span className="text-xs text-yellow-800 font-medium">Aaguardando pagamento...</span>
+                      <span className="text-xs text-yellow-800 font-medium">Aguardando pagamento...</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-gray-400 text-xs">
