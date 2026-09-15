@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T03:54:48.448096+00:00",
+  "generated_at": "2026-09-15T04:01:41.379383+00:00",
   "files": [
     {
       "path": "components.json",
@@ -219,7 +219,7 @@
     },
     {
       "path": "src/integrations/supabase/client.ts",
-      "bytes": 1565
+      "bytes": 852
     },
     {
       "path": "src/integrations/supabase/previewAuthStorage.ts",
@@ -782,18 +782,6 @@
     {
       "source": "src/integrations/supabase/client.ts",
       "target": "@supabase/supabase-js"
-    },
-    {
-      "source": "src/integrations/supabase/client.ts",
-      "target": "./types"
-    },
-    {
-      "source": "src/integrations/supabase/client.ts",
-      "target": "./previewAuthStorage"
-    },
-    {
-      "source": "src/integrations/supabase/client.ts",
-      "target": "@/integrations/supabase/client"
     },
     {
       "source": "src/components/ui/use-toast.ts",
