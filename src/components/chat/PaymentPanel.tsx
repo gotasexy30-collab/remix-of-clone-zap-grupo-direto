@@ -55,7 +55,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4'
   );
   const [successUrl, setSuccessUrl] = useState<string>(
-    localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || ''
+    localStorage.getItem('pix_success_url') || ''
   );
   const paymentHandledRef = useRef(false);
   const { redirect } = useWhatsAppRouter();
@@ -68,10 +68,13 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         getSetting('payment_redirect_link'),
       ]);
       if (videoUrl) setTutorialVideoUrl(videoUrl);
-      const deliveryUrl = configuredSuccessUrl || fallbackUrl || '';
-      if (deliveryUrl) {
-        setSuccessUrl(deliveryUrl);
-        localStorage.setItem('pix_success_url', deliveryUrl);
+      
+      if (configuredSuccessUrl) {
+        setSuccessUrl(configuredSuccessUrl);
+        localStorage.setItem('pix_success_url', configuredSuccessUrl);
+      }
+      if (fallbackUrl) {
+        localStorage.setItem('payment_redirect_link', fallbackUrl);
       }
     })();
   }, []);
@@ -181,6 +184,49 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     }
   };
 
+  const triggerRedirect = async () => {
+    setIsRedirecting(true);
+    try {
+      // ID 2: Fallback de segurança - tenta ler direto do banco se vazio localmente
+      let primaryUrl = successUrl || localStorage.getItem('pix_success_url');
+      if (!primaryUrl) {
+        primaryUrl = await getSetting('pix_success_url') || '';
+        if (primaryUrl) {
+          setSuccessUrl(primaryUrl);
+          localStorage.setItem('pix_success_url', primaryUrl);
+        }
+      }
+
+      // Se tem URL de sucesso (entregável direto), vai para ela ignorando o roteador WA
+      if (primaryUrl) {
+        const finalUrl = primaryUrl.startsWith('http') ? primaryUrl : `https://${primaryUrl}`;
+        console.log("Redirecionando para URL primária:", finalUrl);
+        window.location.href = appendUTMsToUrl(finalUrl);
+        return;
+      }
+
+      // Se não tem URL de sucesso específica, tenta o router/fallback legado
+      let fallbackUrl = localStorage.getItem('payment_redirect_link');
+      if (!fallbackUrl) {
+        fallbackUrl = await getSetting('payment_redirect_link') || '';
+        if (fallbackUrl) {
+          localStorage.setItem('payment_redirect_link', fallbackUrl);
+        }
+      }
+
+      console.log("Tentando WhatsApp Router ou Fallback legado...");
+      const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', fallbackUrl || undefined);
+      if (!success) {
+        setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Contate o suporte.');
+        setIsRedirecting(false);
+      }
+    } catch (err) {
+      console.error("Erro no redirecionamento:", err);
+      setIsRedirecting(false);
+      setNotPaidMsg('Erro ao tentar redirecionar. Atualize a página e clique no botão novamente.');
+    }
+  };
+
   useEffect(() => {
     if (!pix?.id || paymentStatus === 'approved') return;
     const startedAt = Date.now();
@@ -194,33 +240,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
       
-      const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-      setTimeout(async () => {
+      setTimeout(() => {
         console.log("Disparando redirecionamento automático pós-pagamento aprovado...");
-        setIsRedirecting(true);
-        try {
-          const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-          console.log("Redirecionamento automático router:", success);
-          if (!success) {
-            if (destination) {
-              const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-              console.log("Redirecionando automático para fallback (href):", finalUrl);
-              window.location.href = appendUTMsToUrl(finalUrl);
-            } else {
-              console.log("Nenhum destino automático configurado.");
-              setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
-              setIsRedirecting(false);
-            }
-          }
-        } catch (e) {
-          console.error("Erro no redirecionamento automático:", e);
-          if (destination) {
-            const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-            window.location.href = appendUTMsToUrl(finalUrl);
-          } else {
-            setIsRedirecting(false);
-          }
-        }
+        triggerRedirect();
       }, 2000);
     };
 
@@ -318,33 +340,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         const eventId = `np_${pix.id}`;
         fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
         
-        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-        setTimeout(async () => {
+        setTimeout(() => {
            console.log("Disparando redirecionamento manual pós-pagamento...");
-           setIsRedirecting(true);
-           try {
-             const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-             console.log("Redirecionamento manual router:", success);
-             if (!success) {
-               if (destination) {
-                 const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-                 console.log("Redirecionando manual para fallback (href):", finalUrl);
-                 window.location.href = appendUTMsToUrl(finalUrl);
-               } else {
-                 console.log("Nenhum destino manual configurado.");
-                 setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
-                 setIsRedirecting(false);
-               }
-             }
-           } catch (e) {
-             console.error("Erro no redirecionamento manual:", e);
-             if (destination) {
-               const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-               window.location.href = appendUTMsToUrl(finalUrl);
-             } else {
-               setIsRedirecting(false);
-             }
-           }
+           triggerRedirect();
         }, 2000);
       };
 
@@ -441,33 +439,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                     <button
                       onClick={async () => {
                         if (isRedirecting) return;
-                        setIsRedirecting(true);
                         console.log("Botão de acesso ao conteúdo clicado.");
-                        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-                        console.log("Destino resolvido:", destination);
-                        try {
-                          const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-                          console.log("Redirecionamento botão router:", success);
-                          if (!success) {
-                            if (destination) {
-                              const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-                              console.log("Redirecionando botão para fallback (href):", finalUrl);
-                              window.location.href = appendUTMsToUrl(finalUrl);
-                            } else {
-                              console.log("Nenhum destino de botão configurado.");
-                              setNotPaidMsg('Link de acesso não configurado. Por favor, contate o suporte.');
-                              setIsRedirecting(false);
-                            }
-                          }
-                        } catch (e) {
-                          console.error("Erro no redirecionamento do botão:", e);
-                          if (destination) {
-                            const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
-                            window.location.href = appendUTMsToUrl(finalUrl);
-                          } else {
-                            setIsRedirecting(false);
-                          }
-                        }
+                        await triggerRedirect();
                       }}
                       disabled={isRedirecting}
                       className={`w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${isRedirecting ? 'opacity-70' : 'hover:bg-[#15803d] active:scale-[0.98] animate-pulse'}`}
