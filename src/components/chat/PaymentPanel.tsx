@@ -12,7 +12,7 @@ interface PaymentPanelProps {
   userDDD: string;
 }
 
-const PLAN_PRICE = 19.90;
+const PLAN_PRICE = 1.00;
 
 const generatePhone = (ddd: string) => {
   const part1 = Math.floor(90000 + Math.random() * 9000);
@@ -415,7 +415,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
-                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 1,00</span>
                   </div>
                 </div>
 
