@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T01:05:42.151342+00:00",
+  "generated_at": "2026-09-15T01:52:31.821461+00:00",
   "files": [
     {
       "path": "components.json",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23319
+      "bytes": 24547
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
