@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T02:47:25.697355+00:00",
+  "generated_at": "2026-09-15T03:35:24.849891+00:00",
   "files": [
     {
       "path": "components.json",
@@ -175,7 +175,7 @@
     },
     {
       "path": "src/hooks/useWhatsAppRouter.ts",
-      "bytes": 2613
+      "bytes": 3075
     },
     {
       "path": "src/hooks/use-mobile.tsx",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 25989
+      "bytes": 28139
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
