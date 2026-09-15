@@ -12,7 +12,7 @@ interface PaymentPanelProps {
   userDDD: string;
 }
 
-const PLAN_PRICE = 19.90;
+const PLAN_PRICE = 1.00;
 
 const generatePhone = (ddd: string) => {
   const part1 = Math.floor(90000 + Math.random() * 9000);
@@ -415,8 +415,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <h2 className="text-lg font-bold text-gray-800 uppercase">🔥 Acesso ao Clube Secreto</h2>
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
-                    <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 1,00</span>
                   </div>
                 </div>
 
@@ -526,7 +525,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                     <div className="w-full bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
                       <Loader2 size={14} className="animate-spin text-yellow-700" />
-                      <span className="text-xs text-yellow-800 font-medium">Aguardando pagamento...</span>
+                      <span className="text-xs text-yellow-800 font-medium">Aaguardando pagamento...</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-gray-400 text-xs">
