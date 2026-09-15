@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T04:11:07.284563+00:00",
+  "generated_at": "2026-09-15T04:01:41.379383+00:00",
   "files": [
     {
       "path": "components.json",
@@ -427,7 +427,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 51272
+      "bytes": 51277
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",

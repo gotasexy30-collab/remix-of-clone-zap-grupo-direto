@@ -132,7 +132,7 @@ export const ChatDashboard: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          amount: 1.00, 
+          amount: 1.00, // Preço teste 1 real
           name: 'Preview Dashboard',
           cpf: '00000000000',
           email: 'admin@dashboard.com',
