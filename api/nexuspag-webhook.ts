@@ -22,13 +22,13 @@ function databaseHeaders(key: string): Record<string, string> {
     : { apikey: key, Authorization: `Bearer ${key}` };
 }
 
-async function getSetting(key: string): Promise<string> {
+async function getSetting(settingKey: string): Promise<string> {
   const { url, publicKey, serviceKey } = getBackendConfig();
-  const key = serviceKey || publicKey;
-  if (!url || !key) return '';
+  const databaseKey = serviceKey || publicKey;
+  if (!url || !databaseKey) return '';
   const response = await fetch(
-    `${url}/rest/v1/app_settings?key=eq.${encodeURIComponent(key)}&select=value&limit=1`,
-    { headers: databaseHeaders(key) },
+    `${url}/rest/v1/app_settings?key=eq.${encodeURIComponent(settingKey)}&select=value&limit=1`,
+    { headers: databaseHeaders(databaseKey) },
   );
   if (!response.ok) return '';
   const rows = await response.json().catch(() => []);

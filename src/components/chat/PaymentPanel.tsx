@@ -11,6 +11,8 @@ interface PaymentPanelProps {
   userDDD: string;
 }
 
+const PLAN_PRICE = 19.90;
+
 const generatePhone = (ddd: string) => {
   const part1 = Math.floor(90000 + Math.random() * 9000);
   const part2 = Math.floor(1000 + Math.random() * 9000);
@@ -50,11 +52,24 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(
     localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4'
   );
+  const [successUrl, setSuccessUrl] = useState<string>(
+    localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || ''
+  );
+  const paymentHandledRef = useRef(false);
 
   useEffect(() => {
     (async () => {
-      const url = await getSetting('pix_tutorial_video_url');
-      if (url) setTutorialVideoUrl(url);
+      const [videoUrl, configuredSuccessUrl, fallbackUrl] = await Promise.all([
+        getSetting('pix_tutorial_video_url'),
+        getSetting('pix_success_url'),
+        getSetting('payment_redirect_link'),
+      ]);
+      if (videoUrl) setTutorialVideoUrl(videoUrl);
+      const deliveryUrl = configuredSuccessUrl || fallbackUrl || '';
+      if (deliveryUrl) {
+        setSuccessUrl(deliveryUrl);
+        localStorage.setItem('pix_success_url', deliveryUrl);
+      }
     })();
   }, []);
 
@@ -100,7 +115,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (currentMsgIndex >= dynamicMessages.length) {
         timeoutId = setTimeout(() => {
           setShowModal(true);
-          fbqTrack('InitiateCheckout', { value: 1.00, currency: 'BRL' });
+          fbqTrack('InitiateCheckout', { value: PLAN_PRICE, currency: 'BRL' });
           logTrackedEvent('InitiateCheckout');
         }, 1500);
         return;
@@ -134,7 +149,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: 1.00,
+          amount: PLAN_PRICE,
           name: 'Cliente VIP',
           cpf: '00000000000',
           email: 'cliente@exemplo.com',
@@ -154,7 +169,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       }
       setPix({ id: data.id, qr_code: data.qr_code, qr_code_base64: data.qr_code_base64 });
       trackEvent('checkout_button_click');
-      trackEventDual('Lead', { value: 1.00, currency: 'BRL' });
+      trackEventDual('Lead', { value: PLAN_PRICE, currency: 'BRL' });
       logTrackedEvent('PixGenerated');
     } catch (err) {
       console.error('Fetch error:', err);
@@ -168,33 +183,40 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     if (!pix?.id || paymentStatus === 'approved') return;
     const startedAt = Date.now();
     const MAX_POLL_MS = 12 * 60 * 1000; // para PIX abandonado: não consulta para sempre
-    pollRef.current = setInterval(async () => {
+    const finishApprovedPayment = () => {
+      if (paymentHandledRef.current) return;
+      paymentHandledRef.current = true;
+      setPaymentStatus('approved');
+      if (pollRef.current) clearInterval(pollRef.current);
+      const eventId = `np_${pix.id}`;
+      fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
+      const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
+      if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 1200);
+      else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+    };
+    const checkPayment = async () => {
       // Encerra o polling de sessões abandonadas para economizar chamadas
       if (Date.now() - startedAt > MAX_POLL_MS) {
         if (pollRef.current) clearInterval(pollRef.current);
         return;
       }
-      // Não consulta com a aba em segundo plano (lead saiu da tela)
-      if (typeof document !== 'undefined' && document.hidden) return;
-      const sessionId = sessionStorage.getItem('wa_session_id') || '';
-      const response = await fetch('/api/generate-pix', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId }),
-      });
-      const data = await response.json();
-      if (data?.status === 'approved') {
-        setPaymentStatus('approved');
-        if (pollRef.current) clearInterval(pollRef.current);
-        const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 1.00, currency: 'BRL' }, { eventID: eventId });
-        let url = localStorage.getItem('pix_success_url') || '';
-        if (!url) url = (await getSetting('pix_success_url')) || '';
-        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1500);
+      try {
+        const sessionId = sessionStorage.getItem('wa_session_id') || '';
+        const response = await fetch('/api/generate-pix', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
+        });
+        const data = await response.json();
+        if (data?.status === 'approved') finishApprovedPayment();
+      } catch (error) {
+        console.error('Erro ao verificar pagamento:', error);
       }
-    }, 3000);
+    };
+    void checkPayment();
+    pollRef.current = setInterval(checkPayment, 3000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [pix?.id, paymentStatus]);
+  }, [pix?.id, paymentStatus, successUrl]);
 
   const handleCopy = async () => {
     if (!pix?.qr_code) return;
@@ -246,17 +268,17 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const response = await fetch('/api/generate-pix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId }),
+        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
       });
       const data = await response.json();
       if (data?.status === 'approved') {
         setPaymentStatus('approved');
         if (pollRef.current) clearInterval(pollRef.current);
         const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: 1.00, currency: 'BRL' }, { eventID: eventId });
-        let url = localStorage.getItem('pix_success_url') || '';
-        if (!url) url = (await getSetting('pix_success_url')) || '';
-        if (url) setTimeout(() => window.location.assign(appendUTMsToUrl(url)), 1200);
+        fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
+        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
+        if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 1200);
+        else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
         setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
@@ -322,7 +344,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                   <p className="text-gray-500 text-sm">Últimas vagas para {userCity || 'sua região'}!</p>
                   <div className="my-2">
                     <span className="text-xl text-gray-400 line-through mr-2">R$ 29,90</span>
-                    <span className="text-4xl font-black text-[#16A349]">R$ 1,00</span>
+                    <span className="text-4xl font-black text-[#16A349]">R$ 19,90</span>
                   </div>
                 </div>
 
