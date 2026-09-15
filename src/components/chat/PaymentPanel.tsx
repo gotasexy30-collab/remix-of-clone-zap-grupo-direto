@@ -193,6 +193,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
   const triggerRedirect = async () => {
     setIsRedirecting(true);
+    setNotPaidMsg('');
     try {
       let primaryUrl = successUrl || localStorage.getItem('pix_success_url');
       if (!primaryUrl) {
@@ -203,7 +204,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         }
       }
 
-      if (primaryUrl) {
+      if (primaryUrl && primaryUrl.trim() !== '') {
+        primaryUrl = primaryUrl.trim();
         const finalUrl = primaryUrl.startsWith('http') ? primaryUrl : `https://${primaryUrl}`;
         console.log("Redirecionando para URL primária:", finalUrl);
         window.location.href = appendUTMsToUrl(finalUrl);
@@ -221,7 +223,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       console.log("Tentando WhatsApp Router ou Fallback legado...");
       const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', fallbackUrl || undefined);
       if (!success) {
-        setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Contate o suporte.');
+        setNotPaidMsg('O link de acesso não está configurado. Contate o suporte.');
         setIsRedirecting(false);
       }
     } catch (err) {
@@ -244,9 +246,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
       
-      // ID 2: Forçar o redirecionamento imediato assim que detectado
-      console.log("Disparando redirecionamento imediato pós-pagamento aprovado...");
-      setTimeout(triggerRedirect, 100);
+      console.log("Pagamento aprovado pelo polling. Aguardando interação do usuário para redirecionar.");
+      // ID 2: Removido o redirecionamento automático imediato sem interação,
+      // pois navegadores mobile/iOS frequentemente bloqueiam redirecionamentos
+      // que não sejam disparados por um clique direto do usuário.
     };
 
     const checkPayment = async () => {
