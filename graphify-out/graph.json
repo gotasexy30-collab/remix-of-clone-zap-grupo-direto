@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T18:40:42.259265+00:00",
+  "generated_at": "2026-09-15T19:06:28.752135+00:00",
   "files": [
     {
       "path": "components.json",
@@ -139,11 +139,11 @@
     },
     {
       "path": "supabase/functions/generate-pix-nexus/index.ts",
-      "bytes": 3869
+      "bytes": 4898
     },
     {
       "path": "supabase/functions/mp-pix/index.ts",
-      "bytes": 7432
+      "bytes": 7652
     },
     {
       "path": "supabase/functions/nexuspag-webhook/index.ts",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 26906
+      "bytes": 26839
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
