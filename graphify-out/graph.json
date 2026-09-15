@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T18:25:58.286331+00:00",
+  "generated_at": "2026-09-15T18:40:42.259265+00:00",
   "files": [
     {
       "path": "components.json",
@@ -139,11 +139,11 @@
     },
     {
       "path": "supabase/functions/generate-pix-nexus/index.ts",
-      "bytes": 3897
+      "bytes": 3869
     },
     {
       "path": "supabase/functions/mp-pix/index.ts",
-      "bytes": 7695
+      "bytes": 7432
     },
     {
       "path": "supabase/functions/nexuspag-webhook/index.ts",
@@ -593,11 +593,11 @@
     },
     {
       "source": "supabase/functions/generate-pix-nexus/index.ts",
-      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
+      "target": "@supabase/supabase-js"
     },
     {
       "source": "supabase/functions/mp-pix/index.ts",
-      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
+      "target": "@supabase/supabase-js"
     },
     {
       "source": "supabase/functions/nexuspag-webhook/index.ts",
