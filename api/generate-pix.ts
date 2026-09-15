@@ -194,7 +194,7 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const amount = body?.amount || 1.00;
+    const amount = body?.amount || 19.90;
 
     // ---- Consulta de status (NÃO gera um novo PIX) ----
     if (body?.action === 'check_status') {
@@ -223,7 +223,7 @@ export default async function handler(req, res) {
               transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id,
             );
             const paidAmount = Number(
-              transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 1.00,
+              transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90,
             );
             const inserted = await recordApprovedPurchase({
               paymentId,
