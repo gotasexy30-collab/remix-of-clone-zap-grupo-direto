@@ -36,23 +36,19 @@ async function getSetting(settingKey: string): Promise<string> {
 }
 
 async function fetchVerifiedTransaction(id: string, apiKey: string): Promise<any | null> {
-  const endpoints = [
-    `https://nexuspag.com/api/pix/status/${encodeURIComponent(id)}`,
-    `https://nexuspag.com/api/transactions/${encodeURIComponent(id)}`,
-  ];
-
-  for (const endpoint of endpoints) {
-    try {
-      const response = await fetch(endpoint, { headers: { 'x-api-key': apiKey } });
-      const text = await response.text();
-      if (!response.ok) continue;
-      const data = JSON.parse(text);
-      return data?.transaction ?? data?.data ?? data;
-    } catch {
-      // Tenta o próximo endpoint oficial.
-    }
+  // Endpoint oficial da NexusPag para consultar um PIX.
+  try {
+    const response = await fetch(
+      `https://nexuspag.com/api/pix/${encodeURIComponent(id)}`,
+      { headers: { 'x-api-key': apiKey } },
+    );
+    const text = await response.text();
+    if (!response.ok) return null;
+    const data = JSON.parse(text);
+    return data?.transaction ?? data?.data ?? data;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 async function recordPurchase(paymentId: string, amount: number, sessionId: string): Promise<boolean> {
