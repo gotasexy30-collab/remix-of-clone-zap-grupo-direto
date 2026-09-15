@@ -191,7 +191,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
       const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-      if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 1200);
+      if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 2000);
       else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
     };
     const checkPayment = async () => {
@@ -277,7 +277,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         const eventId = `np_${pix.id}`;
         fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
         const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-        if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 1200);
+        if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 2000);
         else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
@@ -349,12 +349,33 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                 </div>
 
                 {paymentStatus === 'approved' ? (
-                  <div className="w-full text-center py-6">
+                  <div className="w-full text-center py-6 flex flex-col items-center">
                     <div className="w-16 h-16 mx-auto rounded-full bg-[#16A349] flex items-center justify-center mb-3">
                       <Check size={36} className="text-white" />
                     </div>
-                    <h3 className="text-xl font-black text-[#16A349] mb-1">PAGAMENTO APROVADO!</h3>
-                    <p className="text-gray-500 text-sm">Liberando seu acesso...</p>
+                    <h3 className="text-xl font-black text-[#16A349] mb-2">PAGAMENTO APROVADO!</h3>
+                    <p className="text-gray-500 text-sm mb-6">Seu acesso foi liberado com sucesso.</p>
+
+                    {(() => {
+                      const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
+                      if (destination) {
+                        return (
+                          <button
+                            onClick={() => window.location.assign(appendUTMsToUrl(destination))}
+                            className="w-full bg-[#16A349] hover:bg-[#15803d] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 animate-pulse"
+                          >
+                            ACESSAR CONTEÚDO AGORA
+                          </button>
+                        );
+                      }
+                      return (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg w-full">
+                          <p className="text-red-600 text-sm font-medium">
+                            Link de acesso não configurado. Por favor, contate o suporte.
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : !pix ? (
                   <>
