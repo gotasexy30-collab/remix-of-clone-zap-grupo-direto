@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T20:55:38.054664+00:00",
+  "generated_at": "2026-09-15T20:55:56.721806+00:00",
   "files": [
     {
       "path": "components.json",
@@ -91,7 +91,7 @@
     },
     {
       "path": "api/nexuspag-webhook.ts",
-      "bytes": 6710
+      "bytes": 6570
     },
     {
       "path": "src/App.css",
