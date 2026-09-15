@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     const { amount, name, cpf, email, description, metadata } = body;
 
     // Default values if not provided for simplicity in the chat app
-    const finalAmount = amount || 19.90;
+    const finalAmount = 1.00;
     const finalName = name || 'Cliente VIP';
     const finalCpf = cpf || '00000000000';
     const finalEmail = email || 'cliente@exemplo.com';
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
   }
 });

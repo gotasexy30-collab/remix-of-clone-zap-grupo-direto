@@ -1,5 +1,5 @@
 // NexusPag PIX integration (mantém o nome mp-pix p/ não quebrar o frontend)
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,10 +92,7 @@ function normalizeStatus(s: any): string {
 }
 
 async function createPix(body: any) {
-  // Enforce minimum price server-side; ignore client-supplied amounts below the configured price.
-  const MIN_AMOUNT = 19.9;
-  const requested = Number(body.amount);
-  const amount = Number.isFinite(requested) && requested >= MIN_AMOUNT ? requested : MIN_AMOUNT;
+  const amount = 1.00;
   const description = body.description || "Acesso Clube Secreto VIP";
   const sessionId = body.session_id || "";
   const externalId = body.external_id || `${sessionId || "anon"}_${PROJECT_TAG}_${Date.now()}`;
