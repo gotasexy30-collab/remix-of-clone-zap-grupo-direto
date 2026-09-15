@@ -194,7 +194,7 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const amount = body?.amount || 1.00;
+    const amount = body?.amount || 19.90;
 
     // ---- Consulta de status (NÃO gera um novo PIX) ----
     if (body?.action === 'check_status') {
@@ -223,7 +223,7 @@ export default async function handler(req, res) {
               transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id,
             );
             const paidAmount = Number(
-              transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 1.00,
+              transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90,
             );
             const inserted = await recordApprovedPurchase({
               paymentId,
@@ -238,20 +238,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'pending' });
     }
 
-    // Novo payload no formato exato exigido pela documentação da NexusPag
     const forwardedHost = String(req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim();
     const forwardedProto = String(req.headers?.['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const webhookUrl = forwardedHost ? `${forwardedProto}://${forwardedHost}/api/nexuspag-webhook` : undefined;
     const clientMetadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
     const payload = {
-      amount: Number(amount), // Valor em reais, não em centavos
+      amount: Number(amount),
       description: body?.description || "Acesso Clube Secreto",
-      external_id: "pedido-" + Date.now(), // Usado como chave de idempotência
+      external_id: "pedido-" + Date.now(),
       metadata: clientMetadata,
       ...(webhookUrl ? { webhook_url: webhookUrl } : {}),
     };
 
-    // Nova URL e Headers corretos
     const response = await fetch('https://nexuspag.com/api/pix/create', {
       method: 'POST',
       headers: {
@@ -262,28 +260,24 @@ export default async function handler(req, res) {
     });
 
     const responseText = await response.text();
-    
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (parseError) {
-      return res.status(502).json({ 
-        error: "Formato inválido retornado. URL Incorreta.", 
-        details: responseText.substring(0, 300) 
+      return res.status(502).json({
+        error: "Formato inválido retornado. URL Incorreta.",
+        details: responseText.substring(0, 300)
       });
     }
 
-    // A NexusPag retorna success: true ou false
     if (!response.ok || !data.success) {
-      return res.status(response.status || 400).json({ 
-        error: data.message || 'Erro recusado pela NexusPag', 
-        details: data 
+      return res.status(response.status || 400).json({
+        error: data.message || 'Erro recusado pela NexusPag',
+        details: data
       });
     }
 
-    // O retorno da NexusPag fica encapsulado dentro de "transaction"
     const tx = data.transaction;
-    
     return res.status(200).json({
       id: tx.id,
       qr_code: tx.pix_copia_cola || "",
