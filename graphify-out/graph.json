@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T16:48:43.737553+00:00",
+  "generated_at": "2026-09-15T17:18:00.017798+00:00",
   "files": [
     {
       "path": "components.json",
@@ -87,7 +87,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 10219
+      "bytes": 10217
     },
     {
       "path": "api/nexuspag-webhook.ts",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 28046
+      "bytes": 28044
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
