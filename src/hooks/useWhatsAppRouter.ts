@@ -29,12 +29,18 @@ async function logLead(payload: any) {
   }
 }
 
+function formatUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}
+
 export function useWhatsAppRouter() {
   const pending = useRef(false);
 
   const redirect = useCallback(
-    async (messageText = "", fallbackUrl?: string) => {
-      if (pending.current) return;
+    async (messageText = "", fallbackUrl?: string): Promise<boolean> => {
+      if (pending.current) return false;
       pending.current = true;
       try {
         // Obter todos os números ativos
@@ -45,8 +51,11 @@ export function useWhatsAppRouter() {
           .eq("manually_disabled", false);
 
         if (error || !numbers || numbers.length === 0) {
-          if (fallbackUrl) window.location.assign(fallbackUrl);
-          return;
+          if (fallbackUrl) {
+            window.location.assign(formatUrl(fallbackUrl));
+            return true;
+          }
+          return false;
         }
 
         // Selecionar um número aleatório (round-robin simples ou random)
@@ -62,9 +71,14 @@ export function useWhatsAppRouter() {
           session_id: getSessionId(),
         });
 
-        window.location.assign(appendUTMsToUrl(link));
+        window.location.assign(appendUTMsToUrl(formatUrl(link)));
+        return true;
       } catch {
-        if (fallbackUrl) window.location.assign(fallbackUrl);
+        if (fallbackUrl) {
+          window.location.assign(formatUrl(fallbackUrl));
+          return true;
+        }
+        return false;
       } finally {
         pending.current = false;
       }

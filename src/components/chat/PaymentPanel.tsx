@@ -5,6 +5,7 @@ import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
 import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrackingContext } from '../../services/pixel';
 import { supabase } from '@/integrations/supabase/client';
+import { useWhatsAppRouter } from '@/hooks/useWhatsAppRouter';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -56,6 +57,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || ''
   );
   const paymentHandledRef = useRef(false);
+  const { redirect } = useWhatsAppRouter();
 
   useEffect(() => {
     (async () => {
@@ -108,7 +110,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       { id: 2, phone: generatePhone(userDDD), content: "Vou fazer ele esperar, olha como eu to agora gente", avatar: "https://midia.jdfnu287h7dujn2jndjsifd.com/IMG-20230920-204325646464.webp", delay: 1500, time: getCurrentTime() },
       { id: 3, phone: generatePhone(userDDD), media: { type: 'image', url: "https://midia.jdfnu287h7dujn2jndjsifd.com/IMG-20240925-211627.webp" }, avatar: "https://midia.jdfnu287h7dujn2jndjsifd.com/IMG-20230920-204325646464.webp", delay: 1000, time: getCurrentTime() },
       { id: 4, phone: generatePhone(userDDD === '11' ? '21' : '11'), content: "O meu ja adestrei, pica nova todo dia kkk", avatar: "https://midia.jdfnu287h7dujn2jndjsifd.com/1718211968653.webp", delay: 2000, time: getCurrentTime() },
-      { id: 5, phone: generatePhone(userDDD), content: "Genteee, o Paulo que entrou ontem me comeu tao bem", avatar: "https://midia.jdfnu287h7dujn2jndjsifd.com/1641853871190.webp", delay: 2000, time: getCurrentTime() }
+      { id: 5, phone: generatePhone(userDDD), content: "Genteee, o Paulo que entrou ontem me me comeu tao bem", avatar: "https://midia.jdfnu287h7dujn2jndjsifd.com/1641853871190.webp", delay: 2000, time: getCurrentTime() }
     ];
 
     const processNextMessage = async () => {
@@ -142,7 +144,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setPixLoading(true);
     setPixError('');
     try {
-      // Chamando a nova API Route interna da Vercel
       const response = await fetch('/api/generate-pix', {
         method: 'POST',
         headers: {
@@ -182,7 +183,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   useEffect(() => {
     if (!pix?.id || paymentStatus === 'approved') return;
     const startedAt = Date.now();
-    const MAX_POLL_MS = 12 * 60 * 1000; // para PIX abandonado: não consulta para sempre
+    const MAX_POLL_MS = 12 * 60 * 1000;
+    
     const finishApprovedPayment = () => {
       if (paymentHandledRef.current) return;
       paymentHandledRef.current = true;
@@ -190,17 +192,37 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (pollRef.current) clearInterval(pollRef.current);
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
+      
       const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-      if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 2000);
-      else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+      setTimeout(async () => {
+        const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+        if (!success) {
+          if (destination) {
+            window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
+          } else {
+            setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+          }
+        }
+      }, 2000);
     };
+
     const checkPayment = async () => {
-      // Encerra o polling de sessões abandonadas para economizar chamadas
       if (Date.now() - startedAt > MAX_POLL_MS) {
         if (pollRef.current) clearInterval(pollRef.current);
         return;
       }
       try {
+        const { data: dbData } = await supabase
+          .from('purchases')
+          .select('status')
+          .eq('mp_payment_id', String(pix.id))
+          .maybeSingle();
+
+        if (dbData?.status === 'approved') {
+          finishApprovedPayment();
+          return;
+        }
+
         const sessionId = sessionStorage.getItem('wa_session_id') || '';
         const response = await fetch('/api/generate-pix', {
           method: 'POST',
@@ -216,7 +238,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     void checkPayment();
     pollRef.current = setInterval(checkPayment, 3000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [pix?.id, paymentStatus, successUrl]);
+  }, [pix?.id, paymentStatus, successUrl, redirect]);
 
   const handleCopy = async () => {
     if (!pix?.qr_code) return;
@@ -264,6 +286,38 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setNotPaidMsg('');
     logTrackedEvent('AlreadyPaid');
     try {
+      const { data: dbData } = await supabase
+        .from('purchases')
+        .select('status')
+        .eq('mp_payment_id', String(pix.id))
+        .maybeSingle();
+
+      const finishAndRedirect = async () => {
+        if (paymentHandledRef.current) return;
+        paymentHandledRef.current = true;
+        setPaymentStatus('approved');
+        if (pollRef.current) clearInterval(pollRef.current);
+        const eventId = `np_${pix.id}`;
+        fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
+        
+        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
+        setTimeout(async () => {
+           const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+           if (!success) {
+             if (destination) {
+               window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
+             } else {
+               setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+             }
+           }
+        }, 2000);
+      };
+
+      if (dbData?.status === 'approved') {
+        await finishAndRedirect();
+        return;
+      }
+
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
       const response = await fetch('/api/generate-pix', {
         method: 'POST',
@@ -272,13 +326,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       });
       const data = await response.json();
       if (data?.status === 'approved') {
-        setPaymentStatus('approved');
-        if (pollRef.current) clearInterval(pollRef.current);
-        const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
-        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-        if (destination) setTimeout(() => window.location.assign(appendUTMsToUrl(destination)), 2000);
-        else setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+        await finishAndRedirect();
       } else {
         setNotPaidMsg('amor so esta faltando voce pagar pra me te adicionar no grupo vem logo safado🔥');
         setTimeout(() => notPaidRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
@@ -356,26 +404,28 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                     <h3 className="text-xl font-black text-[#16A349] mb-2">PAGAMENTO APROVADO!</h3>
                     <p className="text-gray-500 text-sm mb-6">Seu acesso foi liberado com sucesso.</p>
 
-                    {(() => {
-                      const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-                      if (destination) {
-                        return (
-                          <button
-                            onClick={() => window.location.assign(appendUTMsToUrl(destination))}
-                            className="w-full bg-[#16A349] hover:bg-[#15803d] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 animate-pulse"
-                          >
-                            ACESSAR CONTEÚDO AGORA
-                          </button>
-                        );
-                      }
-                      return (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg w-full">
-                          <p className="text-red-600 text-sm font-medium">
-                            Link de acesso não configurado. Por favor, contate o suporte.
-                          </p>
-                        </div>
-                      );
-                    })()}
+                    <button
+                      onClick={async () => {
+                        const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
+                        const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+                        if (!success) {
+                          if (destination) {
+                            window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
+                          } else {
+                            setNotPaidMsg('Link de acesso não configurado. Por favor, contate o suporte.');
+                          }
+                        }
+                      }}
+                      className="w-full bg-[#16A349] hover:bg-[#15803d] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 animate-pulse"
+                    >
+                      ACESSAR CONTEÚDO AGORA
+                    </button>
+                    
+                    {notPaidMsg && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg w-full">
+                        <p className="text-red-600 text-sm font-medium">{notPaidMsg}</p>
+                      </div>
+                    )}
                   </div>
                 ) : !pix ? (
                   <>

@@ -1,5 +1,5 @@
 // NexusPag webhook — registra PIX aprovado server-side
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -74,6 +74,7 @@ async function sendCapiPurchase(paymentId: string, amount: number, metadata: Rec
 function normalizeStatus(s: any): string {
   const v = String(s || "").toLowerCase();
   if (["paid", "approved", "completed", "confirmed", "success"].includes(v)) return "approved";
+  return v;
 }
 
 async function processPayment(idOrPayload: any) {
@@ -93,6 +94,14 @@ async function processPayment(idOrPayload: any) {
   const res = await fetch(`${NEXUS_API}/transactions/${id}`, {
     headers: { "Authorization": `Bearer ${NEXUS_KEY}` },
   });
+
+  let data;
+  try {
+    data = await res.json();
+  } catch(e) {
+    console.error("Error parsing JSON from nexuspag:", e);
+    return;
+  }
 
   const status = normalizeStatus(data?.status);
   if (status !== "approved") {
