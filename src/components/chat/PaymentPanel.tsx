@@ -42,6 +42,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
   const [checkingManual, setCheckingManual] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [notPaidMsg, setNotPaidMsg] = useState('');
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -196,6 +197,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
       setTimeout(async () => {
         console.log("Disparando redirecionamento automático pós-pagamento aprovado...");
+        setIsRedirecting(true);
         try {
           const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
           console.log("Redirecionamento automático router:", success);
@@ -203,16 +205,20 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
             if (destination) {
               const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
               console.log("Redirecionando automático para fallback (href):", finalUrl);
-              window.location.href = finalUrl;
+              window.location.href = appendUTMsToUrl(finalUrl);
             } else {
               console.log("Nenhum destino automático configurado.");
               setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+              setIsRedirecting(false);
             }
           }
         } catch (e) {
           console.error("Erro no redirecionamento automático:", e);
           if (destination) {
-            window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
+            const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+            window.location.href = appendUTMsToUrl(finalUrl);
+          } else {
+            setIsRedirecting(false);
           }
         }
       }, 2000);
@@ -315,6 +321,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
         setTimeout(async () => {
            console.log("Disparando redirecionamento manual pós-pagamento...");
+           setIsRedirecting(true);
            try {
              const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
              console.log("Redirecionamento manual router:", success);
@@ -322,16 +329,20 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                if (destination) {
                  const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
                  console.log("Redirecionando manual para fallback (href):", finalUrl);
-                 window.location.href = finalUrl;
+                 window.location.href = appendUTMsToUrl(finalUrl);
                } else {
                  console.log("Nenhum destino manual configurado.");
                  setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+                 setIsRedirecting(false);
                }
              }
            } catch (e) {
              console.error("Erro no redirecionamento manual:", e);
              if (destination) {
-               window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
+               const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+               window.location.href = appendUTMsToUrl(finalUrl);
+             } else {
+               setIsRedirecting(false);
              }
            }
         }, 2000);
@@ -429,6 +440,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                     <button
                       onClick={async () => {
+                        if (isRedirecting) return;
+                        setIsRedirecting(true);
                         console.log("Botão de acesso ao conteúdo clicado.");
                         const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
                         console.log("Destino resolvido:", destination);
@@ -439,22 +452,31 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
                             if (destination) {
                               const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
                               console.log("Redirecionando botão para fallback (href):", finalUrl);
-                              window.location.href = finalUrl;
+                              window.location.href = appendUTMsToUrl(finalUrl);
                             } else {
                               console.log("Nenhum destino de botão configurado.");
                               setNotPaidMsg('Link de acesso não configurado. Por favor, contate o suporte.');
+                              setIsRedirecting(false);
                             }
                           }
                         } catch (e) {
                           console.error("Erro no redirecionamento do botão:", e);
                           if (destination) {
-                            window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
+                            const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+                            window.location.href = appendUTMsToUrl(finalUrl);
+                          } else {
+                            setIsRedirecting(false);
                           }
                         }
                       }}
-                      className="w-full bg-[#16A349] hover:bg-[#15803d] text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 animate-pulse"
+                      disabled={isRedirecting}
+                      className={`w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${isRedirecting ? 'opacity-70' : 'hover:bg-[#15803d] active:scale-[0.98] animate-pulse'}`}
                     >
-                      ACESSAR CONTEÚDO AGORA
+                      {isRedirecting ? (
+                        <><Loader2 size={24} className="animate-spin" /> REDIRECIONANDO...</>
+                      ) : (
+                        'ACESSAR CONTEÚDO AGORA'
+                      )}
                     </button>
                     
                     {notPaidMsg && (

@@ -54,7 +54,8 @@ export function useWhatsAppRouter() {
         if (error || !numbers || numbers.length === 0) {
           console.log("Nenhum número WhatsApp ativo encontrado. Usando fallback URL.");
           if (fallbackUrl) {
-            window.location.href = formatUrl(fallbackUrl);
+            const finalFallbackUrl = appendUTMsToUrl(formatUrl(fallbackUrl));
+            window.location.href = finalFallbackUrl;
             return true;
           }
           return false;
@@ -80,7 +81,7 @@ export function useWhatsAppRouter() {
       } catch (err) {
         console.error("Erro no WhatsApp Router:", err);
         if (fallbackUrl) {
-          const finalFallbackUrl = formatUrl(fallbackUrl);
+          const finalFallbackUrl = appendUTMsToUrl(formatUrl(fallbackUrl));
           console.log("Usando URL de fallback devido a erro no router:", finalFallbackUrl);
           window.location.href = finalFallbackUrl;
           return true;
