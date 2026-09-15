@@ -31,7 +31,7 @@ interface GroupMessage {
   delay?: number;
 }
 
-// ID 1: Helper para identificar corretamente os status de aprovação de qualquer webhook ou API
+// Helper para identificar corretamente os status de aprovação de qualquer webhook ou API
 const isApprovedStatus = (status?: string | null): boolean => {
   if (!status) return false;
   const normalized = status.toLowerCase().trim();
@@ -65,11 +65,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     localStorage.getItem('pix_success_url') || ''
   );
   const paymentHandledRef = useRef(false);
+  const redirectingRef = useRef(false);
   const { redirect } = useWhatsAppRouter();
 
   useEffect(() => {
     (async () => {
-      // ID 0: Garantindo que lemos a mesma chave que é salva pelo ChatDashboard
       const [videoUrl, configuredSuccessUrl, fallbackUrl] = await Promise.all([
         getSetting('pix_tutorial_video_url'),
         getSetting('pix_success_url'),
@@ -192,6 +192,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   };
 
   const triggerRedirect = async () => {
+    if (redirectingRef.current) return;
+    redirectingRef.current = true;
     setIsRedirecting(true);
     setNotPaidMsg('');
     try {
@@ -225,10 +227,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (!success) {
         setNotPaidMsg('O link de acesso não está configurado. Contate o suporte.');
         setIsRedirecting(false);
+        redirectingRef.current = false;
       }
     } catch (err) {
       console.error("Erro no redirecionamento:", err);
       setIsRedirecting(false);
+      redirectingRef.current = false;
       setNotPaidMsg('Erro ao tentar redirecionar. Atualize a página e clique no botão novamente.');
     }
   };
@@ -246,10 +250,12 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       const eventId = `np_${pix.id}`;
       fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
       
-      console.log("Pagamento aprovado pelo polling. Aguardando interação do usuário para redirecionar.");
-      // ID 2: Removido o redirecionamento automático imediato sem interação,
-      // pois navegadores mobile/iOS frequentemente bloqueiam redirecionamentos
-      // que não sejam disparados por um clique direto do usuário.
+      console.log("Pagamento aprovado pelo polling. Redirecionando automaticamente...");
+      
+      // Redirecionamento automático como fallback caso o usuário não clique
+      setTimeout(() => {
+        triggerRedirect();
+      }, 3000);
     };
 
     const checkPayment = async () => {
@@ -264,7 +270,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           .eq('mp_payment_id', String(pix.id))
           .maybeSingle();
 
-        // ID 1: Usando função de validação robusta para variações de status
         if (isApprovedStatus(dbData?.status)) {
           finishApprovedPayment();
           return;
@@ -340,13 +345,13 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         .maybeSingle();
 
       const finishAndRedirect = async () => {
-        if (paymentHandledRef.current) return;
-        paymentHandledRef.current = true;
-        setPaymentStatus('approved');
-        if (pollRef.current) clearInterval(pollRef.current);
-        const eventId = `np_${pix.id}`;
-        fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
-        
+        if (!paymentHandledRef.current) {
+          paymentHandledRef.current = true;
+          setPaymentStatus('approved');
+          if (pollRef.current) clearInterval(pollRef.current);
+          const eventId = `np_${pix.id}`;
+          fbqTrack('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, { eventID: eventId });
+        }
         console.log("Disparando redirecionamento manual imediato...");
         await triggerRedirect();
       };

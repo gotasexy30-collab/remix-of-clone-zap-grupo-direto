@@ -170,29 +170,37 @@ async function checkStatus(body: any) {
   if (status === "approved") {
     const md = data?.metadata || {};
     const paymentSessionId = md?.session_id || sessionId;
-    const amount = Number(data?.amount ?? data?.transaction_amount) || 0;
+    const amount = Number(data?.amount ?? data?.transaction_amount) || 1.00;
     const paymentId = pickId(data) || String(id);
 
-    const { data: inserted } = await supabase
+    const { data: existing } = await supabase
       .from("purchases")
-      .insert({
-        mp_payment_id: paymentId,
-        amount,
-        session_id: paymentSessionId,
-        status: "approved",
-        approved_at: data?.paid_at || data?.date_approved || new Date().toISOString(),
-      })
-      .select()
+      .select("id")
+      .eq("mp_payment_id", paymentId)
       .maybeSingle();
 
-    if (inserted) {
-      await supabase.from("tracked_events").insert({
-        event_name: "Purchase",
-        session_id: paymentSessionId,
-        slug: "webhook",
-      });
+    if (!existing) {
+      const { data: inserted } = await supabase
+        .from("purchases")
+        .insert({
+          mp_payment_id: paymentId,
+          amount,
+          session_id: paymentSessionId,
+          status: "approved",
+          approved_at: data?.paid_at || data?.date_approved || new Date().toISOString(),
+        })
+        .select()
+        .maybeSingle();
+
+      if (inserted) {
+        await supabase.from("tracked_events").insert({
+          event_name: "Purchase",
+          session_id: paymentSessionId,
+          slug: "polling",
+        });
+      }
+      await sendCapiPurchase(paymentId, amount, md);
     }
-    await sendCapiPurchase(paymentId, amount, md);
   }
 
   return {

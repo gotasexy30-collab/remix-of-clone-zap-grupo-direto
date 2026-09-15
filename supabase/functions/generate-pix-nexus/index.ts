@@ -55,6 +55,40 @@ Deno.serve(async (req) => {
       const status = data.status; // NexusPag status: pending, approved, refused, etc.
       const normalizedStatus = (status === "approved" || status === "paid") ? "approved" : status;
 
+      // Registro no banco caso seja aprovado e o webhook tenha falhado/atrasado
+      if (normalizedStatus === "approved") {
+        const sessionId = body.session_id || "";
+        const amount = body.amount || 1.00;
+        
+        const { data: existing } = await supabase
+          .from("purchases")
+          .select("id")
+          .eq("mp_payment_id", String(id))
+          .maybeSingle();
+
+        if (!existing) {
+          const { data: inserted } = await supabase
+            .from("purchases")
+            .insert({
+              mp_payment_id: String(id),
+              amount: amount,
+              session_id: sessionId,
+              status: "approved",
+              approved_at: new Date().toISOString(),
+            })
+            .select()
+            .maybeSingle();
+
+          if (inserted) {
+            await supabase.from("tracked_events").insert({
+              event_name: "Purchase",
+              session_id: sessionId,
+              slug: "polling"
+            });
+          }
+        }
+      }
+
       return new Response(JSON.stringify({ id, status: normalizedStatus }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
