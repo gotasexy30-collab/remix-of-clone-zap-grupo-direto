@@ -82,30 +82,38 @@ export default async function handler(req, res) {
     if (!NEXUSPAG_API_KEY) return res.status(500).json({ error: 'Erro no Servidor: NEXUSPAG_API_KEY não encontrada.' });
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const amount = body?.amount || 1.00;
+
     if (body?.action === 'check_status') {
       const id = String(body?.id || '');
       if (!id) return res.status(400).json({ error: 'id obrigatório' });
-      const endpoints = [`https://nexuspag.com/api/pix/status/${encodeURIComponent(id)}`, `https://nexuspag.com/api/transactions/${encodeURIComponent(id)}`];
-      for (const url of endpoints) {
-        try {
-          const r = await fetch(url, { headers: { 'x-api-key': NEXUSPAG_API_KEY } });
-          const t = await r.text();
-          let d; try { d = JSON.parse(t); } catch { continue; }
-          if (!r.ok) continue;
-          const raw = normalizeStatus(d?.transaction?.status ?? d?.data?.status ?? d?.status ?? '');
-          const approved = APPROVED_STATUSES.has(raw);
-          if (approved) {
-            const transaction = d?.transaction ?? d?.data ?? d;
-            const paymentId = String(transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id);
-            const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 1.00);
-            const inserted = await recordApprovedPurchase({ paymentId, amount: paidAmount, sessionId: String(body?.session_id || '') });
-            if (inserted) await sendCapiPurchase({ paymentId, amount: paidAmount, req });
-          }
-          return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
-        } catch {}
+
+      // Endpoint oficial da NexusPag para consultar um PIX.
+      // A própria NexusPag informa que esta consulta sincroniza o status com o gateway quando necessário.
+      const url = `https://nexuspag.com/api/pix/${encodeURIComponent(id)}`;
+      const r = await fetch(url, { headers: { 'x-api-key': NEXUSPAG_API_KEY } });
+      const t = await r.text();
+      let d;
+      try {
+        d = JSON.parse(t);
+      } catch {
+        return res.status(502).json({ status: 'pending', error: 'Resposta inválida da NexusPag' });
       }
-      return res.status(200).json({ status: 'pending' });
+      if (!r.ok) {
+        return res.status(200).json({ status: 'pending' });
+      }
+
+      const raw = normalizeStatus(d?.transaction?.status ?? d?.data?.status ?? d?.status ?? '');
+      const approved = APPROVED_STATUSES.has(raw);
+      if (approved) {
+        const transaction = d?.transaction ?? d?.data ?? d;
+        const paymentId = String(transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id);
+        const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 1.00);
+        const inserted = await recordApprovedPurchase({ paymentId, amount: paidAmount, sessionId: String(body?.session_id || '') });
+        if (inserted) await sendCapiPurchase({ paymentId, amount: paidAmount, req });
+      }
+      return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
     }
+
     const forwardedHost = String(req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim();
     const forwardedProto = String(req.headers?.['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const webhookUrl = forwardedHost ? `${forwardedProto}://${forwardedHost}/api/nexuspag-webhook` : undefined;
