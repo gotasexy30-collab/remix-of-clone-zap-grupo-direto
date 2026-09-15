@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15T01:52:31.821461+00:00",
+  "generated_at": "2026-09-15T02:47:25.697355+00:00",
   "files": [
     {
       "path": "components.json",
@@ -147,7 +147,7 @@
     },
     {
       "path": "supabase/functions/nexuspag-webhook/index.ts",
-      "bytes": 5071
+      "bytes": 5201
     },
     {
       "path": "src/services/tracking.ts",
@@ -175,7 +175,7 @@
     },
     {
       "path": "src/hooks/useWhatsAppRouter.ts",
-      "bytes": 2241
+      "bytes": 2613
     },
     {
       "path": "src/hooks/use-mobile.tsx",
@@ -447,7 +447,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 24547
+      "bytes": 25989
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
@@ -601,7 +601,7 @@
     },
     {
       "source": "supabase/functions/nexuspag-webhook/index.ts",
-      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
+      "target": "@supabase/supabase-js"
     },
     {
       "source": "src/services/tracking.ts",
@@ -1610,6 +1610,10 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "@/hooks/useWhatsAppRouter"
     },
     {
       "source": "src/components/chat/AudioBubble.tsx",
