@@ -43,6 +43,7 @@ export function useWhatsAppRouter() {
       if (pending.current) return false;
       pending.current = true;
       try {
+        console.log("Iniciando redirecionamento WhatsApp Router...");
         // Obter todos os números ativos
         const { data: numbers, error } = await supabase
           .from("whatsapp_numbers")
@@ -51,8 +52,9 @@ export function useWhatsAppRouter() {
           .eq("manually_disabled", false);
 
         if (error || !numbers || numbers.length === 0) {
+          console.log("Nenhum número WhatsApp ativo encontrado. Usando fallback URL.");
           if (fallbackUrl) {
-            window.location.assign(formatUrl(fallbackUrl));
+            window.location.href = formatUrl(fallbackUrl);
             return true;
           }
           return false;
@@ -71,11 +73,16 @@ export function useWhatsAppRouter() {
           session_id: getSessionId(),
         });
 
-        window.location.assign(appendUTMsToUrl(formatUrl(link)));
+        const finalUrl = appendUTMsToUrl(formatUrl(link));
+        console.log("URL final WhatsApp resolvida:", finalUrl);
+        window.location.href = finalUrl;
         return true;
-      } catch {
+      } catch (err) {
+        console.error("Erro no WhatsApp Router:", err);
         if (fallbackUrl) {
-          window.location.assign(formatUrl(fallbackUrl));
+          const finalFallbackUrl = formatUrl(fallbackUrl);
+          console.log("Usando URL de fallback devido a erro no router:", finalFallbackUrl);
+          window.location.href = finalFallbackUrl;
           return true;
         }
         return false;

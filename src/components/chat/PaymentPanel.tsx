@@ -195,12 +195,24 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       
       const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
       setTimeout(async () => {
-        const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-        if (!success) {
+        console.log("Disparando redirecionamento automático pós-pagamento aprovado...");
+        try {
+          const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+          console.log("Redirecionamento automático router:", success);
+          if (!success) {
+            if (destination) {
+              const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+              console.log("Redirecionando automático para fallback (href):", finalUrl);
+              window.location.href = finalUrl;
+            } else {
+              console.log("Nenhum destino automático configurado.");
+              setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+            }
+          }
+        } catch (e) {
+          console.error("Erro no redirecionamento automático:", e);
           if (destination) {
-            window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
-          } else {
-            setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+            window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
           }
         }
       }, 2000);
@@ -302,12 +314,24 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         
         const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
         setTimeout(async () => {
-           const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-           if (!success) {
+           console.log("Disparando redirecionamento manual pós-pagamento...");
+           try {
+             const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+             console.log("Redirecionamento manual router:", success);
+             if (!success) {
+               if (destination) {
+                 const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+                 console.log("Redirecionando manual para fallback (href):", finalUrl);
+                 window.location.href = finalUrl;
+               } else {
+                 console.log("Nenhum destino manual configurado.");
+                 setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+               }
+             }
+           } catch (e) {
+             console.error("Erro no redirecionamento manual:", e);
              if (destination) {
-               window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
-             } else {
-               setNotPaidMsg('Pagamento aprovado, mas o link de acesso não está configurado. Entre em contato com o suporte.');
+               window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
              }
            }
         }, 2000);
@@ -406,13 +430,26 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                     <button
                       onClick={async () => {
+                        console.log("Botão de acesso ao conteúdo clicado.");
                         const destination = successUrl || localStorage.getItem('pix_success_url') || localStorage.getItem('payment_redirect_link') || '';
-                        const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
-                        if (!success) {
+                        console.log("Destino resolvido:", destination);
+                        try {
+                          const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', destination);
+                          console.log("Redirecionamento botão router:", success);
+                          if (!success) {
+                            if (destination) {
+                              const finalUrl = destination.startsWith('http') ? destination : `https://${destination}`;
+                              console.log("Redirecionando botão para fallback (href):", finalUrl);
+                              window.location.href = finalUrl;
+                            } else {
+                              console.log("Nenhum destino de botão configurado.");
+                              setNotPaidMsg('Link de acesso não configurado. Por favor, contate o suporte.');
+                            }
+                          }
+                        } catch (e) {
+                          console.error("Erro no redirecionamento do botão:", e);
                           if (destination) {
-                            window.location.assign(destination.startsWith('http') ? destination : `https://${destination}`);
-                          } else {
-                            setNotPaidMsg('Link de acesso não configurado. Por favor, contate o suporte.');
+                            window.location.href = destination.startsWith('http') ? destination : `https://${destination}`;
                           }
                         }
                       }}
