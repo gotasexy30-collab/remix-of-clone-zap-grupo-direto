@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T02:19:48.996484+00:00",
+  "generated_at": "2026-09-16T03:28:38.339791+00:00",
   "files": [
     {
       "path": "components.json",
@@ -87,7 +87,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 8263
+      "bytes": 8076
     },
     {
       "path": "api/nexuspag-webhook.ts",
