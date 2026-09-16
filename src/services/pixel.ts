@@ -14,8 +14,7 @@ const eventQueue: Array<{ method: string, args: any[] }> = [];
 
 export async function initMetaPixel(): Promise<void> {
   if (pixelLoaded) return;
-  
-  // Criação de objeto temporário (dummy) para evitar falhas antes do script principal injetar fbq
+
   if (!window.fbq) {
     window.fbq = function() {
       if ((window.fbq as any)?.callMethod) (window.fbq as any).callMethod.apply(window.fbq, arguments);
@@ -33,7 +32,6 @@ export async function initMetaPixel(): Promise<void> {
 
   currentPixelId = pixelId;
 
-  // Standard Meta Pixel snippet com inserção mais resiliente
   (function (f: any, b, e, v, n?: any, t?: any, s?: any) {
     if (f.fbq && f.fbq.version) return;
     n = f.fbq = function () {
@@ -48,37 +46,26 @@ export async function initMetaPixel(): Promise<void> {
     t.async = !0;
     t.src = v;
     s = b.getElementsByTagName(e)[0];
-    if (s && s.parentNode) {
-      s.parentNode.insertBefore(t, s);
-    } else {
-      b.head.appendChild(t);
-    }
+    if (s && s.parentNode) s.parentNode.insertBefore(t, s);
+    else b.head.appendChild(t);
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
 
   window.fbq?.('init', pixelId);
   window.fbq?.('track', 'PageView');
   pixelLoaded = true;
 
-  // Esvazia os eventos acumulados na fila de agendamento 
   while (eventQueue.length > 0) {
     const ev = eventQueue.shift();
-    if (ev && window.fbq) {
-      window.fbq(ev.method, ...ev.args);
-    }
+    if (ev && window.fbq) window.fbq(ev.method, ...ev.args);
   }
 }
 
+// Envia o mesmo evento para Browser Pixel + CAPI usando o mesmo event_id.
 export function fbqTrack(event: string, params?: Record<string, any>, options?: Record<string, any>) {
-  if (pixelLoaded && window.fbq) {
-    if (options) window.fbq('track', event, params || {}, options);
-    else window.fbq('track', event, params || {});
-  } else {
-    const args = options ? [event, params || {}, options] : [event, params || {}];
-    eventQueue.push({ method: 'track', args });
-  }
+  const eventId = options?.eventID || genEventId();
+  trackEventDual(event, params, eventId);
 }
 
-// ============ Meta CAPI (server-side) ============
 function getCookie(name: string): string {
   try {
     const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
@@ -99,10 +86,6 @@ function genEventId(): string {
   return (crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
-/**
- * Tracks an event via BOTH client-side Pixel AND server-side CAPI with the same
- * event_id, so Meta deduplicates automatically. Use for high-value events (Lead, Purchase).
- */
 export function logTrackedEvent(event: string) {
   try {
     const sessionId = sessionStorage.getItem('wa_session_id') || '';
@@ -121,17 +104,17 @@ export function logTrackedEvent(event: string) {
 export function trackEventDual(event: string, params?: Record<string, any>, eventId?: string) {
   const finalEventId = eventId || genEventId();
 
-  // 1. Client-side pixel with eventID
+  // 1. Browser Pixel
   if (pixelLoaded && window.fbq) {
     window.fbq('track', event, params || {}, { eventID: finalEventId });
   } else {
     eventQueue.push({ method: 'track', args: [event, params || {}, { eventID: finalEventId }] });
   }
 
-  // Log to DB for funnel metrics
+  // Registro interno para métricas
   logTrackedEvent(event);
 
-  // 2. Server-side CAPI via Vercel API Route
+  // 2. Server-side CAPI
   try {
     const pixelId = currentPixelId || localStorage.getItem('meta_pixel_id') || '';
     if (!pixelId) return;
@@ -142,6 +125,7 @@ export function trackEventDual(event: string, params?: Record<string, any>, even
       event_id: finalEventId,
       event_time: Math.floor(Date.now() / 1000),
       action_source: 'website',
+      event_source_url: window.location.href,
       user_data: {
         client_user_agent: navigator.userAgent,
         fbp: getCookie('_fbp'),
@@ -154,11 +138,19 @@ export function trackEventDual(event: string, params?: Record<string, any>, even
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    }).catch(() => {});
-  } catch { /* noop */ }
+    }).then(async response => {
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        console.error('[Meta CAPI] HTTP error:', response.status, text);
+      }
+    }).catch(error => {
+      console.error('[Meta CAPI] Network error:', error);
+    });
+  } catch (error) {
+    console.error('[Meta CAPI] Client error:', error);
+  }
 }
 
-// ============ UTM persistence ============
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
 
 export function captureUTMs() {
@@ -200,7 +192,6 @@ export function appendUTMsToUrl(url: string): string {
     });
     return u.toString();
   } catch {
-    // For wa.me links etc, append as query
     const sep = url.includes('?') ? '&' : '?';
     const qs = Object.entries(utms).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
     return `${url}${sep}${qs}`;
