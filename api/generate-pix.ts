@@ -81,14 +81,12 @@ export default async function handler(req, res) {
     const NEXUSPAG_API_KEY = process.env.NEXUSPAG_API_KEY;
     if (!NEXUSPAG_API_KEY) return res.status(500).json({ error: 'Erro no Servidor: NEXUSPAG_API_KEY não encontrada.' });
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const amount = body?.amount || 1.00;
+    const amount = body?.amount || 19.90;
 
     if (body?.action === 'check_status') {
       const id = String(body?.id || '');
       if (!id) return res.status(400).json({ error: 'id obrigatório' });
 
-      // Endpoint oficial da NexusPag para consultar um PIX.
-      // A própria NexusPag informa que esta consulta sincroniza o status com o gateway quando necessário.
       const url = `https://nexuspag.com/api/pix/${encodeURIComponent(id)}`;
       const r = await fetch(url, { headers: { 'x-api-key': NEXUSPAG_API_KEY } });
       const t = await r.text();
@@ -98,16 +96,14 @@ export default async function handler(req, res) {
       } catch {
         return res.status(502).json({ status: 'pending', error: 'Resposta inválida da NexusPag' });
       }
-      if (!r.ok) {
-        return res.status(200).json({ status: 'pending' });
-      }
+      if (!r.ok) return res.status(200).json({ status: 'pending' });
 
       const raw = normalizeStatus(d?.transaction?.status ?? d?.data?.status ?? d?.status ?? '');
       const approved = APPROVED_STATUSES.has(raw);
       if (approved) {
         const transaction = d?.transaction ?? d?.data ?? d;
         const paymentId = String(transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id);
-        const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 1.00);
+        const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90);
         const inserted = await recordApprovedPurchase({ paymentId, amount: paidAmount, sessionId: String(body?.session_id || '') });
         if (inserted) await sendCapiPurchase({ paymentId, amount: paidAmount, req });
       }
