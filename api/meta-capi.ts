@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
+const META_GRAPH_VERSION = 'v19.0';
+
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +16,26 @@ function createSupabaseAdmin() {
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+}
+
+function getClientIp(req: any): string {
+  const candidates = [
+    req.headers?.['x-forwarded-for'],
+    req.headers?.['x-real-ip'],
+    req.headers?.['cf-connecting-ip'],
+    req.headers?.['true-client-ip'],
+  ];
+
+  for (const value of candidates) {
+    if (!value) continue;
+    let ip = String(value).split(',')[0].trim();
+    ip = ip.replace(/^for=/i, '').replace(/^"|"$/g, '');
+    if (/^\[.*\]:\d+$/.test(ip)) ip = ip.replace(/^\[(.*)\]:\d+$/, '$1');
+    else if (/^\d{1,3}(?:\.\d{1,3}){3}:\d+$/.test(ip)) ip = ip.replace(/:\d+$/, '');
+    if (ip) return ip;
+  }
+
+  return '';
 }
 
 async function getCapiTokenFromDb(): Promise<string | null> {
@@ -64,11 +86,17 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const forwardedFor = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+    const clientIp = getClientIp(req);
     const userAgent = String(req.headers?.['user-agent'] || '');
     const userData = { ...(body.user_data || {}) };
-    if (!userData.client_ip_address && forwardedFor) userData.client_ip_address = forwardedFor;
+
+    // O IP é obtido no servidor para não depender do navegador.
+    if (clientIp) userData.client_ip_address = clientIp;
     if (!userData.client_user_agent && userAgent) userData.client_user_agent = userAgent;
+
+    if (!userData.client_ip_address) {
+      console.warn('[Meta CAPI] client_ip_address não encontrado nos cabeçalhos da requisição.');
+    }
 
     const payload: Record<string, unknown> = {
       data: [
@@ -87,7 +115,7 @@ export default async function handler(req: any, res: any) {
     if (testEventCode) payload.test_event_code = testEventCode;
 
     const fbRes = await fetch(
-      `https://graph.facebook.com/v18.0/${encodeURIComponent(pixelId)}/events`,
+      `https://graph.facebook.com/${META_GRAPH_VERSION}/${encodeURIComponent(pixelId)}/events`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
