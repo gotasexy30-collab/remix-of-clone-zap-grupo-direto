@@ -5,6 +5,26 @@ function normalizeStatus(value: unknown): string {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function getClientIp(req: any): string {
+  const candidates = [
+    req.headers?.['x-forwarded-for'],
+    req.headers?.['x-real-ip'],
+    req.headers?.['cf-connecting-ip'],
+    req.headers?.['true-client-ip'],
+  ];
+
+  for (const value of candidates) {
+    if (!value) continue;
+    let ip = String(value).split(',')[0].trim();
+    ip = ip.replace(/^for=/i, '').replace(/^"|"$/g, '');
+    if (/^\[.*\]:\d+$/.test(ip)) ip = ip.replace(/^\[(.*)\]:\d+$/, '$1');
+    else if (/^\d{1,3}(?:\.\d{1,3}){3}:\d+$/.test(ip)) ip = ip.replace(/:\d+$/, '');
+    if (ip) return ip;
+  }
+
+  return '';
+}
+
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const publicKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -61,10 +81,10 @@ async function sendCapiPurchase({ paymentId, amount, req }: { paymentId: string;
   const pixelId = await getMetaPixelId();
   if (!pixelId) return;
   const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
-  const forwardedFor = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  const clientIp = getClientIp(req);
   const userAgent = String(req.headers?.['user-agent'] || '');
   const userData: Record<string, string> = {};
-  if (forwardedFor) userData.client_ip_address = forwardedFor;
+  if (clientIp) userData.client_ip_address = clientIp;
   if (userAgent) userData.client_user_agent = userAgent;
   const payload = { data: [{ event_name: 'Purchase', event_time: Math.floor(Date.now() / 1000), event_id: `np_${paymentId}`, action_source: 'website', event_source_url: String(req.headers?.referer || req.headers?.origin || ''), user_data: userData, custom_data: { value: safeAmount, currency: 'BRL' } }] };
   const response = await fetch(`https://graph.facebook.com/${META_GRAPH_VERSION}/${encodeURIComponent(pixelId)}/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, access_token: accessToken }) });
@@ -114,7 +134,22 @@ export default async function handler(req, res) {
     const forwardedProto = String(req.headers?.['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const webhookUrl = forwardedHost ? `${forwardedProto}://${forwardedHost}/api/nexuspag-webhook` : undefined;
     const clientMetadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
-    const payload = { amount: Number(amount), description: body?.description || 'Acesso Clube Secreto', external_id: 'pedido-' + Date.now(), metadata: clientMetadata, ...(webhookUrl ? { webhook_url: webhookUrl } : {}) };
+    const clientMeta = clientMetadata?.meta && typeof clientMetadata.meta === 'object' ? clientMetadata.meta : {};
+    const serverClientIp = getClientIp(req);
+    const mergedMeta = {
+      ...clientMeta,
+      ...(serverClientIp ? { client_ip_address: serverClientIp } : {}),
+    };
+    const payload = {
+      amount: Number(amount),
+      description: body?.description || 'Acesso Clube Secreto',
+      external_id: 'pedido-' + Date.now(),
+      metadata: {
+        ...clientMetadata,
+        meta: mergedMeta,
+      },
+      ...(webhookUrl ? { webhook_url: webhookUrl } : {}),
+    };
     const response = await fetch('https://nexuspag.com/api/pix/create', { method: 'POST', headers: { 'x-api-key': NEXUSPAG_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const responseText = await response.text();
     let data; try { data = JSON.parse(responseText); } catch { return res.status(502).json({ error: 'Formato inválido retornado. URL Incorreta.', details: responseText.substring(0, 300) }); }
