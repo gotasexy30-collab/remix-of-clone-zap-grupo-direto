@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T03:29:45.726035+00:00",
+  "generated_at": "2026-09-19T14:28:46.840493+00:00",
   "files": [
     {
       "path": "components.json",
@@ -83,15 +83,15 @@
     },
     {
       "path": "api/meta-capi.ts",
-      "bytes": 4438
+      "bytes": 5200
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 8076
+      "bytes": 8968
     },
     {
       "path": "api/nexuspag-webhook.ts",
-      "bytes": 6570
+      "bytes": 6839
     },
     {
       "path": "src/App.css",
