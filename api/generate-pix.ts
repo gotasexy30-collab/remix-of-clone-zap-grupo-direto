@@ -75,7 +75,17 @@ async function recordApprovedPurchase({ paymentId, amount, sessionId }: { paymen
   return Array.isArray(rows) && rows.length > 0;
 }
 
-async function sendCapiPurchase({ paymentId, amount, req }: { paymentId: string; amount: number; req: any }): Promise<void> {
+async function sendCapiPurchase({
+  paymentId,
+  amount,
+  req,
+  metadata = {},
+}: {
+  paymentId: string;
+  amount: number;
+  req: any;
+  metadata?: Record<string, any>;
+}): Promise<void> {
   const accessToken = await getMetaCapiToken();
   if (!accessToken) return;
   const pixelId = await getMetaPixelId();
@@ -83,9 +93,16 @@ async function sendCapiPurchase({ paymentId, amount, req }: { paymentId: string;
   const safeAmount = Math.max(0, Math.min(Number(amount) || 0, 10000));
   const clientIp = getClientIp(req);
   const userAgent = String(req.headers?.['user-agent'] || '');
+  const meta = metadata?.meta && typeof metadata.meta === 'object' ? metadata.meta : metadata;
   const userData: Record<string, string> = {};
-  if (clientIp) userData.client_ip_address = clientIp;
-  if (userAgent) userData.client_user_agent = userAgent;
+  const storedIp = String(meta?.client_ip_address || meta?.ip_address || '').trim();
+  const storedUserAgent = String(meta?.user_agent || meta?.client_user_agent || '').trim();
+  const fbp = String(meta?.fbp || '').trim();
+  const fbc = String(meta?.fbc || '').trim();
+  if (clientIp || storedIp) userData.client_ip_address = clientIp || storedIp;
+  if (userAgent || storedUserAgent) userData.client_user_agent = userAgent || storedUserAgent;
+  if (fbp) userData.fbp = fbp;
+  if (fbc) userData.fbc = fbc;
   const payload = { data: [{ event_name: 'Purchase', event_time: Math.floor(Date.now() / 1000), event_id: `np_${paymentId}`, action_source: 'website', event_source_url: String(req.headers?.referer || req.headers?.origin || ''), user_data: userData, custom_data: { value: safeAmount, currency: 'BRL' } }] };
   const response = await fetch(`https://graph.facebook.com/${META_GRAPH_VERSION}/${encodeURIComponent(pixelId)}/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, access_token: accessToken }) });
   if (!response.ok) return;
@@ -124,8 +141,23 @@ export default async function handler(req, res) {
         const transaction = d?.transaction ?? d?.data ?? d;
         const paymentId = String(transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id);
         const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90);
-        const inserted = await recordApprovedPurchase({ paymentId, amount: paidAmount, sessionId: String(body?.session_id || '') });
-        if (inserted) await sendCapiPurchase({ paymentId, amount: paidAmount, req });
+        const transactionMetadata =
+          transaction?.metadata && typeof transaction.metadata === 'object'
+            ? transaction.metadata
+            : {};
+        const inserted = await recordApprovedPurchase({
+          paymentId,
+          amount: paidAmount,
+          sessionId: String(body?.session_id || transactionMetadata?.session_id || ''),
+        });
+        if (inserted) {
+          await sendCapiPurchase({
+            paymentId,
+            amount: paidAmount,
+            req,
+            metadata: transactionMetadata,
+          });
+        }
       }
       return res.status(200).json({ status: approved ? 'approved' : (raw || 'pending') });
     }
