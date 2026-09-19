@@ -5,6 +5,10 @@ function normalizeStatus(value: unknown): string {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function getClientIpFromMetadata(metadata: Record<string, any>): string {
+  return String(metadata?.client_ip_address || metadata?.ip_address || '').trim();
+}
+
 function getBackendConfig() {
   return {
     url: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -91,6 +95,8 @@ async function sendPurchaseToMeta(paymentId: string, amount: number, metadata: R
   if (!pixelId || !accessToken) throw new Error('Pixel ID ou token CAPI não configurado');
 
   const userData: Record<string, string> = {};
+  const clientIp = getClientIpFromMetadata(metadata);
+  if (clientIp) userData.client_ip_address = clientIp;
   if (metadata?.user_agent) userData.client_user_agent = String(metadata.user_agent);
   if (metadata?.fbp) userData.fbp = String(metadata.fbp);
   if (metadata?.fbc) userData.fbc = String(metadata.fbc);
