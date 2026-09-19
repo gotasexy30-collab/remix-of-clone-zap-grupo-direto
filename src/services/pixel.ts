@@ -10,11 +10,14 @@ declare global {
 
 let pixelLoaded = false;
 let currentPixelId = '';
+let pixelInitPromise: Promise<void> | null = null;
 const eventQueue: Array<{ method: string, args: any[] }> = [];
 
-export async function initMetaPixel(): Promise<void> {
-  if (pixelLoaded) return;
+export function initMetaPixel(): Promise<void> {
+  if (pixelLoaded) return Promise.resolve();
+  if (pixelInitPromise) return pixelInitPromise;
 
+  pixelInitPromise = (async () => {
   if (!window.fbq) {
     window.fbq = function() {
       if ((window.fbq as any)?.callMethod) (window.fbq as any).callMethod.apply(window.fbq, arguments);
@@ -58,6 +61,9 @@ export async function initMetaPixel(): Promise<void> {
     const ev = eventQueue.shift();
     if (ev && window.fbq) window.fbq(ev.method, ...ev.args);
   }
+  })();
+
+  return pixelInitPromise;
 }
 
 // Envia o mesmo evento para Browser Pixel + CAPI usando o mesmo event_id.
@@ -115,40 +121,55 @@ export function trackEventDual(event: string, params?: Record<string, any>, even
   logTrackedEvent(event);
 
   // 2. Server-side CAPI
-  try {
-    const pixelId = currentPixelId || localStorage.getItem('meta_pixel_id') || '';
-    if (!pixelId) return;
+  // Aguarda a inicialização para evitar perder eventos enquanto o Pixel ID
+  // ainda está sendo carregado do banco.
+  void (async () => {
+    try {
+      await initMetaPixel();
 
-    const payload = {
-      pixelId,
-      event_name: event,
-      event_id: finalEventId,
-      event_time: Math.floor(Date.now() / 1000),
-      action_source: 'website',
-      event_source_url: window.location.href,
-      user_data: {
-        client_user_agent: navigator.userAgent,
-        fbp: getCookie('_fbp'),
-        fbc: getCookie('_fbc'),
-      },
-      custom_data: params || {},
-    };
+      let pixelId = currentPixelId || localStorage.getItem('meta_pixel_id') || '';
+      if (!pixelId) {
+        pixelId = (await getSetting('meta_pixel_id')) || '';
+        if (pixelId) localStorage.setItem('meta_pixel_id', pixelId);
+      }
+      if (!pixelId) {
+        console.warn('[Meta CAPI] Pixel ID não configurado; evento não enviado.');
+        return;
+      }
 
-    fetch('/api/meta-capi', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).then(async response => {
+      const userData: Record<string, string> = {};
+      const userAgent = navigator.userAgent;
+      const fbp = getCookie('_fbp');
+      const fbc = getCookie('_fbc');
+      if (userAgent) userData.client_user_agent = userAgent;
+      if (fbp) userData.fbp = fbp;
+      if (fbc) userData.fbc = fbc;
+
+      const payload = {
+        pixelId,
+        event_name: event,
+        event_id: finalEventId,
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: 'website',
+        event_source_url: window.location.href,
+        user_data: userData,
+        custom_data: params || {},
+      };
+
+      const response = await fetch('/api/meta-capi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
       if (!response.ok) {
         const text = await response.text().catch(() => '');
         console.error('[Meta CAPI] HTTP error:', response.status, text);
       }
-    }).catch(error => {
-      console.error('[Meta CAPI] Network error:', error);
-    });
-  } catch (error) {
-    console.error('[Meta CAPI] Client error:', error);
-  }
+    } catch (error) {
+      console.error('[Meta CAPI] Client error:', error);
+    }
+  })();
 }
 
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'gclid'];
