@@ -4,6 +4,7 @@ import { getCurrentTime } from '../../services/location';
 import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
 import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrackingContext } from '../../services/pixel';
+import { getTrafficAttribution } from '../../services/trafficAttribution';
 import { supabase } from '@/integrations/supabase/client';
 import { useWhatsAppRouter } from '@/hooks/useWhatsAppRouter';
 
@@ -159,6 +160,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           metadata: {
             session_id: sessionStorage.getItem('wa_session_id') || '',
             meta: getMetaTrackingContext(),
+            traffic: getTrafficAttribution(),
           },
         }),
       });
