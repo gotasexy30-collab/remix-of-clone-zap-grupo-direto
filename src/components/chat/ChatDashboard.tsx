@@ -632,25 +632,18 @@ export const ChatDashboard: React.FC = () => {
                   <Link2 size={14} className="text-[#00a884]" />
                   <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pessoas e vendas por origem</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
-                    <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Meta</div>
-                    <div className="text-xl font-black text-white">{trafficSales.meta.visitors}</div>
-                    <div className="text-[9px] text-[#8696a0]">{trafficSales.meta.sales} {trafficSales.meta.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.meta.revenue.toFixed(2).replace('.', ',')}</div>
-                  </div>
-                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
+                <div className="flex justify-center">
+                  <div className="w-full max-w-[260px] bg-[#2a3942] rounded-xl p-4 text-center border border-white/10">
                     <div className="text-[9px] text-white font-bold uppercase mb-1">TikTok</div>
-                    <div className="text-xl font-black text-white">{trafficSales.tiktok.visitors}</div>
-                    <div className="text-[9px] text-[#8696a0]">{trafficSales.tiktok.sales} {trafficSales.tiktok.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.tiktok.revenue.toFixed(2).replace('.', ',')}</div>
-                  </div>
-                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
-                    <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Outros</div>
-                    <div className="text-xl font-black text-white">{trafficSales.other.visitors}</div>
-                    <div className="text-[9px] text-[#8696a0]">{trafficSales.other.sales} {trafficSales.other.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.other.revenue.toFixed(2).replace('.', ',')}</div>
+                    <div className="text-3xl font-black text-white">{trafficSales.tiktok.visitors}</div>
+                    <div className="text-[10px] text-[#8696a0]">pessoas</div>
+                    <div className="text-[10px] text-[#8696a0] mt-2">
+                      {trafficSales.tiktok.sales} {trafficSales.tiktok.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.tiktok.revenue.toFixed(2).replace('.', ',')}
+                    </div>
                   </div>
                 </div>
                 <p className="text-[9px] text-[#8696a0] mt-2 italic">
-                  O número grande mostra pessoas únicas (sessões) da origem no período selecionado. Abaixo ficam vendas e faturamento dessa origem. Vendas sem uma origem registrada ficam em “Outros”.
+                  O número mostra pessoas únicas que chegaram pelo TikTok no período selecionado. Abaixo ficam as vendas aprovadas e o faturamento gerado por essas sessões.
                 </p>
               </div>
             </div>
