@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T14:40:55.287116+00:00",
+  "generated_at": "2026-09-22T16:27:10.991486+00:00",
   "files": [
     {
       "path": "components.json",
@@ -162,6 +162,10 @@
       "bytes": 1204
     },
     {
+      "path": "src/services/trafficAttribution.ts",
+      "bytes": 2896
+    },
+    {
       "path": "src/services/settings.ts",
       "bytes": 1822
     },
@@ -199,7 +203,7 @@
     },
     {
       "path": "src/pages/Index.tsx",
-      "bytes": 11019
+      "bytes": 11149
     },
     {
       "path": "src/pages/Pressel.tsx",
@@ -447,7 +451,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23511
+      "bytes": 23632
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
@@ -620,6 +624,10 @@
       "target": "@/integrations/supabase/client"
     },
     {
+      "source": "src/services/trafficAttribution.ts",
+      "target": "@/integrations/supabase/client"
+    },
+    {
       "source": "src/services/settings.ts",
       "target": "@/integrations/supabase/client"
     },
@@ -742,6 +750,10 @@
     {
       "source": "src/pages/Index.tsx",
       "target": "../services/pixel"
+    },
+    {
+      "source": "src/pages/Index.tsx",
+      "target": "../services/trafficAttribution"
     },
     {
       "source": "src/pages/Index.tsx",
@@ -1598,6 +1610,10 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "../../services/pixel"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/trafficAttribution"
     },
     {
       "source": "src/components/chat/PaymentPanel.tsx",
