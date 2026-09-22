@@ -60,6 +60,12 @@ export const ChatDashboard: React.FC = () => {
     pressel_passed: 0,
   });
 
+  const [trafficSales, setTrafficSales] = useState({
+    meta: { sales: 0, revenue: 0 },
+    tiktok: { sales: 0, revenue: 0 },
+    other: { sales: 0, revenue: 0 },
+  });
+
   const [loading, setLoading] = useState(true);
   const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
@@ -184,8 +190,15 @@ export const ChatDashboard: React.FC = () => {
         .select('event_name, session_id, created_at');
       let salesQuery = supabase
         .from('purchases')
-        .select('amount, status, created_at')
+        .select('amount, status, created_at, session_id')
         .eq('status', 'approved');
+
+      // As origens ficam registradas uma vez por sessão. Buscamos sem filtro
+      // de período para também atribuir uma venda que aconteceu depois da visita.
+      const trafficQuery = supabase
+        .from('tracked_events')
+        .select('event_name, session_id, created_at')
+        .like('event_name', 'TrafficSource:%');
 
       if (start) {
         eventsQuery = eventsQuery.gte('created_at', start.toISOString());
@@ -196,12 +209,14 @@ export const ChatDashboard: React.FC = () => {
         salesQuery = salesQuery.lt('created_at', end.toISOString());
       }
 
-      const [eventsResult, salesResult] = await Promise.all([eventsQuery, salesQuery]);
+      const [eventsResult, salesResult, trafficResult] = await Promise.all([eventsQuery, salesQuery, trafficQuery]);
       if (eventsResult.error) throw eventsResult.error;
       if (salesResult.error) throw salesResult.error;
+      if (trafficResult.error) throw trafficResult.error;
 
       const events = eventsResult.data || [];
       const sales = salesResult.data || [];
+      const trafficEvents = trafficResult.data || [];
       const countEvents = (...names: string[]) => events.filter(event => names.includes(event.event_name)).length;
       const visitEvents = events.filter(event => event.event_name === 'page_view' || event.event_name === 'Visited');
       const uniqueVisitors = new Set(visitEvents.map(event => event.session_id).filter(Boolean)).size;
@@ -211,6 +226,36 @@ export const ChatDashboard: React.FC = () => {
       const totalClicks = chatEvents.length;
       const totalSales = sales.length;
       const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+
+      const sourceBySession = new Map<string, string>();
+      for (const event of trafficEvents) {
+        const sessionId = String(event.session_id || '');
+        const source = String(event.event_name || '').replace(/^TrafficSource:/, '').toLowerCase();
+        if (sessionId && !sourceBySession.has(sessionId)) sourceBySession.set(sessionId, source || 'direct');
+      }
+
+      const trafficBreakdown = {
+        meta: { sales: 0, revenue: 0 },
+        tiktok: { sales: 0, revenue: 0 },
+        other: { sales: 0, revenue: 0 },
+      };
+
+      for (const sale of sales) {
+        const source = sourceBySession.get(String(sale.session_id || '')) || 'other';
+        const amount = Number(sale.amount || 0);
+        if (source === 'meta') {
+          trafficBreakdown.meta.sales += 1;
+          trafficBreakdown.meta.revenue += amount;
+        } else if (source === 'tiktok') {
+          trafficBreakdown.tiktok.sales += 1;
+          trafficBreakdown.tiktok.revenue += amount;
+        } else {
+          trafficBreakdown.other.sales += 1;
+          trafficBreakdown.other.revenue += amount;
+        }
+      }
+
+      setTrafficSales(trafficBreakdown);
 
       setFunnel({
         total_visits: totalVisits,
@@ -540,6 +585,33 @@ export const ChatDashboard: React.FC = () => {
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
                 <strong className="text-white/80">Pagou</strong> = PIX confirmados {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
               </p>
+
+              <div className="mt-4 border-t border-white/5 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Link2 size={14} className="text-[#00a884]" />
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Vendas por origem</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
+                    <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Meta</div>
+                    <div className="text-xl font-black text-white">{trafficSales.meta.sales}</div>
+                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.meta.revenue.toFixed(2).replace('.', ',')}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
+                    <div className="text-[9px] text-white font-bold uppercase mb-1">TikTok</div>
+                    <div className="text-xl font-black text-white">{trafficSales.tiktok.sales}</div>
+                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.tiktok.revenue.toFixed(2).replace('.', ',')}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
+                    <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Outros</div>
+                    <div className="text-xl font-black text-white">{trafficSales.other.sales}</div>
+                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.other.revenue.toFixed(2).replace('.', ',')}</div>
+                  </div>
+                </div>
+                <p className="text-[9px] text-[#8696a0] mt-2 italic">
+                  A origem é identificada pela URL/UTM da sessão. Vendas sem uma origem registrada ficam em “Outros”.
+                </p>
+              </div>
             </div>
 
             {/* Funil completo + feed ao vivo */}
