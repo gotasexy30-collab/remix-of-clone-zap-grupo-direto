@@ -61,9 +61,9 @@ export const ChatDashboard: React.FC = () => {
   });
 
   const [trafficSales, setTrafficSales] = useState({
-    meta: { sales: 0, revenue: 0 },
-    tiktok: { sales: 0, revenue: 0 },
-    other: { sales: 0, revenue: 0 },
+    meta: { visitors: 0, sales: 0, revenue: 0 },
+    tiktok: { visitors: 0, sales: 0, revenue: 0 },
+    other: { visitors: 0, sales: 0, revenue: 0 },
   });
 
   const [loading, setLoading] = useState(true);
@@ -235,9 +235,9 @@ export const ChatDashboard: React.FC = () => {
       }
 
       const trafficBreakdown = {
-        meta: { sales: 0, revenue: 0 },
-        tiktok: { sales: 0, revenue: 0 },
-        other: { sales: 0, revenue: 0 },
+        meta: { visitors: trafficVisitors.meta.size, sales: 0, revenue: 0 },
+        tiktok: { visitors: trafficVisitors.tiktok.size, sales: 0, revenue: 0 },
+        other: { visitors: trafficVisitors.other.size, sales: 0, revenue: 0 },
       };
 
       for (const sale of sales) {
@@ -589,27 +589,27 @@ export const ChatDashboard: React.FC = () => {
               <div className="mt-4 border-t border-white/5 pt-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Link2 size={14} className="text-[#00a884]" />
-                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Vendas por origem</span>
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Pessoas e vendas por origem</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
                     <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Meta</div>
-                    <div className="text-xl font-black text-white">{trafficSales.meta.sales}</div>
-                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.meta.revenue.toFixed(2).replace('.', ',')}</div>
+                    <div className="text-xl font-black text-white">{trafficSales.meta.visitors}</div>
+                    <div className="text-[9px] text-[#8696a0]">{trafficSales.meta.sales} {trafficSales.meta.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.meta.revenue.toFixed(2).replace('.', ',')}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
                     <div className="text-[9px] text-white font-bold uppercase mb-1">TikTok</div>
-                    <div className="text-xl font-black text-white">{trafficSales.tiktok.sales}</div>
-                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.tiktok.revenue.toFixed(2).replace('.', ',')}</div>
+                    <div className="text-xl font-black text-white">{trafficSales.tiktok.visitors}</div>
+                    <div className="text-[9px] text-[#8696a0]">{trafficSales.tiktok.sales} {trafficSales.tiktok.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.tiktok.revenue.toFixed(2).replace('.', ',')}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
                     <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Outros</div>
-                    <div className="text-xl font-black text-white">{trafficSales.other.sales}</div>
-                    <div className="text-[9px] text-[#8696a0]">R$ {trafficSales.other.revenue.toFixed(2).replace('.', ',')}</div>
+                    <div className="text-xl font-black text-white">{trafficSales.other.visitors}</div>
+                    <div className="text-[9px] text-[#8696a0]">{trafficSales.other.sales} {trafficSales.other.sales === 1 ? 'venda' : 'vendas'} · R$ {trafficSales.other.revenue.toFixed(2).replace('.', ',')}</div>
                   </div>
                 </div>
                 <p className="text-[9px] text-[#8696a0] mt-2 italic">
-                  A origem é identificada pela URL/UTM da sessão. Vendas sem uma origem registrada ficam em “Outros”.
+                  O número grande mostra pessoas únicas (sessões) da origem no período selecionado. Abaixo ficam vendas e faturamento dessa origem. Vendas sem uma origem registrada ficam em “Outros”.
                 </p>
               </div>
             </div>
