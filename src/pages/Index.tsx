@@ -10,6 +10,7 @@ import { trackEvent } from '../services/tracking';
 import { generateImageWithCity } from '../services/imageOverlay';
 import { getSetting } from '../services/settings';
 import { initMetaPixel, fbqTrack, captureUTMs } from '../services/pixel';
+import { captureTrafficAttribution } from '../services/trafficAttribution';
 import { supabase } from '@/integrations/supabase/client';
 
 const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4cf04952ad45a2c.jpg';
@@ -38,7 +39,8 @@ const Index = () => {
       trackEvent('page_view');
       visitTracked.current = true;
       captureUTMs();
-      initMetaPixel();
+      void captureTrafficAttribution(getSlug());
+      void initMetaPixel();
       
       // Registra visita no banco usando a tabela page_visits
       try {
