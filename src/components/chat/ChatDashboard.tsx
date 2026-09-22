@@ -190,15 +190,8 @@ export const ChatDashboard: React.FC = () => {
         .select('event_name, session_id, created_at');
       let salesQuery = supabase
         .from('purchases')
-        .select('amount, status, created_at, session_id')
+        .select('amount, status, created_at')
         .eq('status', 'approved');
-
-      // As origens ficam registradas uma vez por sessão. Buscamos sem filtro
-      // de período para também atribuir uma venda que aconteceu depois da visita.
-      const trafficQuery = supabase
-        .from('tracked_events')
-        .select('event_name, session_id, created_at')
-        .like('event_name', 'TrafficSource:%');
 
       if (start) {
         eventsQuery = eventsQuery.gte('created_at', start.toISOString());
@@ -209,14 +202,12 @@ export const ChatDashboard: React.FC = () => {
         salesQuery = salesQuery.lt('created_at', end.toISOString());
       }
 
-      const [eventsResult, salesResult, trafficResult] = await Promise.all([eventsQuery, salesQuery, trafficQuery]);
+      const [eventsResult, salesResult] = await Promise.all([eventsQuery, salesQuery]);
       if (eventsResult.error) throw eventsResult.error;
       if (salesResult.error) throw salesResult.error;
-      if (trafficResult.error) throw trafficResult.error;
 
       const events = eventsResult.data || [];
       const sales = salesResult.data || [];
-      const trafficEvents = trafficResult.data || [];
       const countEvents = (...names: string[]) => events.filter(event => names.includes(event.event_name)).length;
       const visitEvents = events.filter(event => event.event_name === 'page_view' || event.event_name === 'Visited');
       const uniqueVisitors = new Set(visitEvents.map(event => event.session_id).filter(Boolean)).size;
@@ -227,35 +218,85 @@ export const ChatDashboard: React.FC = () => {
       const totalSales = sales.length;
       const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
 
-      const sourceBySession = new Map<string, string>();
-      for (const event of trafficEvents) {
-        const sessionId = String(event.session_id || '');
-        const source = String(event.event_name || '').replace(/^TrafficSource:/, '').toLowerCase();
-        if (sessionId && !sourceBySession.has(sessionId)) sourceBySession.set(sessionId, source || 'direct');
-      }
+      // Atributação é complementar ao funil principal. Qualquer erro nesta
+      // consulta nova não pode derrubar as métricas que já funcionavam.
+      try {
+        const [trafficResult, attributionSalesResult] = await Promise.all([
+          supabase
+            .from('tracked_events')
+            .select('event_name, session_id, created_at')
+            .like('event_name', 'TrafficSource:%'),
+          supabase
+            .from('purchases')
+            .select('amount, session_id, created_at')
+            .eq('status', 'approved'),
+        ]);
 
-      const trafficBreakdown = {
-        meta: { visitors: trafficVisitors.meta.size, sales: 0, revenue: 0 },
-        tiktok: { visitors: trafficVisitors.tiktok.size, sales: 0, revenue: 0 },
-        other: { visitors: trafficVisitors.other.size, sales: 0, revenue: 0 },
-      };
+        if (trafficResult.error) throw trafficResult.error;
+        if (attributionSalesResult.error) throw attributionSalesResult.error;
 
-      for (const sale of sales) {
-        const source = sourceBySession.get(String(sale.session_id || '')) || 'other';
-        const amount = Number(sale.amount || 0);
-        if (source === 'meta') {
-          trafficBreakdown.meta.sales += 1;
-          trafficBreakdown.meta.revenue += amount;
-        } else if (source === 'tiktok') {
-          trafficBreakdown.tiktok.sales += 1;
-          trafficBreakdown.tiktok.revenue += amount;
-        } else {
-          trafficBreakdown.other.sales += 1;
-          trafficBreakdown.other.revenue += amount;
+        const trafficEvents = trafficResult.data || [];
+        const attributionSales = attributionSalesResult.data || [];
+
+        const trafficVisitors = {
+          meta: new Set<string>(),
+          tiktok: new Set<string>(),
+          other: new Set<string>(),
+        };
+
+        const sourceBySession = new Map<string, string>();
+
+        for (const event of trafficEvents) {
+          const sessionId = String(event.session_id || '');
+          if (!sessionId) continue;
+          if (!isInFunnelPeriod(String(event.created_at), period)) continue;
+
+          const source = String(event.event_name || '')
+            .replace(/^TrafficSource:/, '')
+            .toLowerCase() || 'direct';
+
+          if (source === 'meta') trafficVisitors.meta.add(sessionId);
+          else if (source === 'tiktok') trafficVisitors.tiktok.add(sessionId);
+          else trafficVisitors.other.add(sessionId);
+
+          if (!sourceBySession.has(sessionId)) {
+            sourceBySession.set(sessionId, source);
+          }
         }
-      }
 
-      setTrafficSales(trafficBreakdown);
+        const trafficBreakdown = {
+          meta: { visitors: trafficVisitors.meta.size, sales: 0, revenue: 0 },
+          tiktok: { visitors: trafficVisitors.tiktok.size, sales: 0, revenue: 0 },
+          other: { visitors: trafficVisitors.other.size, sales: 0, revenue: 0 },
+        };
+
+        for (const sale of attributionSales) {
+          if (!isInFunnelPeriod(String(sale.created_at), period)) continue;
+
+          const source = sourceBySession.get(String(sale.session_id || '')) || 'other';
+          const amount = Number(sale.amount || 0);
+
+          if (source === 'meta') {
+            trafficBreakdown.meta.sales += 1;
+            trafficBreakdown.meta.revenue += amount;
+          } else if (source === 'tiktok') {
+            trafficBreakdown.tiktok.sales += 1;
+            trafficBreakdown.tiktok.revenue += amount;
+          } else {
+            trafficBreakdown.other.sales += 1;
+            trafficBreakdown.other.revenue += amount;
+          }
+        }
+
+        setTrafficSales(trafficBreakdown);
+      } catch (error) {
+        console.warn('[Traffic] Atribuição indisponível; mantendo funil principal:', error);
+        setTrafficSales({
+          meta: { visitors: 0, sales: 0, revenue: 0 },
+          tiktok: { visitors: 0, sales: 0, revenue: 0 },
+          other: { visitors: 0, sales: 0, revenue: 0 },
+        });
+      }
 
       setFunnel({
         total_visits: totalVisits,
