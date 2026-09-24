@@ -1,17 +1,33 @@
 {
-  "generated_at": "2026-09-22T17:50:03.664580+00:00",
+  "generated_at": "2026-09-24T14:55:59.996616+00:00",
   "files": [
     {
-      "path": "components.json",
-      "bytes": 414
+      "path": "tsconfig.app.json",
+      "bytes": 680
+    },
+    {
+      "path": "tailwind.config.ts",
+      "bytes": 2706
+    },
+    {
+      "path": "roadmap.md",
+      "bytes": 721
+    },
+    {
+      "path": "supabase_schema.sql",
+      "bytes": 6180
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 136
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 293977
     },
     {
       "path": "playwright.config.ts",
       "bytes": 277
-    },
-    {
-      "path": "vitest.config.ts",
-      "bytes": 395
     },
     {
       "path": "postcss.config.js",
@@ -22,56 +38,44 @@
       "bytes": 168
     },
     {
-      "path": "vite.config.ts",
-      "bytes": 625
-    },
-    {
-      "path": "tailwind.config.ts",
-      "bytes": 2706
-    },
-    {
       "path": "tsconfig.node.json",
       "bytes": 481
-    },
-    {
-      "path": "eslint.config.js",
-      "bytes": 765
-    },
-    {
-      "path": "supabase_schema.sql",
-      "bytes": 6180
-    },
-    {
-      "path": "package.json",
-      "bytes": 2978
     },
     {
       "path": "index.html",
       "bytes": 1416
     },
     {
-      "path": "package-lock.json",
-      "bytes": 293977
+      "path": "vitest.config.ts",
+      "bytes": 395
     },
     {
-      "path": "tsconfig.app.json",
-      "bytes": 680
+      "path": "tsconfig.json",
+      "bytes": 396
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 625
+    },
+    {
+      "path": "eslint.config.js",
+      "bytes": 765
     },
     {
       "path": "README.md",
       "bytes": 877
     },
     {
-      "path": "roadmap.md",
-      "bytes": 721
+      "path": "package.json",
+      "bytes": 2978
     },
     {
-      "path": "vercel.json",
-      "bytes": 136
+      "path": "components.json",
+      "bytes": 414
     },
     {
-      "path": "tsconfig.json",
-      "bytes": 396
+      "path": "public/preview-sorteio.html",
+      "bytes": 7470
     },
     {
       "path": ".lovasiri/sync.json",
@@ -82,6 +86,10 @@
       "bytes": 2783
     },
     {
+      "path": "api/nexuspag-webhook.ts",
+      "bytes": 6839
+    },
+    {
       "path": "api/meta-capi.ts",
       "bytes": 5200
     },
@@ -90,8 +98,12 @@
       "bytes": 9872
     },
     {
-      "path": "api/nexuspag-webhook.ts",
-      "bytes": 6839
+      "path": "src/constants.ts",
+      "bytes": 4573
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "bytes": 38
     },
     {
       "path": "src/App.css",
@@ -102,44 +114,28 @@
       "bytes": 2813
     },
     {
-      "path": "src/vite-env.d.ts",
-      "bytes": 38
-    },
-    {
-      "path": "src/constants.ts",
-      "bytes": 4573
-    },
-    {
       "path": "src/App.tsx",
       "bytes": 1303
-    },
-    {
-      "path": "src/main.tsx",
-      "bytes": 234
     },
     {
       "path": "src/types.ts",
       "bytes": 852
     },
     {
-      "path": ".lovable/plan/unificar-painel-vendas-pix-e-meta-capi-2026-09-14.md",
-      "bytes": 1254
-    },
-    {
-      "path": ".lovable/plan/plano-evento-purchase-na-meta-capi-2026-09-14.md",
-      "bytes": 1161
+      "path": "src/main.tsx",
+      "bytes": 234
     },
     {
       "path": "supabase/functions/funnel-metrics/index.ts",
       "bytes": 3527
     },
     {
-      "path": "supabase/functions/mp-webhook/index.ts",
-      "bytes": 5250
-    },
-    {
       "path": "supabase/functions/generate-pix-nexus/index.ts",
       "bytes": 4898
+    },
+    {
+      "path": "supabase/functions/mp-webhook/index.ts",
+      "bytes": 5250
     },
     {
       "path": "supabase/functions/mp-pix/index.ts",
@@ -150,28 +146,44 @@
       "bytes": 5201
     },
     {
-      "path": "src/services/tracking.ts",
-      "bytes": 1729
+      "path": ".lovable/plan/unificar-painel-vendas-pix-e-meta-capi-2026-09-14.md",
+      "bytes": 1254
     },
     {
-      "path": "src/services/pixel.ts",
-      "bytes": 6707
+      "path": ".lovable/plan/plano-evento-purchase-na-meta-capi-2026-09-14.md",
+      "bytes": 1161
+    },
+    {
+      "path": "src/components/NavLink.tsx",
+      "bytes": 751
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "bytes": 169
     },
     {
       "path": "src/services/imageOverlay.ts",
       "bytes": 1204
     },
     {
-      "path": "src/services/trafficAttribution.ts",
-      "bytes": 2896
-    },
-    {
       "path": "src/services/settings.ts",
       "bytes": 1822
     },
     {
+      "path": "src/services/pixel.ts",
+      "bytes": 6707
+    },
+    {
       "path": "src/services/location.ts",
       "bytes": 2847
+    },
+    {
+      "path": "src/services/trafficAttribution.ts",
+      "bytes": 2896
+    },
+    {
+      "path": "src/services/tracking.ts",
+      "bytes": 1729
     },
     {
       "path": "src/hooks/use-toast.ts",
@@ -186,28 +198,24 @@
       "bytes": 576
     },
     {
-      "path": "src/lib/utils.ts",
-      "bytes": 169
-    },
-    {
-      "path": "src/pages/Dashboard.tsx",
-      "bytes": 1155
+      "path": "src/pages/Redirect.tsx",
+      "bytes": 2843
     },
     {
       "path": "src/pages/NotFound.tsx",
       "bytes": 727
     },
     {
-      "path": "src/pages/Redirect.tsx",
-      "bytes": 2843
+      "path": "src/pages/Pressel.tsx",
+      "bytes": 6962
     },
     {
       "path": "src/pages/Index.tsx",
       "bytes": 11149
     },
     {
-      "path": "src/pages/Pressel.tsx",
-      "bytes": 6962
+      "path": "src/pages/Dashboard.tsx",
+      "bytes": 1155
     },
     {
       "path": "src/test/example.test.ts",
@@ -218,14 +226,6 @@
       "bytes": 353
     },
     {
-      "path": "src/components/NavLink.tsx",
-      "bytes": 751
-    },
-    {
-      "path": "src/integrations/supabase/client.ts",
-      "bytes": 852
-    },
-    {
       "path": "src/integrations/supabase/previewAuthStorage.ts",
       "bytes": 4336
     },
@@ -234,242 +234,258 @@
       "bytes": 9959
     },
     {
-      "path": "src/components/ui/use-toast.ts",
-      "bytes": 82
-    },
-    {
-      "path": "src/components/ui/alert.tsx",
-      "bytes": 1546
-    },
-    {
-      "path": "src/components/ui/progress.tsx",
-      "bytes": 765
-    },
-    {
-      "path": "src/components/ui/resizable.tsx",
-      "bytes": 1696
-    },
-    {
-      "path": "src/components/ui/calendar.tsx",
-      "bytes": 2563
-    },
-    {
-      "path": "src/components/ui/tooltip.tsx",
-      "bytes": 1155
-    },
-    {
-      "path": "src/components/ui/scroll-area.tsx",
-      "bytes": 1608
-    },
-    {
-      "path": "src/components/ui/breadcrumb.tsx",
-      "bytes": 2687
-    },
-    {
-      "path": "src/components/ui/command.tsx",
-      "bytes": 4821
-    },
-    {
-      "path": "src/components/ui/input.tsx",
-      "bytes": 799
-    },
-    {
-      "path": "src/components/ui/badge.tsx",
-      "bytes": 1089
-    },
-    {
-      "path": "src/components/ui/toggle.tsx",
-      "bytes": 1416
-    },
-    {
-      "path": "src/components/ui/navigation-menu.tsx",
-      "bytes": 5030
-    },
-    {
-      "path": "src/components/ui/checkbox.tsx",
-      "bytes": 1053
-    },
-    {
-      "path": "src/components/ui/table.tsx",
-      "bytes": 2694
-    },
-    {
-      "path": "src/components/ui/toast.tsx",
-      "bytes": 4798
-    },
-    {
-      "path": "src/components/ui/skeleton.tsx",
-      "bytes": 234
-    },
-    {
-      "path": "src/components/ui/label.tsx",
-      "bytes": 696
-    },
-    {
-      "path": "src/components/ui/drawer.tsx",
-      "bytes": 2941
-    },
-    {
-      "path": "src/components/ui/avatar.tsx",
-      "bytes": 1365
-    },
-    {
-      "path": "src/components/ui/hover-card.tsx",
-      "bytes": 1193
-    },
-    {
-      "path": "src/components/ui/switch.tsx",
-      "bytes": 1147
-    },
-    {
-      "path": "src/components/ui/radio-group.tsx",
-      "bytes": 1447
-    },
-    {
-      "path": "src/components/ui/sidebar.tsx",
-      "bytes": 22837
-    },
-    {
-      "path": "src/components/ui/popover.tsx",
-      "bytes": 1239
-    },
-    {
-      "path": "src/components/ui/carousel.tsx",
-      "bytes": 6249
-    },
-    {
-      "path": "src/components/ui/toggle-group.tsx",
-      "bytes": 1714
-    },
-    {
-      "path": "src/components/ui/context-menu.tsx",
-      "bytes": 7191
-    },
-    {
-      "path": "src/components/ui/button.tsx",
-      "bytes": 1840
-    },
-    {
-      "path": "src/components/ui/dropdown-menu.tsx",
-      "bytes": 7260
-    },
-    {
-      "path": "src/components/ui/collapsible.tsx",
-      "bytes": 320
-    },
-    {
-      "path": "src/components/ui/dialog.tsx",
-      "bytes": 3761
-    },
-    {
-      "path": "src/components/ui/form.tsx",
-      "bytes": 4014
-    },
-    {
-      "path": "src/components/ui/slider.tsx",
-      "bytes": 1065
-    },
-    {
-      "path": "src/components/ui/select.tsx",
-      "bytes": 5575
-    },
-    {
-      "path": "src/components/ui/menubar.tsx",
-      "bytes": 7863
-    },
-    {
-      "path": "src/components/ui/aspect-ratio.tsx",
-      "bytes": 143
-    },
-    {
-      "path": "src/components/ui/sheet.tsx",
-      "bytes": 4197
-    },
-    {
-      "path": "src/components/ui/card.tsx",
-      "bytes": 1785
-    },
-    {
-      "path": "src/components/ui/alert-dialog.tsx",
-      "bytes": 4313
-    },
-    {
-      "path": "src/components/ui/pagination.tsx",
-      "bytes": 2683
-    },
-    {
-      "path": "src/components/ui/separator.tsx",
-      "bytes": 698
-    },
-    {
-      "path": "src/components/ui/tabs.tsx",
-      "bytes": 1897
-    },
-    {
-      "path": "src/components/ui/chart.tsx",
-      "bytes": 9987
-    },
-    {
-      "path": "src/components/ui/textarea.tsx",
-      "bytes": 751
-    },
-    {
-      "path": "src/components/ui/toaster.tsx",
-      "bytes": 730
-    },
-    {
-      "path": "src/components/ui/accordion.tsx",
-      "bytes": 1976
-    },
-    {
-      "path": "src/components/ui/sonner.tsx",
-      "bytes": 877
-    },
-    {
-      "path": "src/components/ui/input-otp.tsx",
-      "bytes": 2166
-    },
-    {
-      "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 56000
+      "path": "src/integrations/supabase/client.ts",
+      "bytes": 852
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
       "bytes": 9704
     },
     {
-      "path": "src/components/chat/ChatHeader.tsx",
-      "bytes": 2179
-    },
-    {
-      "path": "src/components/chat/PresselTest.tsx",
-      "bytes": 7070
+      "path": "src/components/chat/PaymentPanel.tsx",
+      "bytes": 23632
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
       "bytes": 13231
     },
     {
-      "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23632
-    },
-    {
-      "path": "src/components/chat/AudioBubble.tsx",
-      "bytes": 9102
+      "path": "src/components/chat/PresselTest.tsx",
+      "bytes": 7070
     },
     {
       "path": "src/components/chat/ChatBubble.tsx",
       "bytes": 2826
     },
     {
+      "path": "src/components/chat/AudioBubble.tsx",
+      "bytes": 9102
+    },
+    {
+      "path": "src/components/chat/ChatHeader.tsx",
+      "bytes": 2179
+    },
+    {
+      "path": "src/components/chat/ChatDashboard.tsx",
+      "bytes": 56000
+    },
+    {
       "path": "src/components/auth/AdminLogin.tsx",
       "bytes": 3909
+    },
+    {
+      "path": "src/components/ui/dropdown-menu.tsx",
+      "bytes": 7260
+    },
+    {
+      "path": "src/components/ui/toast.tsx",
+      "bytes": 4798
+    },
+    {
+      "path": "src/components/ui/input-otp.tsx",
+      "bytes": 2166
+    },
+    {
+      "path": "src/components/ui/command.tsx",
+      "bytes": 4821
+    },
+    {
+      "path": "src/components/ui/use-toast.ts",
+      "bytes": 82
+    },
+    {
+      "path": "src/components/ui/context-menu.tsx",
+      "bytes": 7191
+    },
+    {
+      "path": "src/components/ui/checkbox.tsx",
+      "bytes": 1053
+    },
+    {
+      "path": "src/components/ui/resizable.tsx",
+      "bytes": 1696
+    },
+    {
+      "path": "src/components/ui/separator.tsx",
+      "bytes": 698
+    },
+    {
+      "path": "src/components/ui/table.tsx",
+      "bytes": 2694
+    },
+    {
+      "path": "src/components/ui/textarea.tsx",
+      "bytes": 751
+    },
+    {
+      "path": "src/components/ui/button.tsx",
+      "bytes": 1840
+    },
+    {
+      "path": "src/components/ui/pagination.tsx",
+      "bytes": 2683
+    },
+    {
+      "path": "src/components/ui/calendar.tsx",
+      "bytes": 2563
+    },
+    {
+      "path": "src/components/ui/toggle.tsx",
+      "bytes": 1416
+    },
+    {
+      "path": "src/components/ui/alert.tsx",
+      "bytes": 1546
+    },
+    {
+      "path": "src/components/ui/sidebar.tsx",
+      "bytes": 22837
+    },
+    {
+      "path": "src/components/ui/toggle-group.tsx",
+      "bytes": 1714
+    },
+    {
+      "path": "src/components/ui/sonner.tsx",
+      "bytes": 877
+    },
+    {
+      "path": "src/components/ui/select.tsx",
+      "bytes": 5575
+    },
+    {
+      "path": "src/components/ui/switch.tsx",
+      "bytes": 1147
+    },
+    {
+      "path": "src/components/ui/navigation-menu.tsx",
+      "bytes": 5030
+    },
+    {
+      "path": "src/components/ui/collapsible.tsx",
+      "bytes": 320
+    },
+    {
+      "path": "src/components/ui/popover.tsx",
+      "bytes": 1239
+    },
+    {
+      "path": "src/components/ui/slider.tsx",
+      "bytes": 1065
+    },
+    {
+      "path": "src/components/ui/sheet.tsx",
+      "bytes": 4197
+    },
+    {
+      "path": "src/components/ui/label.tsx",
+      "bytes": 696
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "bytes": 1785
+    },
+    {
+      "path": "src/components/ui/avatar.tsx",
+      "bytes": 1365
+    },
+    {
+      "path": "src/components/ui/breadcrumb.tsx",
+      "bytes": 2687
+    },
+    {
+      "path": "src/components/ui/toaster.tsx",
+      "bytes": 730
+    },
+    {
+      "path": "src/components/ui/aspect-ratio.tsx",
+      "bytes": 143
+    },
+    {
+      "path": "src/components/ui/menubar.tsx",
+      "bytes": 7863
+    },
+    {
+      "path": "src/components/ui/hover-card.tsx",
+      "bytes": 1193
+    },
+    {
+      "path": "src/components/ui/chart.tsx",
+      "bytes": 9987
+    },
+    {
+      "path": "src/components/ui/carousel.tsx",
+      "bytes": 6249
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "bytes": 1089
+    },
+    {
+      "path": "src/components/ui/form.tsx",
+      "bytes": 4014
+    },
+    {
+      "path": "src/components/ui/skeleton.tsx",
+      "bytes": 234
+    },
+    {
+      "path": "src/components/ui/drawer.tsx",
+      "bytes": 2941
+    },
+    {
+      "path": "src/components/ui/radio-group.tsx",
+      "bytes": 1447
+    },
+    {
+      "path": "src/components/ui/progress.tsx",
+      "bytes": 765
+    },
+    {
+      "path": "src/components/ui/input.tsx",
+      "bytes": 799
+    },
+    {
+      "path": "src/components/ui/dialog.tsx",
+      "bytes": 3761
+    },
+    {
+      "path": "src/components/ui/alert-dialog.tsx",
+      "bytes": 4313
+    },
+    {
+      "path": "src/components/ui/accordion.tsx",
+      "bytes": 1976
+    },
+    {
+      "path": "src/components/ui/tooltip.tsx",
+      "bytes": 1155
+    },
+    {
+      "path": "src/components/ui/tabs.tsx",
+      "bytes": 1897
+    },
+    {
+      "path": "src/components/ui/scroll-area.tsx",
+      "bytes": 1608
     }
   ],
   "dependencies": [
     {
+      "source": "tailwind.config.ts",
+      "target": "tailwindcss"
+    },
+    {
+      "source": "tailwind.config.ts",
+      "target": "tailwindcss-animate"
+    },
+    {
       "source": "playwright.config.ts",
       "target": "lovable-agent-playwright-config/config"
+    },
+    {
+      "source": "playwright-fixture.ts",
+      "target": "lovable-agent-playwright-config/fixture"
     },
     {
       "source": "vitest.config.ts",
@@ -482,10 +498,6 @@
     {
       "source": "vitest.config.ts",
       "target": "path"
-    },
-    {
-      "source": "playwright-fixture.ts",
-      "target": "lovable-agent-playwright-config/fixture"
     },
     {
       "source": "vite.config.ts",
@@ -502,14 +514,6 @@
     {
       "source": "vite.config.ts",
       "target": "lovable-tagger"
-    },
-    {
-      "source": "tailwind.config.ts",
-      "target": "tailwindcss"
-    },
-    {
-      "source": "tailwind.config.ts",
-      "target": "tailwindcss-animate"
     },
     {
       "source": "eslint.config.js",
@@ -596,12 +600,12 @@
       "target": "npm:@supabase/supabase-js@2.45.0"
     },
     {
-      "source": "supabase/functions/mp-webhook/index.ts",
-      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
-    },
-    {
       "source": "supabase/functions/generate-pix-nexus/index.ts",
       "target": "@supabase/supabase-js"
+    },
+    {
+      "source": "supabase/functions/mp-webhook/index.ts",
+      "target": "https://esm.sh/@supabase/supabase-js@2.45.0"
     },
     {
       "source": "supabase/functions/mp-pix/index.ts",
@@ -612,7 +616,27 @@
       "target": "@supabase/supabase-js"
     },
     {
-      "source": "src/services/tracking.ts",
+      "source": "src/components/NavLink.tsx",
+      "target": "react-router-dom"
+    },
+    {
+      "source": "src/components/NavLink.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/NavLink.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/lib/utils.ts",
+      "target": "clsx"
+    },
+    {
+      "source": "src/lib/utils.ts",
+      "target": "tailwind-merge"
+    },
+    {
+      "source": "src/services/settings.ts",
       "target": "@/integrations/supabase/client"
     },
     {
@@ -628,7 +652,7 @@
       "target": "@/integrations/supabase/client"
     },
     {
-      "source": "src/services/settings.ts",
+      "source": "src/services/tracking.ts",
       "target": "@/integrations/supabase/client"
     },
     {
@@ -656,38 +680,6 @@
       "target": "react"
     },
     {
-      "source": "src/lib/utils.ts",
-      "target": "clsx"
-    },
-    {
-      "source": "src/lib/utils.ts",
-      "target": "tailwind-merge"
-    },
-    {
-      "source": "src/pages/Dashboard.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/pages/Dashboard.tsx",
-      "target": "../components/chat/ChatDashboard"
-    },
-    {
-      "source": "src/pages/Dashboard.tsx",
-      "target": "../components/auth/AdminLogin"
-    },
-    {
-      "source": "src/pages/Dashboard.tsx",
-      "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/pages/NotFound.tsx",
-      "target": "react-router-dom"
-    },
-    {
-      "source": "src/pages/NotFound.tsx",
-      "target": "react"
-    },
-    {
       "source": "src/pages/Redirect.tsx",
       "target": "react"
     },
@@ -701,6 +693,30 @@
     },
     {
       "source": "src/pages/Redirect.tsx",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/pages/NotFound.tsx",
+      "target": "react-router-dom"
+    },
+    {
+      "source": "src/pages/NotFound.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/pages/Pressel.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/pages/Pressel.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/pages/Pressel.tsx",
+      "target": "../services/settings"
+    },
+    {
+      "source": "src/pages/Pressel.tsx",
       "target": "@/integrations/supabase/client"
     },
     {
@@ -764,19 +780,19 @@
       "target": "../services/pixel"
     },
     {
-      "source": "src/pages/Pressel.tsx",
+      "source": "src/pages/Dashboard.tsx",
       "target": "react"
     },
     {
-      "source": "src/pages/Pressel.tsx",
-      "target": "lucide-react"
+      "source": "src/pages/Dashboard.tsx",
+      "target": "../components/chat/ChatDashboard"
     },
     {
-      "source": "src/pages/Pressel.tsx",
-      "target": "../services/settings"
+      "source": "src/pages/Dashboard.tsx",
+      "target": "../components/auth/AdminLogin"
     },
     {
-      "source": "src/pages/Pressel.tsx",
+      "source": "src/pages/Dashboard.tsx",
       "target": "@/integrations/supabase/client"
     },
     {
@@ -784,119 +800,211 @@
       "target": "vitest"
     },
     {
-      "source": "src/components/NavLink.tsx",
-      "target": "react-router-dom"
-    },
-    {
-      "source": "src/components/NavLink.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/NavLink.tsx",
-      "target": "@/lib/utils"
-    },
-    {
       "source": "src/integrations/supabase/client.ts",
       "target": "@supabase/supabase-js"
     },
     {
-      "source": "src/components/ui/use-toast.ts",
-      "target": "@/hooks/use-toast"
-    },
-    {
-      "source": "src/components/ui/alert.tsx",
+      "source": "src/components/chat/FunnelLiveFeed.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/alert.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/alert.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/progress.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/progress.tsx",
-      "target": "@radix-ui/react-progress"
-    },
-    {
-      "source": "src/components/ui/progress.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/resizable.tsx",
+      "source": "src/components/chat/FunnelLiveFeed.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/resizable.tsx",
-      "target": "react-resizable-panels"
+      "source": "src/components/chat/FunnelLiveFeed.tsx",
+      "target": "@/integrations/supabase/client"
     },
     {
-      "source": "src/components/ui/resizable.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/calendar.tsx",
+      "source": "src/components/chat/PaymentPanel.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/calendar.tsx",
+      "source": "src/components/chat/PaymentPanel.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/calendar.tsx",
-      "target": "react-day-picker"
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/location"
     },
     {
-      "source": "src/components/ui/calendar.tsx",
-      "target": "@/lib/utils"
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/tracking"
     },
     {
-      "source": "src/components/ui/calendar.tsx",
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/settings"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/pixel"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/trafficAttribution"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "@/hooks/useWhatsAppRouter"
+    },
+    {
+      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/components/chat/PresselTest.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/PresselTest.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/chat/ChatBubble.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/ChatBubble.tsx",
+      "target": "./AudioBubble"
+    },
+    {
+      "source": "src/components/chat/ChatBubble.tsx",
+      "target": "../../types"
+    },
+    {
+      "source": "src/components/chat/AudioBubble.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/ChatHeader.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/ChatHeader.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/chat/ChatHeader.tsx",
+      "target": "../../services/settings"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "../../services/tracking"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "../../services/location"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "../../services/settings"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "./WhatsAppRouterPanel"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "./FunnelLiveFeed"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "./PresselTest"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
+      "target": "sonner"
+    },
+    {
+      "source": "src/components/chat/ChatDashboard.tsx",
       "target": "@/components/ui/button"
     },
     {
-      "source": "src/components/ui/tooltip.tsx",
+      "source": "src/components/auth/AdminLogin.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/tooltip.tsx",
-      "target": "@radix-ui/react-tooltip"
-    },
-    {
-      "source": "src/components/ui/tooltip.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/scroll-area.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/scroll-area.tsx",
-      "target": "@radix-ui/react-scroll-area"
-    },
-    {
-      "source": "src/components/ui/scroll-area.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/breadcrumb.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/breadcrumb.tsx",
-      "target": "@radix-ui/react-slot"
-    },
-    {
-      "source": "src/components/ui/breadcrumb.tsx",
+      "source": "src/components/auth/AdminLogin.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/breadcrumb.tsx",
+      "source": "src/components/auth/AdminLogin.tsx",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/components/ui/dropdown-menu.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/dropdown-menu.tsx",
+      "target": "@radix-ui/react-dropdown-menu"
+    },
+    {
+      "source": "src/components/ui/dropdown-menu.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/dropdown-menu.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/toast.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/toast.tsx",
+      "target": "@radix-ui/react-toast"
+    },
+    {
+      "source": "src/components/ui/toast.tsx",
+      "target": "class-variance-authority"
+    },
+    {
+      "source": "src/components/ui/toast.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/toast.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/input-otp.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/input-otp.tsx",
+      "target": "input-otp"
+    },
+    {
+      "source": "src/components/ui/input-otp.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/input-otp.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -924,59 +1032,23 @@
       "target": "@/components/ui/dialog"
     },
     {
-      "source": "src/components/ui/input.tsx",
+      "source": "src/components/ui/use-toast.ts",
+      "target": "@/hooks/use-toast"
+    },
+    {
+      "source": "src/components/ui/context-menu.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/input.tsx",
-      "target": "@/lib/utils"
+      "source": "src/components/ui/context-menu.tsx",
+      "target": "@radix-ui/react-context-menu"
     },
     {
-      "source": "src/components/ui/badge.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/badge.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/badge.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/toggle.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/toggle.tsx",
-      "target": "@radix-ui/react-toggle"
-    },
-    {
-      "source": "src/components/ui/toggle.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/toggle.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/navigation-menu.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/navigation-menu.tsx",
-      "target": "@radix-ui/react-navigation-menu"
-    },
-    {
-      "source": "src/components/ui/navigation-menu.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/navigation-menu.tsx",
+      "source": "src/components/ui/context-menu.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/navigation-menu.tsx",
+      "source": "src/components/ui/context-menu.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -996,6 +1068,30 @@
       "target": "@/lib/utils"
     },
     {
+      "source": "src/components/ui/resizable.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/resizable.tsx",
+      "target": "react-resizable-panels"
+    },
+    {
+      "source": "src/components/ui/resizable.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/separator.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/separator.tsx",
+      "target": "@radix-ui/react-separator"
+    },
+    {
+      "source": "src/components/ui/separator.tsx",
+      "target": "@/lib/utils"
+    },
+    {
       "source": "src/components/ui/table.tsx",
       "target": "react"
     },
@@ -1004,107 +1100,91 @@
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/toast.tsx",
+      "source": "src/components/ui/textarea.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/toast.tsx",
-      "target": "@radix-ui/react-toast"
+      "source": "src/components/ui/textarea.tsx",
+      "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/toast.tsx",
+      "source": "src/components/ui/button.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/button.tsx",
+      "target": "@radix-ui/react-slot"
+    },
+    {
+      "source": "src/components/ui/button.tsx",
       "target": "class-variance-authority"
     },
     {
-      "source": "src/components/ui/toast.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/toast.tsx",
+      "source": "src/components/ui/button.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/skeleton.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/label.tsx",
+      "source": "src/components/ui/pagination.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/label.tsx",
-      "target": "@radix-ui/react-label"
+      "source": "src/components/ui/pagination.tsx",
+      "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/label.tsx",
+      "source": "src/components/ui/pagination.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/pagination.tsx",
+      "target": "@/components/ui/button"
+    },
+    {
+      "source": "src/components/ui/calendar.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/calendar.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/calendar.tsx",
+      "target": "react-day-picker"
+    },
+    {
+      "source": "src/components/ui/calendar.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/calendar.tsx",
+      "target": "@/components/ui/button"
+    },
+    {
+      "source": "src/components/ui/toggle.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/toggle.tsx",
+      "target": "@radix-ui/react-toggle"
+    },
+    {
+      "source": "src/components/ui/toggle.tsx",
       "target": "class-variance-authority"
     },
     {
-      "source": "src/components/ui/label.tsx",
+      "source": "src/components/ui/toggle.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/drawer.tsx",
+      "source": "src/components/ui/alert.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/drawer.tsx",
-      "target": "vaul"
+      "source": "src/components/ui/alert.tsx",
+      "target": "class-variance-authority"
     },
     {
-      "source": "src/components/ui/drawer.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/avatar.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/avatar.tsx",
-      "target": "@radix-ui/react-avatar"
-    },
-    {
-      "source": "src/components/ui/avatar.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/hover-card.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/hover-card.tsx",
-      "target": "@radix-ui/react-hover-card"
-    },
-    {
-      "source": "src/components/ui/hover-card.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/switch.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/switch.tsx",
-      "target": "@radix-ui/react-switch"
-    },
-    {
-      "source": "src/components/ui/switch.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/radio-group.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/radio-group.tsx",
-      "target": "@radix-ui/react-radio-group"
-    },
-    {
-      "source": "src/components/ui/radio-group.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/radio-group.tsx",
+      "source": "src/components/ui/alert.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -1156,6 +1236,86 @@
       "target": "@/components/ui/tooltip"
     },
     {
+      "source": "src/components/ui/toggle-group.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/toggle-group.tsx",
+      "target": "@radix-ui/react-toggle-group"
+    },
+    {
+      "source": "src/components/ui/toggle-group.tsx",
+      "target": "class-variance-authority"
+    },
+    {
+      "source": "src/components/ui/toggle-group.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/toggle-group.tsx",
+      "target": "@/components/ui/toggle"
+    },
+    {
+      "source": "src/components/ui/sonner.tsx",
+      "target": "next-themes"
+    },
+    {
+      "source": "src/components/ui/sonner.tsx",
+      "target": "sonner"
+    },
+    {
+      "source": "src/components/ui/select.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/select.tsx",
+      "target": "@radix-ui/react-select"
+    },
+    {
+      "source": "src/components/ui/select.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/select.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/switch.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/switch.tsx",
+      "target": "@radix-ui/react-switch"
+    },
+    {
+      "source": "src/components/ui/switch.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/navigation-menu.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/navigation-menu.tsx",
+      "target": "@radix-ui/react-navigation-menu"
+    },
+    {
+      "source": "src/components/ui/navigation-menu.tsx",
+      "target": "class-variance-authority"
+    },
+    {
+      "source": "src/components/ui/navigation-menu.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/navigation-menu.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/collapsible.tsx",
+      "target": "@radix-ui/react-collapsible"
+    },
+    {
       "source": "src/components/ui/popover.tsx",
       "target": "react"
     },
@@ -1165,6 +1325,142 @@
     },
     {
       "source": "src/components/ui/popover.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/slider.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/slider.tsx",
+      "target": "@radix-ui/react-slider"
+    },
+    {
+      "source": "src/components/ui/slider.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/sheet.tsx",
+      "target": "@radix-ui/react-dialog"
+    },
+    {
+      "source": "src/components/ui/sheet.tsx",
+      "target": "class-variance-authority"
+    },
+    {
+      "source": "src/components/ui/sheet.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/sheet.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/sheet.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/label.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/label.tsx",
+      "target": "@radix-ui/react-label"
+    },
+    {
+      "source": "src/components/ui/label.tsx",
+      "target": "class-variance-authority"
+    },
+    {
+      "source": "src/components/ui/label.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/card.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/card.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/avatar.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/avatar.tsx",
+      "target": "@radix-ui/react-avatar"
+    },
+    {
+      "source": "src/components/ui/avatar.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/breadcrumb.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/breadcrumb.tsx",
+      "target": "@radix-ui/react-slot"
+    },
+    {
+      "source": "src/components/ui/breadcrumb.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/breadcrumb.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/toaster.tsx",
+      "target": "@/hooks/use-toast"
+    },
+    {
+      "source": "src/components/ui/toaster.tsx",
+      "target": "@/components/ui/toast"
+    },
+    {
+      "source": "src/components/ui/aspect-ratio.tsx",
+      "target": "@radix-ui/react-aspect-ratio"
+    },
+    {
+      "source": "src/components/ui/menubar.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/menubar.tsx",
+      "target": "@radix-ui/react-menubar"
+    },
+    {
+      "source": "src/components/ui/menubar.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/components/ui/menubar.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/hover-card.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/hover-card.tsx",
+      "target": "@radix-ui/react-hover-card"
+    },
+    {
+      "source": "src/components/ui/hover-card.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/chart.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/chart.tsx",
+      "target": "recharts"
+    },
+    {
+      "source": "src/components/ui/chart.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -1188,91 +1484,15 @@
       "target": "@/components/ui/button"
     },
     {
-      "source": "src/components/ui/toggle-group.tsx",
+      "source": "src/components/ui/badge.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/toggle-group.tsx",
-      "target": "@radix-ui/react-toggle-group"
-    },
-    {
-      "source": "src/components/ui/toggle-group.tsx",
+      "source": "src/components/ui/badge.tsx",
       "target": "class-variance-authority"
     },
     {
-      "source": "src/components/ui/toggle-group.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/toggle-group.tsx",
-      "target": "@/components/ui/toggle"
-    },
-    {
-      "source": "src/components/ui/context-menu.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/context-menu.tsx",
-      "target": "@radix-ui/react-context-menu"
-    },
-    {
-      "source": "src/components/ui/context-menu.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/context-menu.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/button.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/button.tsx",
-      "target": "@radix-ui/react-slot"
-    },
-    {
-      "source": "src/components/ui/button.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/button.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/dropdown-menu.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/dropdown-menu.tsx",
-      "target": "@radix-ui/react-dropdown-menu"
-    },
-    {
-      "source": "src/components/ui/dropdown-menu.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/dropdown-menu.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/collapsible.tsx",
-      "target": "@radix-ui/react-collapsible"
-    },
-    {
-      "source": "src/components/ui/dialog.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/dialog.tsx",
-      "target": "@radix-ui/react-dialog"
-    },
-    {
-      "source": "src/components/ui/dialog.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/dialog.tsx",
+      "source": "src/components/ui/badge.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -1300,79 +1520,71 @@
       "target": "@/components/ui/label"
     },
     {
-      "source": "src/components/ui/slider.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/slider.tsx",
-      "target": "@radix-ui/react-slider"
-    },
-    {
-      "source": "src/components/ui/slider.tsx",
+      "source": "src/components/ui/skeleton.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/select.tsx",
+      "source": "src/components/ui/drawer.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/select.tsx",
-      "target": "@radix-ui/react-select"
+      "source": "src/components/ui/drawer.tsx",
+      "target": "vaul"
     },
     {
-      "source": "src/components/ui/select.tsx",
+      "source": "src/components/ui/drawer.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/radio-group.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/radio-group.tsx",
+      "target": "@radix-ui/react-radio-group"
+    },
+    {
+      "source": "src/components/ui/radio-group.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/select.tsx",
+      "source": "src/components/ui/radio-group.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/menubar.tsx",
+      "source": "src/components/ui/progress.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/menubar.tsx",
-      "target": "@radix-ui/react-menubar"
+      "source": "src/components/ui/progress.tsx",
+      "target": "@radix-ui/react-progress"
     },
     {
-      "source": "src/components/ui/menubar.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/menubar.tsx",
+      "source": "src/components/ui/progress.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/aspect-ratio.tsx",
-      "target": "@radix-ui/react-aspect-ratio"
+      "source": "src/components/ui/input.tsx",
+      "target": "react"
     },
     {
-      "source": "src/components/ui/sheet.tsx",
+      "source": "src/components/ui/input.tsx",
+      "target": "@/lib/utils"
+    },
+    {
+      "source": "src/components/ui/dialog.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/ui/dialog.tsx",
       "target": "@radix-ui/react-dialog"
     },
     {
-      "source": "src/components/ui/sheet.tsx",
-      "target": "class-variance-authority"
-    },
-    {
-      "source": "src/components/ui/sheet.tsx",
+      "source": "src/components/ui/dialog.tsx",
       "target": "lucide-react"
     },
     {
-      "source": "src/components/ui/sheet.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/sheet.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/card.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/card.tsx",
+      "source": "src/components/ui/dialog.tsx",
       "target": "@/lib/utils"
     },
     {
@@ -1392,74 +1604,6 @@
       "target": "@/components/ui/button"
     },
     {
-      "source": "src/components/ui/pagination.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/pagination.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/pagination.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/pagination.tsx",
-      "target": "@/components/ui/button"
-    },
-    {
-      "source": "src/components/ui/separator.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/separator.tsx",
-      "target": "@radix-ui/react-separator"
-    },
-    {
-      "source": "src/components/ui/separator.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/tabs.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/tabs.tsx",
-      "target": "@radix-ui/react-tabs"
-    },
-    {
-      "source": "src/components/ui/tabs.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/chart.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/chart.tsx",
-      "target": "recharts"
-    },
-    {
-      "source": "src/components/ui/chart.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/textarea.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/ui/textarea.tsx",
-      "target": "@/lib/utils"
-    },
-    {
-      "source": "src/components/ui/toaster.tsx",
-      "target": "@/hooks/use-toast"
-    },
-    {
-      "source": "src/components/ui/toaster.tsx",
-      "target": "@/components/ui/toast"
-    },
-    {
       "source": "src/components/ui/accordion.tsx",
       "target": "react"
     },
@@ -1476,180 +1620,40 @@
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/ui/sonner.tsx",
-      "target": "next-themes"
-    },
-    {
-      "source": "src/components/ui/sonner.tsx",
-      "target": "sonner"
-    },
-    {
-      "source": "src/components/ui/input-otp.tsx",
+      "source": "src/components/ui/tooltip.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/ui/input-otp.tsx",
-      "target": "input-otp"
+      "source": "src/components/ui/tooltip.tsx",
+      "target": "@radix-ui/react-tooltip"
     },
     {
-      "source": "src/components/ui/input-otp.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/ui/input-otp.tsx",
+      "source": "src/components/ui/tooltip.tsx",
       "target": "@/lib/utils"
     },
     {
-      "source": "src/components/chat/ChatDashboard.tsx",
+      "source": "src/components/ui/tabs.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "lucide-react"
+      "source": "src/components/ui/tabs.tsx",
+      "target": "@radix-ui/react-tabs"
     },
     {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "../../services/tracking"
+      "source": "src/components/ui/tabs.tsx",
+      "target": "@/lib/utils"
     },
     {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "../../services/location"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "../../services/settings"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "./WhatsAppRouterPanel"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "./FunnelLiveFeed"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "./PresselTest"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "sonner"
-    },
-    {
-      "source": "src/components/chat/ChatDashboard.tsx",
-      "target": "@/components/ui/button"
-    },
-    {
-      "source": "src/components/chat/FunnelLiveFeed.tsx",
+      "source": "src/components/ui/scroll-area.tsx",
       "target": "react"
     },
     {
-      "source": "src/components/chat/FunnelLiveFeed.tsx",
-      "target": "lucide-react"
+      "source": "src/components/ui/scroll-area.tsx",
+      "target": "@radix-ui/react-scroll-area"
     },
     {
-      "source": "src/components/chat/FunnelLiveFeed.tsx",
-      "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/components/chat/ChatHeader.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/ChatHeader.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/chat/ChatHeader.tsx",
-      "target": "../../services/settings"
-    },
-    {
-      "source": "src/components/chat/PresselTest.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/PresselTest.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/chat/WhatsAppRouterPanel.tsx",
-      "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "../../services/location"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "../../services/tracking"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "../../services/settings"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "../../services/pixel"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "../../services/trafficAttribution"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "@/hooks/useWhatsAppRouter"
-    },
-    {
-      "source": "src/components/chat/AudioBubble.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/ChatBubble.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/chat/ChatBubble.tsx",
-      "target": "./AudioBubble"
-    },
-    {
-      "source": "src/components/chat/ChatBubble.tsx",
-      "target": "../../types"
-    },
-    {
-      "source": "src/components/auth/AdminLogin.tsx",
-      "target": "react"
-    },
-    {
-      "source": "src/components/auth/AdminLogin.tsx",
-      "target": "lucide-react"
-    },
-    {
-      "source": "src/components/auth/AdminLogin.tsx",
-      "target": "@/integrations/supabase/client"
+      "source": "src/components/ui/scroll-area.tsx",
+      "target": "@/lib/utils"
     }
   ]
 }
