@@ -150,6 +150,34 @@ export default async function handler(req: any, res: any) {
     );
     const amount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? 0);
     const metadata = transaction?.metadata ?? received?.metadata ?? {};
+    // Sorteio é um pagamento adicional: nunca registrar em purchases nem disparar Purchase do ingresso original.
+    if (metadata?.offer_type === 'sorteio_cota') {
+      const { url, serviceKey } = getBackendConfig();
+      if (!url || !serviceKey) return res.status(503).json({ error: 'Banco da oferta indisponível' });
+      const headers = databaseHeaders(serviceKey);
+      const lookup = await fetch(
+        `${url}/rest/v1/sorteio_entries?payment_id=eq.${encodeURIComponent(paymentId)}&select=payment_id,amount,status&limit=1`,
+        { headers },
+      );
+      if (!lookup.ok) return res.status(500).json({ error: 'Falha ao consultar participação' });
+      const offers = await lookup.json().catch(() => []);
+      const offer = offers?.[0];
+      if (!offer) return res.status(200).json({ ok: true, status: 'approved', recorded: false, reason: 'participacao_aguardando_registro' });
+      if (offer.status === 'approved') return res.status(200).json({ ok: true, status: 'approved', recorded: false });
+      if (!Number.isFinite(amount) || Math.round(amount * 100) !== Math.round(Number(offer.amount) * 100)) {
+        return res.status(409).json({ error: 'Valor divergente do pedido de participação' });
+      }
+      const update = await fetch(
+        `${url}/rest/v1/sorteio_entries?payment_id=eq.${encodeURIComponent(paymentId)}&status=eq.pending`,
+        {
+          method: 'PATCH',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'approved', approved_at: new Date().toISOString() }),
+        },
+      );
+      if (!update.ok) return res.status(500).json({ error: 'Falha ao registrar participação' });
+      return res.status(200).json({ ok: true, status: 'approved', recorded: true, offer: 'sorteio_cota' });
+    }
     const inserted = await recordPurchase(paymentId, amount, String(metadata?.session_id || ''));
     if (inserted) await sendPurchaseToMeta(paymentId, amount, metadata?.meta ?? metadata);
 
