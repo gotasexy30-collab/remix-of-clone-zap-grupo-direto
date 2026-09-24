@@ -11,19 +11,19 @@
 </head>
 <body>
 <main class="wrap">
-<p class="preview"><span></span> Prévia de layout · sem cobrança</p>
+<p class="preview"><span></span> CONVITE ESPECIAL · PARTICIPAÇÃO OPCIONAL</p>
 <header class="hero">
-<div class="eyebrow">OFERTA ADICIONAL OPCIONAL</div>
+<div class="eyebrow">SEU CONTEÚDO JÁ ESTÁ GARANTIDO ❤️</div>
 <h1>Participe do sorteio da <em>peça íntima da sua modelo favorita</em></h1>
-<p class="subtitle">Escolha uma modelo e veja como ficaria a seleção de cotas. Seu acesso de R$ 19,90 não depende desta oferta.</p>
+<p class="subtitle">Quer participar? Escolha sua modelo favorita e a quantidade de cotas. <strong>Esta é uma oferta extra, não é taxa de liberação nem pagamento obrigatório.</strong> Se não quiser participar, é só pular e acessar o conteúdo que você já comprou.</p>
 </header>
 <section class="panel" aria-label="Simulação de cotas">
 <div class="panel-head">
 <span class="section-label">01 · Escolha sua modelo</span>
 <div class="models" role="group" aria-label="Modelo favorita">
-<button class="model" type="button" aria-pressed="true" data-model="Modelo 1"><span class="avatar">♡</span>Modelo 1</button>
-<button class="model" type="button" aria-pressed="false" data-model="Modelo 2"><span class="avatar">♡</span>Modelo 2</button>
-<button class="model" type="button" aria-pressed="false" data-model="Modelo 3"><span class="avatar">♡</span>Modelo 3</button>
+<button class="model" type="button" aria-pressed="true" data-model="Alice"><span class="avatar">♡</span>Alice</button>
+<button class="model" type="button" aria-pressed="false" data-model="Thaisinha"><span class="avatar">♡</span>Thaisinha</button>
+<button class="model" type="button" aria-pressed="false" data-model="Camila"><span class="avatar">♡</span>Camila</button>
 </div>
 </div>
 <div class="divider"></div>
@@ -37,15 +37,15 @@
 <div class="total"><span>Total simulado</span><strong id="total">R$ 4,60</strong></div>
 <div class="actions">
 <button class="primary" id="simulate" type="button">VER RESUMO DA ESCOLHA</button>
-<button class="secondary" id="skip" type="button">Não quero participar · acessar meu conteúdo</button>
+<button class="secondary" id="skip" type="button">Pular oferta e acessar meu conteúdo já pago →</button>
 <p class="status" id="status" role="status" aria-live="polite"></p>
 </div>
 </section>
-<p class="fine">Esta página é somente uma demonstração visual. Não gera PIX, não reserva cotas e não realiza sorteio. Modelos e prêmio são ilustrativos.</p>
-<aside class="notice"><strong>Antes de uma oferta real:</strong> definir prêmio efetivo, condições de participação, regulamento e enquadramento legal do sorteio. O conteúdo já comprado deve continuar disponível sem uma nova cobrança.</aside>
+<p class="fine">Esta página é somente uma demonstração visual. Não gera PIX, não reserva cotas e não realiza sorteio. A participação e o prêmio são apenas ilustrativos nesta prévia.</p>
+
 </main>
 <script>
-(()=>{let quantity=1;let model='Modelo 1';const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});const qty=document.getElementById('qty'),total=document.getElementById('total'),minus=document.getElementById('minus'),plus=document.getElementById('plus'),status=document.getElementById('status');function render(){qty.textContent=String(quantity);total.textContent=money.format(quantity*4.6);minus.disabled=quantity<=1;plus.disabled=quantity>=100;status.textContent='';}minus.addEventListener('click',()=>{quantity=Math.max(1,quantity-1);render()});plus.addEventListener('click',()=>{quantity=Math.min(100,quantity+1);render()});document.querySelectorAll('[data-model]').forEach(button=>button.addEventListener('click',()=>{model=button.dataset.model;document.querySelectorAll('[data-model]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));status.textContent=''}));document.getElementById('simulate').addEventListener('click',()=>{status.textContent='Prévia: '+model+' · '+quantity+' '+(quantity===1?'cota':'cotas')+' · '+money.format(quantity*4.6)+'. Nenhuma compra foi iniciada.'});document.getElementById('skip').addEventListener('click',()=>{status.textContent='Prévia: nesta tela não há redirecionamento. O acesso original permanece inalterado.'});render()})();
+(()=>{let quantity=1;let model='Alice';const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});const qty=document.getElementById('qty'),total=document.getElementById('total'),minus=document.getElementById('minus'),plus=document.getElementById('plus'),status=document.getElementById('status');function render(){qty.textContent=String(quantity);total.textContent=money.format(quantity*4.6);minus.disabled=quantity<=1;plus.disabled=quantity>=100;status.textContent='';}minus.addEventListener('click',()=>{quantity=Math.max(1,quantity-1);render()});plus.addEventListener('click',()=>{quantity=Math.min(100,quantity+1);render()});document.querySelectorAll('[data-model]').forEach(button=>button.addEventListener('click',()=>{model=button.dataset.model;document.querySelectorAll('[data-model]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));status.textContent=''}));document.getElementById('simulate').addEventListener('click',()=>{status.textContent='Prévia: '+model+' · '+quantity+' '+(quantity===1?'cota':'cotas')+' · '+money.format(quantity*4.6)+'. Nenhuma compra foi iniciada.'});document.getElementById('skip').addEventListener('click',()=>{status.textContent='Prévia: nesta tela não há redirecionamento. O acesso original permanece inalterado.'});render()})();
 </script>
 </body>
 </html>
