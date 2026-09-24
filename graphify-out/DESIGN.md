@@ -1,6 +1,6 @@
 # Design system
 
-Generated: 2026-09-24T22:20:31.994505+00:00
+Generated: 2026-09-24T22:21:09.615670+00:00
 
 ## Tokens
 - --background: 0 0% 100% (src/index.css)
@@ -119,6 +119,7 @@ Generated: 2026-09-24T22:20:31.994505+00:00
 - src/components/chat/FunnelLiveFeed.tsx
 - src/components/chat/PaymentPanel.tsx
 - src/components/chat/PresselTest.tsx
+- src/components/chat/SorteioOffer.tsx
 - src/components/chat/WhatsAppRouterPanel.tsx
 - src/components/ui/accordion.tsx
 - src/components/ui/alert-dialog.tsx

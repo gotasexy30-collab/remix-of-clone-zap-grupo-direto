@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T22:20:31.994505+00:00",
+  "generated_at": "2026-09-24T22:21:09.615670+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -240,6 +240,10 @@
     {
       "path": "src/integrations/supabase/client.ts",
       "bytes": 852
+    },
+    {
+      "path": "src/components/chat/SorteioOffer.tsx",
+      "bytes": 11178
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
@@ -806,6 +810,14 @@
     {
       "source": "src/integrations/supabase/client.ts",
       "target": "@supabase/supabase-js"
+    },
+    {
+      "source": "src/components/chat/SorteioOffer.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/components/chat/SorteioOffer.tsx",
+      "target": "lucide-react"
     },
     {
       "source": "src/components/chat/FunnelLiveFeed.tsx",
