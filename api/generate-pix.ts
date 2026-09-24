@@ -145,6 +145,11 @@ export default async function handler(req, res) {
           transaction?.metadata && typeof transaction.metadata === 'object'
             ? transaction.metadata
             : {};
+        // A compra de cotas usa tabela e endpoint próprios; nunca contar como ingresso de R$ 19,90.
+        if (transactionMetadata?.offer_type === 'sorteio_cota' ||
+            String(transaction?.external_id ?? transaction?.externalId ?? '').startsWith('sorteio-')) {
+          return res.status(200).json({ status: 'approved' });
+        }
         const inserted = await recordApprovedPurchase({
           paymentId,
           amount: paidAmount,
