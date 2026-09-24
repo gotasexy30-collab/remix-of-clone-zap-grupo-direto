@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T22:21:09.615670+00:00",
+  "generated_at": "2026-09-24T22:21:32.550005+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -251,7 +251,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23632
+      "bytes": 24183
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
@@ -866,6 +866,10 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "@/hooks/useWhatsAppRouter"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "./SorteioOffer"
     },
     {
       "source": "src/components/chat/WhatsAppRouterPanel.tsx",
