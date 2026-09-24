@@ -151,7 +151,21 @@ export default async function handler(req: any, res: any) {
     const amount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? 0);
     const metadata = transaction?.metadata ?? received?.metadata ?? {};
     // Sorteio é um pagamento adicional: nunca registrar em purchases nem disparar Purchase do ingresso original.
-    if (metadata?.offer_type === 'sorteio_cota') {
+    // Verificar também o identificador externo e o registro próprio, pois alguns retornos da NexusPag omitem metadata.
+    const externalId = String(transaction?.external_id ?? transaction?.externalId ?? received?.external_id ?? received?.externalId ?? '');
+    const dbForOffer = getBackendConfig();
+    let storedOffer: any = null;
+    if (dbForOffer.url && dbForOffer.serviceKey) {
+      const offerLookup = await fetch(
+        `${dbForOffer.url}/rest/v1/sorteio_entries?payment_id=eq.${encodeURIComponent(paymentId)}&select=payment_id,amount,status&limit=1`,
+        { headers: databaseHeaders(dbForOffer.serviceKey) },
+      );
+      if (offerLookup.ok) {
+        const offerRows = await offerLookup.json().catch(() => []);
+        storedOffer = offerRows?.[0] || null;
+      }
+    }
+    if (metadata?.offer_type === 'sorteio_cota' || externalId.startsWith('sorteio-') || storedOffer) {
       const { url, serviceKey } = getBackendConfig();
       if (!url || !serviceKey) return res.status(503).json({ error: 'Banco da oferta indisponível' });
       const headers = databaseHeaders(serviceKey);
@@ -161,7 +175,7 @@ export default async function handler(req: any, res: any) {
       );
       if (!lookup.ok) return res.status(500).json({ error: 'Falha ao consultar participação' });
       const offers = await lookup.json().catch(() => []);
-      const offer = offers?.[0];
+      const offer = storedOffer || offers?.[0];
       if (!offer) return res.status(200).json({ ok: true, status: 'approved', recorded: false, reason: 'participacao_aguardando_registro' });
       if (offer.status === 'approved') return res.status(200).json({ ok: true, status: 'approved', recorded: false });
       if (!Number.isFinite(amount) || Math.round(amount * 100) !== Math.round(Number(offer.amount) * 100)) {
