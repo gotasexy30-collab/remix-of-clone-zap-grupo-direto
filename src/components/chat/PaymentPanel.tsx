@@ -7,6 +7,7 @@ import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrac
 import { getTrafficAttribution } from '../../services/trafficAttribution';
 import { supabase } from '@/integrations/supabase/client';
 import { useWhatsAppRouter } from '@/hooks/useWhatsAppRouter';
+import { SorteioOffer } from './SorteioOffer';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -48,6 +49,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [pixError, setPixError] = useState('');
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
+  const [showSorteioOffer, setShowSorteioOffer] = useState(true);
   const [checkingManual, setCheckingManual] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [notPaidMsg, setNotPaidMsg] = useState('');
@@ -381,6 +383,14 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                   {paymentStatus === 'approved' ? (
                     <div className="w-full text-center py-6 flex flex-col items-center">
+                      {showSorteioOffer && pix?.id && (
+                        <SorteioOffer
+                          parentPaymentId={pix.id}
+                          sessionId={sessionStorage.getItem('wa_session_id') || ''}
+                          isRedirecting={isRedirecting}
+                          onContinue={() => { setShowSorteioOffer(false); void triggerRedirect(); }}
+                        />
+                      )}
                       <div className="w-16 h-16 mx-auto rounded-full bg-[#16A349] flex items-center justify-center mb-3"><Check size={36} className="text-white" /></div>
                       <h3 className="text-xl font-black text-[#16A349] mb-2">PAGAMENTO APROVADO!</h3>
                       <p className="text-gray-500 text-sm mb-6">Seu acesso foi liberado com sucesso.</p>
