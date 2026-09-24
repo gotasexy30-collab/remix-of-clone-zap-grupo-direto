@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T22:07:51.811482+00:00",
+  "generated_at": "2026-09-24T22:20:14.636492+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -92,6 +92,10 @@
     {
       "path": "api/meta-capi.ts",
       "bytes": 5200
+    },
+    {
+      "path": "api/sorteio-pix.ts",
+      "bytes": 8113
     },
     {
       "path": "api/generate-pix.ts",
