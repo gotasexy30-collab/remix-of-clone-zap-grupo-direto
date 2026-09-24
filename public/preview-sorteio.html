@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Prévia — Participação em sorteio</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f7f2f7;background:#0c0b13;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 50% -15%,#5d214c 0%,#19101e 43%,#0c0b13 78%)}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #ffd38c;outline-offset:3px}.wrap{width:min(100% - 32px,460px);margin:auto;padding:24px 0 42px}.preview{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#ffdfac;margin:0 0 20px}.preview span{width:7px;height:7px;border-radius:50%;background:#ffcf75}.hero{text-align:center}.eyebrow{font-size:11px;letter-spacing:.2em;color:#e7a9c9;font-weight:800}.hero h1{font-size:clamp(27px,7vw,38px);line-height:1.13;letter-spacing:-.04em;margin:12px 0}.hero h1 em{font-style:normal;color:#ffb7d4}.subtitle{color:#c4b8c5;font-size:14px;line-height:1.55;margin:0 auto 23px;max-width:350px}.panel{background:linear-gradient(155deg,#2c1c2f,#1a1523);border:1px solid #69425d;border-radius:22px;box-shadow:0 24px 70px #0006;overflow:hidden}.panel-head{padding:22px 22px 0}.section-label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#d8a8bf;font-weight:800;margin-bottom:12px}.models{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.model{background:#211a28;border:1px solid #514056;border-radius:13px;color:#f4e7ef;padding:13px 5px;min-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700}.model .avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#4e3049;color:#ffd6e9;font-size:18px}.model[aria-pressed="true"]{border:2px solid #ff91c1;background:#512e49;padding:12px 4px}.divider{height:1px;background:#50394c;margin:21px 22px}.quantity{padding:0 22px 21px}.price-line{display:flex;align-items:center;justify-content:space-between;gap:12px}.unit{color:#c9b8c8;font-size:13px}.unit strong{display:block;color:white;font-size:23px;margin-top:3px}.stepper{display:flex;align-items:center;gap:15px}.stepper button{height:39px;width:39px;border-radius:12px;border:1px solid #79506b;background:#493045;color:white;font-size:24px}.stepper output{font-size:23px;font-weight:800;min-width:22px;text-align:center}.total{background:#241b2a;padding:19px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #50394c}.total span{font-size:13px;color:#e2c9d7}.total strong{font-size:27px;color:#ffd39d}.actions{padding:20px 22px 23px}.primary{display:block;width:100%;border:0;border-radius:13px;background:linear-gradient(90deg,#ff8ebd,#ffb78c);color:#341323;padding:15px 10px;font-weight:900;font-size:14px}.secondary{display:block;margin:13px auto 0;background:transparent;color:#d4c3d0;border:0;text-decoration:underline;font-size:13px;padding:8px}.fine{font-size:11px;line-height:1.55;color:#a99eaf;text-align:center;margin:16px auto 0;max-width:385px}.notice{margin-top:20px;padding:15px;border:1px solid #514354;border-radius:13px;background:#211b29;color:#d7c7d5;font-size:12px;line-height:1.6}.notice strong{color:#fff}.status{min-height:18px;color:#ffd39d;text-align:center;font-size:12px;margin:10px 0 0}@media(min-width:700px){.wrap{padding-top:42px}}@media(max-width:350px){.models{gap:5px}.model{font-size:11px}.panel-head,.quantity,.actions{padding-left:15px;padding-right:15px}.divider{margin-left:15px;margin-right:15px}.total{padding-left:15px;padding-right:15px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<p class="preview"><span></span> Prévia de layout · sem cobrança</p>
+<header class="hero">
+<div class="eyebrow">OFERTA ADICIONAL OPCIONAL</div>
+<h1>Participe do sorteio da <em>peça íntima da sua modelo favorita</em></h1>
+<p class="subtitle">Escolha uma modelo e veja como ficaria a seleção de cotas. Seu acesso de R$ 19,90 não depende desta oferta.</p>
+</header>
+<section class="panel" aria-label="Simulação de cotas">
+<div class="panel-head">
+<span class="section-label">01 · Escolha sua modelo</span>
+<div class="models" role="group" aria-label="Modelo favorita">
+<button class="model" type="button" aria-pressed="true" data-model="Modelo 1"><span class="avatar">♡</span>Modelo 1</button>
+<button class="model" type="button" aria-pressed="false" data-model="Modelo 2"><span class="avatar">♡</span>Modelo 2</button>
+<button class="model" type="button" aria-pressed="false" data-model="Modelo 3"><span class="avatar">♡</span>Modelo 3</button>
+</div>
+</div>
+<div class="divider"></div>
+<div class="quantity">
+<span class="section-label">02 · Quantas cotas?</span>
+<div class="price-line">
+<div class="unit">Valor por cota<strong>R$ 4,60</strong></div>
+<div class="stepper"><button id="minus" type="button" aria-label="Diminuir cotas" disabled>−</button><output id="qty" aria-live="polite">1</output><button id="plus" type="button" aria-label="Aumentar cotas">+</button></div>
+</div>
+</div>
+<div class="total"><span>Total simulado</span><strong id="total">R$ 4,60</strong></div>
+<div class="actions">
+<button class="primary" id="simulate" type="button">VER RESUMO DA ESCOLHA</button>
+<button class="secondary" id="skip" type="button">Não quero participar · acessar meu conteúdo</button>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+</div>
+</section>
+<p class="fine">Esta página é somente uma demonstração visual. Não gera PIX, não reserva cotas e não realiza sorteio. Modelos e prêmio são ilustrativos.</p>
+<aside class="notice"><strong>Antes de uma oferta real:</strong> definir prêmio efetivo, condições de participação, regulamento e enquadramento legal do sorteio. O conteúdo já comprado deve continuar disponível sem uma nova cobrança.</aside>
+</main>
+<script>
+(()=>{let quantity=1;let model='Modelo 1';const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});const qty=document.getElementById('qty'),total=document.getElementById('total'),minus=document.getElementById('minus'),plus=document.getElementById('plus'),status=document.getElementById('status');function render(){qty.textContent=String(quantity);total.textContent=money.format(quantity*4.6);minus.disabled=quantity<=1;plus.disabled=quantity>=100;status.textContent='';}minus.addEventListener('click',()=>{quantity=Math.max(1,quantity-1);render()});plus.addEventListener('click',()=>{quantity=Math.min(100,quantity+1);render()});document.querySelectorAll('[data-model]').forEach(button=>button.addEventListener('click',()=>{model=button.dataset.model;document.querySelectorAll('[data-model]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));status.textContent=''}));document.getElementById('simulate').addEventListener('click',()=>{status.textContent='Prévia: '+model+' · '+quantity+' '+(quantity===1?'cota':'cotas')+' · '+money.format(quantity*4.6)+'. Nenhuma compra foi iniciada.'});document.getElementById('skip').addEventListener('click',()=>{status.textContent='Prévia: nesta tela não há redirecionamento. O acesso original permanece inalterado.'});render()})();
+</script>
+</body>
+</html>
