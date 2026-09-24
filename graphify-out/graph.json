@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T15:05:49.203255+00:00",
+  "generated_at": "2026-09-24T15:15:32.881001+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -75,7 +75,7 @@
     },
     {
       "path": "public/preview-sorteio.html",
-      "bytes": 7411
+      "bytes": 7511
     },
     {
       "path": ".lovasiri/sync.json",
