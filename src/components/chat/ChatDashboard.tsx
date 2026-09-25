@@ -221,15 +221,30 @@ export const ChatDashboard: React.FC = () => {
       // Atributação é complementar ao funil principal. Qualquer erro nesta
       // consulta nova não pode derrubar as métricas que já funcionavam.
       try {
+        // Filtrar no banco pelo período selecionado. Antes esta consulta buscava
+        // todo o histórico e o PostgREST podia devolver apenas o primeiro lote,
+        // deixando eventos recentes do TikTok de fora do painel.
+        let trafficQuery = supabase
+          .from('tracked_events')
+          .select('event_name, session_id, created_at')
+          .like('event_name', 'TrafficSource:%');
+        let attributionSalesQuery = supabase
+          .from('purchases')
+          .select('amount, session_id, created_at')
+          .eq('status', 'approved');
+
+        if (start) {
+          trafficQuery = trafficQuery.gte('created_at', start.toISOString());
+          attributionSalesQuery = attributionSalesQuery.gte('created_at', start.toISOString());
+        }
+        if (end) {
+          trafficQuery = trafficQuery.lt('created_at', end.toISOString());
+          attributionSalesQuery = attributionSalesQuery.lt('created_at', end.toISOString());
+        }
+
         const [trafficResult, attributionSalesResult] = await Promise.all([
-          supabase
-            .from('tracked_events')
-            .select('event_name, session_id, created_at')
-            .like('event_name', 'TrafficSource:%'),
-          supabase
-            .from('purchases')
-            .select('amount, session_id, created_at')
-            .eq('status', 'approved'),
+          trafficQuery,
+          attributionSalesQuery,
         ]);
 
         if (trafficResult.error) throw trafficResult.error;
