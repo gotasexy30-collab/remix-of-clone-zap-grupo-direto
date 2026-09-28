@@ -17,6 +17,19 @@ async function dbRequest(path: string, init: RequestInit = {}) {
   const { url, headers } = dbConfig();
   return fetch(url + '/rest/v1/' + path, { ...init, headers: { ...headers, ...init.headers } });
 }
+
+async function logTrackedEvent(eventName: string, sessionId: string) {
+  try {
+    if (!sessionId) return;
+    await dbRequest('tracked_events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_name: eventName, session_id: sessionId.slice(0, 200), slug: 'sorteio' }),
+    });
+  } catch (error) {
+    console.warn('[Sorteio] Falha ao registrar evento:', eventName, error);
+  }
+}
 async function getTransaction(id: string, key: string): Promise<any | null> {
   const response = await fetch(API + encodeURIComponent(id), { headers: { 'x-api-key': key } });
   if (!response.ok) return null;
@@ -73,7 +86,8 @@ export default async function handler(req: any, res: any) {
       if (transactionId !== id || !Number.isFinite(paid) || Math.round(paid * 100) !== Math.round(Number(offer.amount) * 100)) {
         return res.status(409).json({ error: 'Dados do pagamento não correspondem à participação.' });
       }
-      await approveOffer(id, Number(offer.amount));
+      const newlyApproved = await approveOffer(id, Number(offer.amount));
+      if (newlyApproved) await logTrackedEvent('SorteioPurchaseApproved', sessionId);
       return res.status(200).json({ status: 'approved' });
     }
     if (body.action !== 'create') return res.status(400).json({ error: 'Operação inválida.' });
@@ -116,6 +130,7 @@ export default async function handler(req: any, res: any) {
       console.error('[Sorteio] PIX criado mas não registrado:', paymentId, insertResponse.status);
       return res.status(503).json({ error: 'Não foi possível registrar a participação. Não pague este PIX. Seu conteúdo original segue disponível.' });
     }
+    await logTrackedEvent('SorteioPixGenerated', sessionId);
     return res.status(200).json({ id: paymentId, qr_code: transaction.pix_copia_cola || '', qr_code_base64: transaction.qr_code_base64 || '', status: 'pending', amount });
   } catch (error) {
     console.error('[Sorteio PIX]', error);
