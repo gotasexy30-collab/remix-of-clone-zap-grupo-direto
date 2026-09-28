@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T15:31:12.882866+00:00",
+  "generated_at": "2026-09-28T18:21:44.083627+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -243,7 +243,7 @@
     },
     {
       "path": "src/components/chat/SorteioOffer.tsx",
-      "bytes": 11178
+      "bytes": 11506
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
@@ -818,6 +818,10 @@
     {
       "source": "src/components/chat/SorteioOffer.tsx",
       "target": "lucide-react"
+    },
+    {
+      "source": "src/components/chat/SorteioOffer.tsx",
+      "target": "../../services/pixel"
     },
     {
       "source": "src/components/chat/FunnelLiveFeed.tsx",
