@@ -47,6 +47,7 @@ export function SorteioOffer({ parentPaymentId, sessionId, onContinue, isRedirec
         approvedRef.current = true;
         setApproved(true);
         setError('');
+        logTrackedEvent('SorteioPurchaseApproved');
       } else if (showError) {
         setError('O pagamento adicional ainda não foi confirmado. Você pode aguardar ou acessar seu conteúdo já pago.');
       }
