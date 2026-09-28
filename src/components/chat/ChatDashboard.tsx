@@ -227,26 +227,51 @@ export const ChatDashboard: React.FC = () => {
       const totalSales = sales.length;
       const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
 
-      // Funil da oferta opcional de cotas. Contamos pessoas únicas por sessão
-      // para evitar duplicidade caso um evento seja enviado mais de uma vez.
-      const sessionsFor = (eventName: string) =>
-        new Set(events.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
-      const sorteioViewed = sessionsFor('SorteioOfferViewed');
-      const sorteioParticipate = sessionsFor('SorteioParticipateClicked');
-      const sorteioSkipped = sessionsFor('SorteioSkipped');
-      const sorteioPixGenerated = sessionsFor('SorteioPixGenerated');
-      const sorteioApproved = sessionsFor('SorteioPurchaseApproved');
-      const acted = new Set<string>([...sorteioParticipate, ...sorteioSkipped]);
-      const sorteioNoAction = new Set([...sorteioViewed].filter(sessionId => !acted.has(sessionId)));
+      // Funil da oferta opcional de cotas: consulta separada e filtrada no banco.
+      // O funil principal pode ter milhares de eventos no dia e o PostgREST limita
+      // o lote padrão; por isso os eventos recentes do sorteio não podem depender
+      // da consulta geral acima.
+      try {
+        const sorteioEventNames = [
+          'SorteioOfferViewed',
+          'SorteioParticipateClicked',
+          'SorteioSkipped',
+          'SorteioPixGenerated',
+          'SorteioPurchaseApproved',
+        ];
+        let sorteioQuery = supabase
+          .from('tracked_events')
+          .select('event_name, session_id, created_at')
+          .in('event_name', sorteioEventNames);
 
-      setSorteioFunnel({
-        viewed: sorteioViewed.size,
-        participate: sorteioParticipate.size,
-        skipped: sorteioSkipped.size,
-        noAction: sorteioNoAction.size,
-        pixGenerated: sorteioPixGenerated.size,
-        approved: sorteioApproved.size,
-      });
+        if (start) sorteioQuery = sorteioQuery.gte('created_at', start.toISOString());
+        if (end) sorteioQuery = sorteioQuery.lt('created_at', end.toISOString());
+
+        const sorteioResult = await sorteioQuery;
+        if (sorteioResult.error) throw sorteioResult.error;
+        const sorteioEvents = sorteioResult.data || [];
+        const sessionsFor = (eventName: string) =>
+          new Set(sorteioEvents.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
+        const sorteioViewed = sessionsFor('SorteioOfferViewed');
+        const sorteioParticipate = sessionsFor('SorteioParticipateClicked');
+        const sorteioSkipped = sessionsFor('SorteioSkipped');
+        const sorteioPixGenerated = sessionsFor('SorteioPixGenerated');
+        const sorteioApproved = sessionsFor('SorteioPurchaseApproved');
+        const acted = new Set<string>([...sorteioParticipate, ...sorteioSkipped]);
+        const sorteioNoAction = new Set([...sorteioViewed].filter(sessionId => !acted.has(sessionId)));
+
+        setSorteioFunnel({
+          viewed: sorteioViewed.size,
+          participate: sorteioParticipate.size,
+          skipped: sorteioSkipped.size,
+          noAction: sorteioNoAction.size,
+          pixGenerated: sorteioPixGenerated.size,
+          approved: sorteioApproved.size,
+        });
+      } catch (error) {
+        console.warn('[Sorteio] Métricas da oferta indisponíveis:', error);
+        setSorteioFunnel({ viewed: 0, participate: 0, skipped: 0, noAction: 0, pixGenerated: 0, approved: 0 });
+      }
 
       // Atributação é complementar ao funil principal. Qualquer erro nesta
       // consulta nova não pode derrubar as métricas que já funcionavam.
