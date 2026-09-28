@@ -66,6 +66,15 @@ export const ChatDashboard: React.FC = () => {
     other: { visitors: 0, sales: 0, revenue: 0 },
   });
 
+  const [sorteioFunnel, setSorteioFunnel] = useState({
+    viewed: 0,
+    participate: 0,
+    skipped: 0,
+    noAction: 0,
+    pixGenerated: 0,
+    approved: 0,
+  });
+
   const [loading, setLoading] = useState(true);
   const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
@@ -217,6 +226,27 @@ export const ChatDashboard: React.FC = () => {
       const totalClicks = chatEvents.length;
       const totalSales = sales.length;
       const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
+
+      // Funil da oferta opcional de cotas. Contamos pessoas únicas por sessão
+      // para evitar duplicidade caso um evento seja enviado mais de uma vez.
+      const sessionsFor = (eventName: string) =>
+        new Set(events.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
+      const sorteioViewed = sessionsFor('SorteioOfferViewed');
+      const sorteioParticipate = sessionsFor('SorteioParticipateClicked');
+      const sorteioSkipped = sessionsFor('SorteioSkipped');
+      const sorteioPixGenerated = sessionsFor('SorteioPixGenerated');
+      const sorteioApproved = sessionsFor('SorteioPurchaseApproved');
+      const acted = new Set<string>([...sorteioParticipate, ...sorteioSkipped]);
+      const sorteioNoAction = new Set([...sorteioViewed].filter(sessionId => !acted.has(sessionId)));
+
+      setSorteioFunnel({
+        viewed: sorteioViewed.size,
+        participate: sorteioParticipate.size,
+        skipped: sorteioSkipped.size,
+        noAction: sorteioNoAction.size,
+        pixGenerated: sorteioPixGenerated.size,
+        approved: sorteioApproved.size,
+      });
 
       // Atributação é complementar ao funil principal. Qualquer erro nesta
       // consulta nova não pode derrubar as métricas que já funcionavam.
@@ -641,6 +671,42 @@ export const ChatDashboard: React.FC = () => {
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
                 <strong className="text-white/80">Pagou</strong> = PIX confirmados {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
               </p>
+
+              <div className="mt-4 border-t border-white/5 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Link2 size={14} className="text-[#00a884]" />
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Oferta opcional de cotas</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Viram a oferta</div>
+                    <div className="text-2xl font-black text-white mt-1">{sorteioFunnel.viewed}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#ff91c1]/20">
+                    <div className="text-[9px] text-[#ffb7d4] uppercase font-bold">Clicaram participar</div>
+                    <div className="text-2xl font-black text-[#ffb7d4] mt-1">{sorteioFunnel.participate}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Pularam oferta</div>
+                    <div className="text-2xl font-black text-white mt-1">{sorteioFunnel.skipped}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-amber-400/20">
+                    <div className="text-[9px] text-amber-300 uppercase font-bold">Sem ação</div>
+                    <div className="text-2xl font-black text-amber-300 mt-1">{sorteioFunnel.noAction}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-blue-400/20">
+                    <div className="text-[9px] text-blue-300 uppercase font-bold">PIX cotas gerado</div>
+                    <div className="text-2xl font-black text-blue-300 mt-1">{sorteioFunnel.pixGenerated}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
+                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Cotas pagas</div>
+                    <div className="text-2xl font-black text-[#16A349] mt-1">{sorteioFunnel.approved}</div>
+                  </div>
+                </div>
+                <p className="text-[9px] text-[#8696a0] italic leading-relaxed">
+                  <strong className="text-white/80">Sem ação</strong> = viu a oferta e ainda não registrou clique em Participar nem em Pular. Os números acompanham o mesmo período selecionado acima e começam a ser medidos a partir desta atualização.
+                </p>
+              </div>
 
               <div className="mt-4 border-t border-white/5 pt-4">
                 <div className="flex items-center gap-2 mb-3">
