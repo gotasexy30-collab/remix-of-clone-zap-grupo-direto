@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Loader2, Minus, Plus } from 'lucide-react';
+import { logTrackedEvent } from '../../services/pixel';
 
 const PRICE_CENTS = 460;
 const MODELS = [
@@ -22,6 +23,13 @@ export function SorteioOffer({ parentPaymentId, sessionId, onContinue, isRedirec
   const [copied, setCopied] = useState(false);
   const requestRef = useRef(false);
   const approvedRef = useRef(false);
+  const viewedRef = useRef(false);
+
+  useEffect(() => {
+    if (viewedRef.current) return;
+    viewedRef.current = true;
+    logTrackedEvent('SorteioOfferViewed');
+  }, []);
 
   const check = async (id: string, showError = false) => {
     if (approvedRef.current || !sessionId) return;
@@ -56,6 +64,7 @@ export function SorteioOffer({ parentPaymentId, sessionId, onContinue, isRedirec
 
   const createPix = async () => {
     if (requestRef.current || pix || isRedirecting) return;
+    logTrackedEvent('SorteioParticipateClicked');
     requestRef.current = true;
     setCreating(true);
     setError('');
@@ -146,7 +155,7 @@ export function SorteioOffer({ parentPaymentId, sessionId, onContinue, isRedirec
               </button>
             )}
             {approved && <button type="button" onClick={onContinue} disabled={isRedirecting} className="w-full rounded-[13px] bg-[#16A349] text-white font-black text-sm py-4 disabled:opacity-50">{isRedirecting ? 'ABRINDO CONTEÚDO...' : 'ACESSAR MEU CONTEÚDO AGORA'}</button>}
-            {!approved && <button type="button" onClick={onContinue} disabled={isRedirecting} className="block mx-auto mt-4 text-[#e6cdda] text-[13px] underline underline-offset-2 disabled:opacity-50">{isRedirecting ? 'ABRINDO CONTEÚDO...' : 'Pular oferta e acessar meu conteúdo já pago →'}</button>}
+            {!approved && <button type="button" onClick={() => { logTrackedEvent('SorteioSkipped'); onContinue(); }} disabled={isRedirecting} className="block mx-auto mt-4 text-[#e6cdda] text-[13px] underline underline-offset-2 disabled:opacity-50">{isRedirecting ? 'ABRINDO CONTEÚDO...' : 'Pular oferta e acessar meu conteúdo já pago →'}</button>}
             {error && <p role="alert" className="text-[#ffc4c4] text-xs leading-relaxed text-center mt-4">{error}</p>}
           </div>
         </section>
