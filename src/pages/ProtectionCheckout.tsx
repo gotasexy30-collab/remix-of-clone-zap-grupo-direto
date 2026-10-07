@@ -148,8 +148,8 @@ export default function ProtectionCheckout() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-black/80 flex items-center justify-center p-3">
-      <div className="w-full max-w-[470px] bg-white rounded-2xl shadow-2xl p-5 sm:p-6 text-gray-900">
+    <div className="h-[100dvh] overflow-y-auto bg-black/80 flex items-start sm:items-center justify-center p-3 overscroll-contain">
+      <div className="w-full max-w-[470px] bg-white rounded-2xl shadow-2xl p-5 sm:p-6 text-gray-900 my-3 sm:my-0">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 font-black text-xl uppercase">
             <LockKeyhole className="text-amber-500" size={28} />
@@ -192,12 +192,13 @@ export default function ProtectionCheckout() {
         )}
 
         {pix && !approved && (
-          <div className="mt-5">
-            <p className="text-center font-bold text-sm mb-3">PIX da Proteção do Grupo</p>
+          <div className="mt-4">
+            <p className="text-center font-bold text-sm mb-2">PIX da Proteção do Grupo</p>
             {pix.qr_code_base64 && (
-              <img src={pix.qr_code_base64} alt="QR Code PIX" className="w-44 h-44 mx-auto object-contain" />
+              <img src={pix.qr_code_base64} alt="QR Code PIX" className="w-36 h-36 sm:w-44 sm:h-44 mx-auto object-contain" />
             )}
-            <div className="mt-3 bg-gray-100 border rounded-lg p-2 text-[10px] text-gray-700 break-all max-h-24 overflow-auto">
+            <p className="mt-2 mb-1 text-center text-[11px] font-semibold text-gray-500">PIX Copia e Cola</p>
+            <div className="bg-gray-100 border rounded-lg p-2 text-[10px] leading-snug text-gray-700 break-all max-h-16 overflow-y-auto">
               {pix.qr_code}
             </div>
             <button
@@ -207,7 +208,7 @@ export default function ProtectionCheckout() {
             >
               {copied ? <><Check size={18}/> CÓDIGO COPIADO</> : <><Copy size={18}/> COPIAR CÓDIGO PIX</>}
             </button>
-            <div className="mt-3 flex items-center justify-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs font-medium">
+            <div className="mt-2 flex items-center justify-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs font-medium">
               <Loader2 size={14} className="animate-spin" /> Aguardando confirmação...
             </div>
           </div>
@@ -221,14 +222,16 @@ export default function ProtectionCheckout() {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => void goToDelivery()}
-          disabled={isRedirecting}
-          className="w-full mt-4 text-sm text-gray-500 underline underline-offset-4 disabled:opacity-50"
-        >
-          Continuar para minha entrega sem adicionar a proteção
-        </button>
+        {!approved && (
+          <button
+            type="button"
+            onClick={() => void goToDelivery()}
+            disabled={isRedirecting}
+            className="block mx-auto mt-4 text-xs text-gray-400 underline underline-offset-4 disabled:opacity-50"
+          >
+            Não, obrigado
+          </button>
+        )}
 
         {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
       </div>
