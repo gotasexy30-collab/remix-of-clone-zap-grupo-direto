@@ -7,7 +7,6 @@ import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrac
 import { getTrafficAttribution } from '../../services/trafficAttribution';
 import { supabase } from '@/integrations/supabase/client';
 import { useWhatsAppRouter } from '@/hooks/useWhatsAppRouter';
-import { SorteioOffer } from './SorteioOffer';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -49,7 +48,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [pixError, setPixError] = useState('');
   const [copied, setCopied] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'approved'>('pending');
-  const [showSorteioOffer, setShowSorteioOffer] = useState(true);
   const [checkingManual, setCheckingManual] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [notPaidMsg, setNotPaidMsg] = useState('');
@@ -236,6 +234,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       setPaymentStatus('approved');
       if (pollRef.current) clearInterval(pollRef.current);
       trackEventDual('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, `np_${pix.id}`);
+      sessionStorage.setItem('protection_parent_payment_id', String(pix.id));
+      window.location.href = '/checkout-protecao';
     };
 
     const checkPayment = async () => {
@@ -291,6 +291,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setPaymentStatus('approved');
     if (pollRef.current) clearInterval(pollRef.current);
     trackEventDual('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, `np_${pix?.id || 'manual'}`);
+    if (pix?.id) {
+      sessionStorage.setItem('protection_parent_payment_id', String(pix.id));
+      window.location.href = '/checkout-protecao';
+    }
   };
 
   const handleManualCheck = async () => {
@@ -383,21 +387,19 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
 
                   {paymentStatus === 'approved' ? (
                     <div className="w-full text-center py-6 flex flex-col items-center">
-                      {showSorteioOffer && pix?.id && (
-                        <SorteioOffer
-                          parentPaymentId={pix.id}
-                          sessionId={sessionStorage.getItem('wa_session_id') || ''}
-                          isRedirecting={isRedirecting}
-                          onContinue={() => { setShowSorteioOffer(false); void triggerRedirect(); }}
-                        />
-                      )}
-                      <div className="w-16 h-16 mx-auto rounded-full bg-[#16A349] flex items-center justify-center mb-3"><Check size={36} className="text-white" /></div>
+                      <Loader2 size={36} className="animate-spin text-[#16A349] mb-3" />
                       <h3 className="text-xl font-black text-[#16A349] mb-2">PAGAMENTO APROVADO!</h3>
-                      <p className="text-gray-500 text-sm mb-6">Seu acesso foi liberado com sucesso.</p>
-                      <button onClick={() => { if (!isRedirecting) void triggerRedirect(); }} disabled={isRedirecting} className={`w-full bg-[#16A349] text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2 ${isRedirecting ? 'opacity-70' : 'hover:bg-[#15803d] active:scale-[0.98] animate-pulse'}`}>
-                        {isRedirecting ? <><Loader2 size={24} className="animate-spin" /> REDIRECIONANDO...</> : 'ACESSAR CONTEÚDO AGORA'}
+                      <p className="text-gray-500 text-sm">Abrindo a próxima etapa...</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (pix?.id) sessionStorage.setItem('protection_parent_payment_id', String(pix.id));
+                          window.location.href = '/checkout-protecao';
+                        }}
+                        className="w-full mt-4 bg-[#16A349] text-white py-3 rounded-xl font-bold text-sm"
+                      >
+                        CONTINUAR
                       </button>
-                      {notPaidMsg && <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg w-full"><p className="text-red-600 text-sm font-medium">{notPaidMsg}</p></div>}
                     </div>
                   ) : !pix ? (
                     <>
