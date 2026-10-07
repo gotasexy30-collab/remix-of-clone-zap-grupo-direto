@@ -66,13 +66,16 @@ export const ChatDashboard: React.FC = () => {
     other: { visitors: 0, sales: 0, revenue: 0 },
   });
 
-  const [sorteioFunnel, setSorteioFunnel] = useState({
+  const [protectionFunnel, setProtectionFunnel] = useState({
     viewed: 0,
-    participate: 0,
+    clicked: 0,
     skipped: 0,
     noAction: 0,
     pixGenerated: 0,
     approved: 0,
+    revenue: 0,
+    offerConversion: 0,
+    pixConversion: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -227,50 +230,56 @@ export const ChatDashboard: React.FC = () => {
       const totalSales = sales.length;
       const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
 
-      // Funil da oferta opcional de cotas: consulta separada e filtrada no banco.
-      // O funil principal pode ter milhares de eventos no dia e o PostgREST limita
-      // o lote padrão; por isso os eventos recentes do sorteio não podem depender
-      // da consulta geral acima.
+      // Funil do checkout pós-compra Proteção do Grupo.
+      // Consulta separada e filtrada no banco para não depender do lote geral de eventos.
       try {
-        const sorteioEventNames = [
-          'SorteioOfferViewed',
-          'SorteioParticipateClicked',
-          'SorteioSkipped',
-          'SorteioPixGenerated',
-          'SorteioPurchaseApproved',
+        const protectionEventNames = [
+          'ProtectionOfferViewed',
+          'ProtectionPayClicked',
+          'ProtectionSkipped',
+          'ProtectionPixGenerated',
+          'ProtectionPurchaseApproved',
         ];
-        let sorteioQuery = supabase
+        let protectionQuery = supabase
           .from('tracked_events')
           .select('event_name, session_id, created_at')
-          .in('event_name', sorteioEventNames);
+          .in('event_name', protectionEventNames);
 
-        if (start) sorteioQuery = sorteioQuery.gte('created_at', start.toISOString());
-        if (end) sorteioQuery = sorteioQuery.lt('created_at', end.toISOString());
+        if (start) protectionQuery = protectionQuery.gte('created_at', start.toISOString());
+        if (end) protectionQuery = protectionQuery.lt('created_at', end.toISOString());
 
-        const sorteioResult = await sorteioQuery;
-        if (sorteioResult.error) throw sorteioResult.error;
-        const sorteioEvents = sorteioResult.data || [];
+        const protectionResult = await protectionQuery;
+        if (protectionResult.error) throw protectionResult.error;
+        const protectionEvents = protectionResult.data || [];
         const sessionsFor = (eventName: string) =>
-          new Set(sorteioEvents.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
-        const sorteioViewed = sessionsFor('SorteioOfferViewed');
-        const sorteioParticipate = sessionsFor('SorteioParticipateClicked');
-        const sorteioSkipped = sessionsFor('SorteioSkipped');
-        const sorteioPixGenerated = sessionsFor('SorteioPixGenerated');
-        const sorteioApproved = sessionsFor('SorteioPurchaseApproved');
-        const acted = new Set<string>([...sorteioParticipate, ...sorteioSkipped]);
-        const sorteioNoAction = new Set([...sorteioViewed].filter(sessionId => !acted.has(sessionId)));
+          new Set(protectionEvents.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
 
-        setSorteioFunnel({
-          viewed: sorteioViewed.size,
-          participate: sorteioParticipate.size,
-          skipped: sorteioSkipped.size,
-          noAction: sorteioNoAction.size,
-          pixGenerated: sorteioPixGenerated.size,
-          approved: sorteioApproved.size,
+        const viewed = sessionsFor('ProtectionOfferViewed');
+        const clicked = sessionsFor('ProtectionPayClicked');
+        const skipped = sessionsFor('ProtectionSkipped');
+        const pixGenerated = sessionsFor('ProtectionPixGenerated');
+        const approved = sessionsFor('ProtectionPurchaseApproved');
+        const acted = new Set<string>([...clicked, ...skipped]);
+        const noAction = new Set([...viewed].filter(sessionId => !acted.has(sessionId)));
+
+        const approvedCount = approved.size;
+        setProtectionFunnel({
+          viewed: viewed.size,
+          clicked: clicked.size,
+          skipped: skipped.size,
+          noAction: noAction.size,
+          pixGenerated: pixGenerated.size,
+          approved: approvedCount,
+          revenue: approvedCount * 7.90,
+          offerConversion: viewed.size > 0 ? (approvedCount / viewed.size) * 100 : 0,
+          pixConversion: pixGenerated.size > 0 ? (approvedCount / pixGenerated.size) * 100 : 0,
         });
       } catch (error) {
-        console.warn('[Sorteio] Métricas da oferta indisponíveis:', error);
-        setSorteioFunnel({ viewed: 0, participate: 0, skipped: 0, noAction: 0, pixGenerated: 0, approved: 0 });
+        console.warn('[Proteção] Métricas do checkout indisponíveis:', error);
+        setProtectionFunnel({
+          viewed: 0, clicked: 0, skipped: 0, noAction: 0, pixGenerated: 0,
+          approved: 0, revenue: 0, offerConversion: 0, pixConversion: 0,
+        });
       }
 
       // Atributação é complementar ao funil principal. Qualquer erro nesta
@@ -699,37 +708,53 @@ export const ChatDashboard: React.FC = () => {
 
               <div className="mt-4 border-t border-white/5 pt-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Link2 size={14} className="text-[#00a884]" />
-                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Oferta opcional de cotas</span>
+                  <ShieldCheck size={14} className="text-[#00a884]" />
+                  <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Checkout Proteção do Grupo · R$ 7,90</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
-                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Viram a oferta</div>
-                    <div className="text-2xl font-black text-white mt-1">{sorteioFunnel.viewed}</div>
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Viram o checkout</div>
+                    <div className="text-2xl font-black text-white mt-1">{protectionFunnel.viewed}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#ff91c1]/20">
-                    <div className="text-[9px] text-[#ffb7d4] uppercase font-bold">Clicaram participar</div>
-                    <div className="text-2xl font-black text-[#ffb7d4] mt-1">{sorteioFunnel.participate}</div>
+                    <div className="text-[9px] text-[#ffb7d4] uppercase font-bold">Clicaram pagar</div>
+                    <div className="text-2xl font-black text-[#ffb7d4] mt-1">{protectionFunnel.clicked}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
-                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Pularam oferta</div>
-                    <div className="text-2xl font-black text-white mt-1">{sorteioFunnel.skipped}</div>
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Recusaram</div>
+                    <div className="text-2xl font-black text-white mt-1">{protectionFunnel.skipped}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-amber-400/20">
                     <div className="text-[9px] text-amber-300 uppercase font-bold">Sem ação</div>
-                    <div className="text-2xl font-black text-amber-300 mt-1">{sorteioFunnel.noAction}</div>
+                    <div className="text-2xl font-black text-amber-300 mt-1">{protectionFunnel.noAction}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-blue-400/20">
-                    <div className="text-[9px] text-blue-300 uppercase font-bold">PIX cotas gerado</div>
-                    <div className="text-2xl font-black text-blue-300 mt-1">{sorteioFunnel.pixGenerated}</div>
+                    <div className="text-[9px] text-blue-300 uppercase font-bold">PIX R$ 7,90 gerado</div>
+                    <div className="text-2xl font-black text-blue-300 mt-1">{protectionFunnel.pixGenerated}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
-                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Cotas pagas</div>
-                    <div className="text-2xl font-black text-[#16A349] mt-1">{sorteioFunnel.approved}</div>
+                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Proteções pagas</div>
+                    <div className="text-2xl font-black text-[#16A349] mt-1">{protectionFunnel.approved}</div>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
+                    <div className="text-[9px] text-[#1877F2] uppercase font-bold">Faturamento proteção</div>
+                    <div className="text-xl font-black text-[#1877F2] mt-1">R$ {protectionFunnel.revenue.toFixed(2).replace('.', ',')}</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#00a884]/20">
+                    <div className="text-[9px] text-[#00a884] uppercase font-bold">Viu → Pagou</div>
+                    <div className="text-xl font-black text-[#00a884] mt-1">{protectionFunnel.offerConversion.toFixed(1).replace('.', ',')}%</div>
+                  </div>
+                  <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
+                    <div className="text-[9px] text-[#16A349] uppercase font-bold">PIX → Pagou</div>
+                    <div className="text-xl font-black text-[#16A349] mt-1">{protectionFunnel.pixConversion.toFixed(1).replace('.', ',')}%</div>
+                  </div>
+                </div>
+
                 <p className="text-[9px] text-[#8696a0] italic leading-relaxed">
-                  <strong className="text-white/80">Sem ação</strong> = viu a oferta e ainda não registrou clique em Participar nem em Pular. Os números acompanham o mesmo período selecionado acima e começam a ser medidos a partir desta atualização.
+                  <strong className="text-white/80">Sem ação</strong> = abriu o checkout de proteção e ainda não clicou em pagar nem em recusar. Todos os números seguem o mesmo período selecionado acima.
                 </p>
               </div>
 
