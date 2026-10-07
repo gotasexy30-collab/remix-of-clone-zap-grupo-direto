@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T11:50:50.635420+00:00",
+  "generated_at": "2026-10-07T11:51:17.978323+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -96,6 +96,10 @@
     {
       "path": "api/sorteio-pix.ts",
       "bytes": 8726
+    },
+    {
+      "path": "api/protection-pix.ts",
+      "bytes": 6143
     },
     {
       "path": "api/generate-pix.ts",
