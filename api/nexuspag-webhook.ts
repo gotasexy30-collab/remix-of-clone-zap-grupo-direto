@@ -5,6 +5,48 @@ function normalizeStatus(value: unknown): string {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function getTransactionEventTime(transaction: any): number {
+  const now = Math.floor(Date.now() / 1000);
+  const candidates = [
+    transaction?.approved_at,
+    transaction?.approvedAt,
+    transaction?.paid_at,
+    transaction?.paidAt,
+    transaction?.date_approved,
+    transaction?.dateApproved,
+    transaction?.confirmed_at,
+    transaction?.confirmedAt,
+    transaction?.payment_date,
+    transaction?.paymentDate,
+    transaction?.updated_at,
+    transaction?.updatedAt,
+  ];
+
+  for (const value of candidates) {
+    if (value === null || value === undefined || value === '') continue;
+    let seconds = 0;
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      seconds = value > 1e12 ? Math.floor(value / 1000) : Math.floor(value);
+    } else {
+      const raw = String(value).trim();
+      const numeric = Number(raw);
+      if (raw && Number.isFinite(numeric) && numeric > 0) {
+        seconds = numeric > 1e12 ? Math.floor(numeric / 1000) : Math.floor(numeric);
+      } else {
+        const parsed = Date.parse(raw);
+        if (Number.isFinite(parsed)) seconds = Math.floor(parsed / 1000);
+      }
+    }
+
+    if (seconds > 0 && seconds <= now + 300 && seconds >= now - (7 * 24 * 60 * 60)) {
+      return seconds;
+    }
+  }
+
+  return now;
+}
+
 function getClientIpFromMetadata(metadata: Record<string, any>): string {
   return String(metadata?.client_ip_address || metadata?.ip_address || '').trim();
 }
@@ -55,7 +97,7 @@ async function fetchVerifiedTransaction(id: string, apiKey: string): Promise<any
   }
 }
 
-async function recordPurchase(paymentId: string, amount: number, sessionId: string): Promise<boolean> {
+async function recordPurchase(paymentId: string, amount: number, sessionId: string, approvedAt?: number): Promise<boolean> {
   const { url, publicKey, serviceKey } = getBackendConfig();
   const databaseKey = serviceKey || publicKey;
   if (!url || !databaseKey) throw new Error('Banco não configurado na Vercel');
@@ -81,7 +123,7 @@ async function recordPurchase(paymentId: string, amount: number, sessionId: stri
       amount: safeAmount,
       session_id: sessionId.slice(0, 200),
       status: 'approved',
-      approved_at: new Date().toISOString(),
+      approved_at: new Date((approvedAt || Math.floor(Date.now() / 1000)) * 1000).toISOString(),
     }),
   });
   if (!response.ok) throw new Error(`Falha ao registrar venda: ${response.status}`);
@@ -89,7 +131,7 @@ async function recordPurchase(paymentId: string, amount: number, sessionId: stri
   return Array.isArray(inserted) && inserted.length > 0;
 }
 
-async function sendPurchaseToMeta(paymentId: string, amount: number, metadata: Record<string, any>) {
+async function sendPurchaseToMeta(paymentId: string, amount: number, metadata: Record<string, any>, eventTime?: number) {
   const pixelId = await getSetting('meta_pixel_id');
   const accessToken = process.env.META_CAPI_TOKEN || (await getSetting('meta_capi_token'));
   if (!pixelId || !accessToken) throw new Error('Pixel ID ou token CAPI não configurado');
@@ -109,7 +151,7 @@ async function sendPurchaseToMeta(paymentId: string, amount: number, metadata: R
       body: JSON.stringify({
         data: [{
           event_name: 'Purchase',
-          event_time: Math.floor(Date.now() / 1000),
+          event_time: eventTime || Math.floor(Date.now() / 1000),
           event_id: `np_${paymentId}`,
           action_source: 'website',
           event_source_url: String(metadata?.event_source_url || ''),
@@ -150,6 +192,7 @@ export default async function handler(req: any, res: any) {
     );
     const amount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? 0);
     const metadata = transaction?.metadata ?? received?.metadata ?? {};
+    const transactionEventTime = getTransactionEventTime(transaction);
     // Sorteio é um pagamento adicional: nunca registrar em purchases nem disparar Purchase do ingresso original.
     // Verificar também o identificador externo e o registro próprio, pois alguns retornos da NexusPag omitem metadata.
     const externalId = String(transaction?.external_id ?? transaction?.externalId ?? received?.external_id ?? received?.externalId ?? '');
@@ -199,8 +242,8 @@ export default async function handler(req: any, res: any) {
       if (!update.ok) return res.status(500).json({ error: 'Falha ao registrar participação' });
       return res.status(200).json({ ok: true, status: 'approved', recorded: true, offer: 'sorteio_cota' });
     }
-    const inserted = await recordPurchase(paymentId, amount, String(metadata?.session_id || ''));
-    if (inserted) await sendPurchaseToMeta(paymentId, amount, metadata?.meta ?? metadata);
+    const inserted = await recordPurchase(paymentId, amount, String(metadata?.session_id || ''), transactionEventTime);
+    if (inserted) await sendPurchaseToMeta(paymentId, amount, metadata?.meta ?? metadata, transactionEventTime);
 
     return res.status(200).json({ ok: true, status: 'approved', recorded: inserted });
   } catch (error) {
