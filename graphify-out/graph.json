@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T11:51:17.978323+00:00",
+  "generated_at": "2026-10-07T11:51:56.814892+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -123,7 +123,7 @@
     },
     {
       "path": "src/App.tsx",
-      "bytes": 1303
+      "bytes": 1447
     },
     {
       "path": "src/types.ts",
@@ -259,7 +259,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 24183
+      "bytes": 23625
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
@@ -597,6 +597,10 @@
     },
     {
       "source": "src/App.tsx",
+      "target": "./pages/ProtectionCheckout.tsx"
+    },
+    {
+      "source": "src/App.tsx",
       "target": "./pages/NotFound.tsx"
     },
     {
@@ -898,10 +902,6 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "@/hooks/useWhatsAppRouter"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "./SorteioOffer"
     },
     {
       "source": "src/components/chat/WhatsAppRouterPanel.tsx",
