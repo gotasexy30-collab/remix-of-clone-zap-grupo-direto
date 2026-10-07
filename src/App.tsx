@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Redirect from "./pages/Redirect.tsx";
 import Pressel from "./pages/Pressel.tsx";
+import ProtectionCheckout from "./pages/ProtectionCheckout.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/r" element={<Redirect />} />
           <Route path="/pressel" element={<Pressel />} />
+          <Route path="/checkout-protecao" element={<ProtectionCheckout />} />
           <Route path="/painel" element={<Dashboard />} />
           <Route path="/:slug/painel" element={<Dashboard />} />
           <Route path="/:slug" element={<Index />} />
