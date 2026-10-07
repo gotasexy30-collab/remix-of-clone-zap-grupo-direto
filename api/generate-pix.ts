@@ -5,6 +5,49 @@ function normalizeStatus(value: unknown): string {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 }
 
+function getTransactionEventTime(transaction: any): number {
+  const now = Math.floor(Date.now() / 1000);
+  const candidates = [
+    transaction?.approved_at,
+    transaction?.approvedAt,
+    transaction?.paid_at,
+    transaction?.paidAt,
+    transaction?.date_approved,
+    transaction?.dateApproved,
+    transaction?.confirmed_at,
+    transaction?.confirmedAt,
+    transaction?.payment_date,
+    transaction?.paymentDate,
+    transaction?.updated_at,
+    transaction?.updatedAt,
+  ];
+
+  for (const value of candidates) {
+    if (value === null || value === undefined || value === '') continue;
+    let seconds = 0;
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      seconds = value > 1e12 ? Math.floor(value / 1000) : Math.floor(value);
+    } else {
+      const raw = String(value).trim();
+      const numeric = Number(raw);
+      if (raw && Number.isFinite(numeric) && numeric > 0) {
+        seconds = numeric > 1e12 ? Math.floor(numeric / 1000) : Math.floor(numeric);
+      } else {
+        const parsed = Date.parse(raw);
+        if (Number.isFinite(parsed)) seconds = Math.floor(parsed / 1000);
+      }
+    }
+
+    // Meta aceita eventos recentes; rejeitamos timestamps futuros ou claramente inválidos.
+    if (seconds > 0 && seconds <= now + 300 && seconds >= now - (7 * 24 * 60 * 60)) {
+      return seconds;
+    }
+  }
+
+  return now;
+}
+
 function getClientIp(req: any): string {
   const candidates = [
     req.headers?.['x-forwarded-for'],
@@ -57,7 +100,7 @@ async function getMetaCapiToken(): Promise<string> {
   return Array.isArray(rows) ? String(rows[0]?.value || '') : '';
 }
 
-async function recordApprovedPurchase({ paymentId, amount, sessionId }: { paymentId: string; amount: number; sessionId: string }): Promise<boolean> {
+async function recordApprovedPurchase({ paymentId, amount, sessionId, approvedAt }: { paymentId: string; amount: number; sessionId: string; approvedAt?: number }): Promise<boolean> {
   const { url, publicKey, serviceKey } = getSupabaseConfig();
   const databaseKey = serviceKey || publicKey;
   if (!url || !databaseKey) return false;
@@ -68,7 +111,7 @@ async function recordApprovedPurchase({ paymentId, amount, sessionId }: { paymen
   const response = await fetch(`${url}/rest/v1/purchases`, {
     method: 'POST',
     headers: { ...databaseHeaders(databaseKey), 'Content-Type': 'application/json', Prefer: 'return=representation' },
-    body: JSON.stringify({ mp_payment_id: paymentId, amount: Math.max(0, Math.min(Number(amount) || 0, 10000)), session_id: sessionId.slice(0, 200), status: 'approved', approved_at: new Date().toISOString() }),
+    body: JSON.stringify({ mp_payment_id: paymentId, amount: Math.max(0, Math.min(Number(amount) || 0, 10000)), session_id: sessionId.slice(0, 200), status: 'approved', approved_at: new Date((approvedAt || Math.floor(Date.now() / 1000)) * 1000).toISOString() }),
   });
   if (!response.ok) return false;
   const rows = await response.json().catch(() => []);
@@ -80,11 +123,13 @@ async function sendCapiPurchase({
   amount,
   req,
   metadata = {},
+  eventTime,
 }: {
   paymentId: string;
   amount: number;
   req: any;
   metadata?: Record<string, any>;
+  eventTime?: number;
 }): Promise<void> {
   const accessToken = await getMetaCapiToken();
   if (!accessToken) return;
@@ -103,7 +148,7 @@ async function sendCapiPurchase({
   if (userAgent || storedUserAgent) userData.client_user_agent = userAgent || storedUserAgent;
   if (fbp) userData.fbp = fbp;
   if (fbc) userData.fbc = fbc;
-  const payload = { data: [{ event_name: 'Purchase', event_time: Math.floor(Date.now() / 1000), event_id: `np_${paymentId}`, action_source: 'website', event_source_url: String(req.headers?.referer || req.headers?.origin || ''), user_data: userData, custom_data: { value: safeAmount, currency: 'BRL' } }] };
+  const payload = { data: [{ event_name: 'Purchase', event_time: eventTime || Math.floor(Date.now() / 1000), event_id: `np_${paymentId}`, action_source: 'website', event_source_url: String(req.headers?.referer || req.headers?.origin || ''), user_data: userData, custom_data: { value: safeAmount, currency: 'BRL' } }] };
   const response = await fetch(`https://graph.facebook.com/${META_GRAPH_VERSION}/${encodeURIComponent(pixelId)}/events`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, access_token: accessToken }) });
   if (!response.ok) return;
 }
@@ -145,6 +190,7 @@ export default async function handler(req, res) {
           transaction?.metadata && typeof transaction.metadata === 'object'
             ? transaction.metadata
             : {};
+        const transactionEventTime = getTransactionEventTime(transaction);
         // A compra de cotas usa tabela e endpoint próprios; nunca contar como ingresso de R$ 19,90.
         if (transactionMetadata?.offer_type === 'sorteio_cota' ||
             String(transaction?.external_id ?? transaction?.externalId ?? '').startsWith('sorteio-')) {
@@ -154,6 +200,7 @@ export default async function handler(req, res) {
           paymentId,
           amount: paidAmount,
           sessionId: String(body?.session_id || transactionMetadata?.session_id || ''),
+          approvedAt: transactionEventTime,
         });
         if (inserted) {
           await sendCapiPurchase({
@@ -161,6 +208,7 @@ export default async function handler(req, res) {
             amount: paidAmount,
             req,
             metadata: transactionMetadata,
+            eventTime: transactionEventTime,
           });
         }
       }
