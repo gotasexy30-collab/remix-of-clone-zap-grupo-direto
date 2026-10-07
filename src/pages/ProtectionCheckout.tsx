@@ -222,17 +222,6 @@ export default function ProtectionCheckout() {
           </div>
         )}
 
-        {!approved && (
-          <button
-            type="button"
-            onClick={() => { logTrackedEvent('ProtectionSkipped'); void goToDelivery(); }}
-            disabled={isRedirecting}
-            className="block mx-auto mt-4 text-xs text-gray-400 underline underline-offset-4 disabled:opacity-50"
-          >
-            Não, obrigado
-          </button>
-        )}
-
         {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
       </div>
     </div>
