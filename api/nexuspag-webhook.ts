@@ -153,6 +153,13 @@ export default async function handler(req: any, res: any) {
     // Sorteio é um pagamento adicional: nunca registrar em purchases nem disparar Purchase do ingresso original.
     // Verificar também o identificador externo e o registro próprio, pois alguns retornos da NexusPag omitem metadata.
     const externalId = String(transaction?.external_id ?? transaction?.externalId ?? received?.external_id ?? received?.externalId ?? '');
+
+    // A Proteção do Grupo é um upsell pós-compra separado. Nunca registrar esse
+    // PIX de R$ 7,90 na tabela purchases nem disparar o Purchase do acesso base.
+    if (metadata?.offer_type === 'group_protection' || externalId.startsWith('protecao-')) {
+      return res.status(200).json({ ok: true, status: 'approved', recorded: false, offer: 'group_protection' });
+    }
+
     const dbForOffer = getBackendConfig();
     let storedOffer: any = null;
     if (dbForOffer.url && dbForOffer.serviceKey) {
