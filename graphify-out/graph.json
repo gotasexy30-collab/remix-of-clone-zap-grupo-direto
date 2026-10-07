@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T23:49:04.364996+00:00",
+  "generated_at": "2026-10-07T11:50:50.635420+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -204,6 +204,10 @@
     {
       "path": "src/pages/Redirect.tsx",
       "bytes": 2843
+    },
+    {
+      "path": "src/pages/ProtectionCheckout.tsx",
+      "bytes": 9590
     },
     {
       "path": "src/pages/NotFound.tsx",
@@ -702,6 +706,26 @@
     {
       "source": "src/pages/Redirect.tsx",
       "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "react"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "lucide-react"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "../services/pixel"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "../services/settings"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "../hooks/useWhatsAppRouter"
     },
     {
       "source": "src/pages/NotFound.tsx",
