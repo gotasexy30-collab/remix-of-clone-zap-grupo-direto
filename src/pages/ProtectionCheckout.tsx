@@ -225,7 +225,7 @@ export default function ProtectionCheckout() {
         {!approved && (
           <button
             type="button"
-            onClick={() => void goToDelivery()}
+            onClick={() => { logTrackedEvent('ProtectionSkipped'); void goToDelivery(); }}
             disabled={isRedirecting}
             className="block mx-auto mt-4 text-xs text-gray-400 underline underline-offset-4 disabled:opacity-50"
           >
