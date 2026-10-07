@@ -1,6 +1,6 @@
 # Design system
 
-Generated: 2026-10-07T12:25:55.994180+00:00
+Generated: 2026-10-07T12:39:41.258694+00:00
 
 ## Tokens
 - --background: 0 0% 100% (src/index.css)
