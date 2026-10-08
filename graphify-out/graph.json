@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T14:42:49.356630+00:00",
+  "generated_at": "2026-10-08T20:28:09.846809+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -175,7 +175,7 @@
     },
     {
       "path": "src/services/settings.ts",
-      "bytes": 1822
+      "bytes": 1625
     },
     {
       "path": "src/services/pixel.ts",
@@ -227,7 +227,7 @@
     },
     {
       "path": "src/pages/Dashboard.tsx",
-      "bytes": 1155
+      "bytes": 1219
     },
     {
       "path": "src/test/example.test.ts",
