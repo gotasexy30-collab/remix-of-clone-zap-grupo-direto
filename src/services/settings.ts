@@ -40,11 +40,9 @@ export async function setSetting(key: string, value: string): Promise<void> {
   }
 }
 
+// Validação de senha é realizada exclusivamente pelo Supabase Auth.
 export async function verifyAdminPassword(password: string): Promise<boolean> {
-  // Since we removed the edge function, we fallback to frontend validation 
-  // or simple local session check if the user is already authenticated via Supabase.
-  // The user requested to remove the Edge Function.
-  // In a professional setup, we'd use Supabase Auth (which is already implemented in the login screen).
-  // We return true here because the dashboard is already protected by Supabase Auth RLS and the Login component.
-  return true;
+  if (!password) return false;
+  const { data: { session } } = await supabase.auth.getSession();
+  return !!session && session.user.email?.toLowerCase() === 'admin@meusistema.com';
 }
