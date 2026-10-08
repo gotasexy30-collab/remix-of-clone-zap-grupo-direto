@@ -40,9 +40,8 @@ export async function setSetting(key: string, value: string): Promise<void> {
   }
 }
 
-// Validação de senha é realizada exclusivamente pelo Supabase Auth.
-export async function verifyAdminPassword(password: string): Promise<boolean> {
-  if (!password) return false;
-  const { data: { session } } = await supabase.auth.getSession();
-  return !!session && session.user.email?.toLowerCase() === 'admin@meusistema.com';
+// Função legada intencionalmente desativada: senhas só devem ser validadas
+// pelo signInWithPassword do Supabase Auth, nunca no cliente.
+export async function verifyAdminPassword(_password: string): Promise<boolean> {
+  return false;
 }
