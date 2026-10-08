@@ -9,7 +9,7 @@ const Dashboard = () => {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+      setIsAuthenticated(!!session && session.user.email?.toLowerCase() === 'admin@meusistema.com');
     };
 
     checkAuth();
