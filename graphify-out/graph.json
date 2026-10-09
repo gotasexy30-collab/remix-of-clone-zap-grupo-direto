@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T14:44:33.917880+00:00",
+  "generated_at": "2026-10-09T14:45:09.968071+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -287,7 +287,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 63469
+      "bytes": 63370
     },
     {
       "path": "src/components/auth/AdminLogin.tsx",
