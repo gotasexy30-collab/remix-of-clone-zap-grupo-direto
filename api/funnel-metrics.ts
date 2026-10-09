@@ -21,7 +21,7 @@ export default async function handler(req: any, res: any) {
   if (!url || !key) return res.status(500).json({ error: 'Banco não configurado' });
 
   // Este endpoint é administrativo e consulta vendas com a service_role.
-  const token = String(req.headers?.authorization || '').match(/^Bearer\\s+(.+)$/i)?.[1] || '';
+  const token = String(req.headers?.authorization || '').match(/^Bearer\s+(.+)$/i)?.[1] || '';
   if (!token) return res.status(401).json({ error: 'Autenticação obrigatória.' });
   const userResponse = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: key, Authorization: `Bearer ${token}` },
