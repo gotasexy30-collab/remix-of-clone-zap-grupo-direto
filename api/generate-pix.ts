@@ -185,21 +185,38 @@ export default async function handler(req, res) {
       if (approved) {
         const transaction = d?.transaction ?? d?.data ?? d;
         const paymentId = String(transaction?.id ?? transaction?.uuid ?? transaction?.transaction_id ?? transaction?.txid ?? id);
-        const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? body?.amount ?? 19.90);
+        const paidAmount = Number(transaction?.amount ?? transaction?.transaction_amount ?? transaction?.value ?? NaN);
         const transactionMetadata =
           transaction?.metadata && typeof transaction.metadata === 'object'
             ? transaction.metadata
             : {};
+        const externalId = String(transaction?.external_id ?? transaction?.externalId ?? '');
+        const txSession = String(transactionMetadata?.session_id || '');
+        const requestSession = String(body?.session_id || '');
         const transactionEventTime = getTransactionEventTime(transaction);
-        // A compra de cotas usa tabela e endpoint próprios; nunca contar como ingresso de R$ 19,90.
-        if (transactionMetadata?.offer_type === 'sorteio_cota' ||
-            String(transaction?.external_id ?? transaction?.externalId ?? '').startsWith('sorteio-')) {
+
+        // Jamais marcar um upsell/cota ou PIX de teste como compra do acesso principal.
+        if (
+          transactionMetadata?.offer_type === 'sorteio_cota' ||
+          transactionMetadata?.offer_type === 'group_protection' ||
+          externalId.startsWith('sorteio-') ||
+          externalId.startsWith('protecao-')
+        ) return res.status(200).json({ status: 'pending' });
+        if (paymentId !== id || !Number.isFinite(paidAmount)) {
+          return res.status(200).json({ status: 'pending' });
+        }
+        // O checkout administrativo de R$1,00 ainda pode verificar o status,
+        // mas não pode registrar uma venda do acesso principal.
+        if (Math.round(paidAmount * 100) !== 1990) {
           return res.status(200).json({ status: 'approved' });
+        }
+        if (!requestSession || (txSession && txSession !== requestSession)) {
+          return res.status(200).json({ status: 'pending' });
         }
         const inserted = await recordApprovedPurchase({
           paymentId,
           amount: paidAmount,
-          sessionId: String(body?.session_id || transactionMetadata?.session_id || ''),
+          sessionId: txSession || requestSession,
           approvedAt: transactionEventTime,
         });
         if (inserted) {
