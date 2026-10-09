@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T14:43:38.556564+00:00",
+  "generated_at": "2026-10-09T14:44:24.531943+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -215,7 +215,7 @@
     },
     {
       "path": "src/pages/ProtectionCheckout.tsx",
-      "bytes": 9464
+      "bytes": 9331
     },
     {
       "path": "src/pages/NotFound.tsx",
@@ -263,7 +263,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23605
+      "bytes": 22070
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
@@ -732,14 +732,6 @@
       "target": "../services/pixel"
     },
     {
-      "source": "src/pages/ProtectionCheckout.tsx",
-      "target": "../services/settings"
-    },
-    {
-      "source": "src/pages/ProtectionCheckout.tsx",
-      "target": "../hooks/useWhatsAppRouter"
-    },
-    {
       "source": "src/pages/NotFound.tsx",
       "target": "react-router-dom"
     },
@@ -902,10 +894,6 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "@/integrations/supabase/client"
-    },
-    {
-      "source": "src/components/chat/PaymentPanel.tsx",
-      "target": "@/hooks/useWhatsAppRouter"
     },
     {
       "source": "src/components/chat/WhatsAppRouterPanel.tsx",
