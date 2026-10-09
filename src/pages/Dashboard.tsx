@@ -15,7 +15,7 @@ const Dashboard = () => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
+      setIsAuthenticated(!!session && session.user.email?.toLowerCase() === 'admin@meusistema.com');
     });
 
     return () => subscription.unsubscribe();
