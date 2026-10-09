@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { appendUTMsToUrl, logTrackedEvent } from '../services/pixel';
-import { getSetting } from '../services/settings';
-import { useWhatsAppRouter } from '../hooks/useWhatsAppRouter';
+
 
 const PROTECTION_PRICE = 7.90;
 
@@ -25,7 +24,6 @@ export default function ProtectionCheckout() {
   const [error, setError] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
   const pollRef = useRef<number | null>(null);
-  const { redirect } = useWhatsAppRouter();
 
   const sessionId = sessionStorage.getItem('wa_session_id') || '';
   const parentPaymentId = sessionStorage.getItem('protection_parent_payment_id') || '';
@@ -40,29 +38,21 @@ export default function ProtectionCheckout() {
   const goToDelivery = async () => {
     if (isRedirecting) return;
     setIsRedirecting(true);
+    setError('');
     try {
-      let primaryUrl = localStorage.getItem('pix_success_url') || '';
-      if (!primaryUrl) {
-        primaryUrl = await getSetting('pix_success_url') || '';
-        if (primaryUrl) localStorage.setItem('pix_success_url', primaryUrl);
-      }
-      if (primaryUrl.trim()) {
-        const cleanUrl = primaryUrl.trim();
-        const finalUrl = cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
-        window.location.href = appendUTMsToUrl(finalUrl);
+      const response = await fetch('/api/delivery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ parent_payment_id: parentPaymentId, session_id: sessionId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.url) {
+        setError(data?.error || 'Não foi possível confirmar seu acesso. Contate o suporte.');
+        setIsRedirecting(false);
         return;
       }
-
-      let fallbackUrl = localStorage.getItem('payment_redirect_link') || '';
-      if (!fallbackUrl) {
-        fallbackUrl = await getSetting('payment_redirect_link') || '';
-        if (fallbackUrl) localStorage.setItem('payment_redirect_link', fallbackUrl);
-      }
-      const ok = await redirect('Olá! Acabei de concluir meu pagamento.', fallbackUrl || undefined);
-      if (!ok) {
-        setError('O link de entrega não está configurado. Contate o suporte.');
-        setIsRedirecting(false);
-      }
+      window.location.href = appendUTMsToUrl(String(data.url));
     } catch {
       setError('Não foi possível abrir a entrega agora. Tente novamente.');
       setIsRedirecting(false);
@@ -220,6 +210,17 @@ export default function ProtectionCheckout() {
             <div className="font-black text-[#15803d] mt-2">Pagamento confirmado</div>
             <div className="text-sm text-gray-500 mt-1">{isRedirecting ? 'Abrindo sua entrega...' : 'Sua proteção foi adicionada.'}</div>
           </div>
+        )}
+
+        {!approved && (
+          <button
+            type="button"
+            onClick={() => { logTrackedEvent('ProtectionSkipped'); void goToDelivery(); }}
+            disabled={isRedirecting || !parentPaymentId || !sessionId}
+            className="block mx-auto mt-4 text-xs text-gray-500 underline underline-offset-4 disabled:opacity-50"
+          >
+            Não, obrigado. Continuar para meu acesso.
+          </button>
         )}
 
         {error && <p className="mt-4 text-center text-sm text-red-600">{error}</p>}
