@@ -6,7 +6,6 @@ import { getSetting } from '../../services/settings';
 import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrackingContext } from '../../services/pixel';
 import { getTrafficAttribution } from '../../services/trafficAttribution';
 import { supabase } from '@/integrations/supabase/client';
-import { useWhatsAppRouter } from '@/hooks/useWhatsAppRouter';
 
 interface PaymentPanelProps {
   userCity: string;
@@ -58,25 +57,16 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [videoMuted, setVideoMuted] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
-  const [successUrl, setSuccessUrl] = useState<string>(localStorage.getItem('pix_success_url') || '');
   const paymentHandledRef = useRef(false);
   const redirectingRef = useRef(false);
-  const { redirect } = useWhatsAppRouter();
 
   useEffect(() => {
-    (async () => {
-      const [videoUrl, configuredSuccessUrl, fallbackUrl] = await Promise.all([
-        getSetting('pix_tutorial_video_url'),
-        getSetting('pix_success_url'),
-        getSetting('payment_redirect_link'),
-      ]);
+    // O endereço da entrega não deve ficar em storage nem ser obtido antes da compra.
+    localStorage.removeItem('pix_success_url');
+    localStorage.removeItem('payment_redirect_link');
+    void getSetting('pix_tutorial_video_url').then((videoUrl) => {
       if (videoUrl) setTutorialVideoUrl(videoUrl);
-      if (configuredSuccessUrl) {
-        setSuccessUrl(configuredSuccessUrl);
-        localStorage.setItem('pix_success_url', configuredSuccessUrl);
-      }
-      if (fallbackUrl) localStorage.setItem('payment_redirect_link', fallbackUrl);
-    })();
+    });
   }, []);
 
   useEffect(() => {
@@ -182,43 +172,32 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   };
 
   const triggerRedirect = async () => {
-    if (redirectingRef.current) return;
+    if (redirectingRef.current || !pix?.id) return;
     redirectingRef.current = true;
     setIsRedirecting(true);
     setNotPaidMsg('');
     try {
-      let primaryUrl = successUrl || localStorage.getItem('pix_success_url');
-      if (!primaryUrl) {
-        primaryUrl = await getSetting('pix_success_url') || '';
-        if (primaryUrl) {
-          setSuccessUrl(primaryUrl);
-          localStorage.setItem('pix_success_url', primaryUrl);
-        }
-      }
-      if (primaryUrl && primaryUrl.trim() !== '') {
-        const cleanUrl = primaryUrl.trim();
-        const finalUrl = cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
-        window.location.href = appendUTMsToUrl(finalUrl);
-        return;
-      }
-
-      let fallbackUrl = localStorage.getItem('payment_redirect_link');
-      if (!fallbackUrl) {
-        fallbackUrl = await getSetting('payment_redirect_link') || '';
-        if (fallbackUrl) localStorage.setItem('payment_redirect_link', fallbackUrl);
-      }
-
-      const success = await redirect('Olá! Acabei de realizar o pagamento do Clube.', fallbackUrl || undefined);
-      if (!success) {
-        setNotPaidMsg('O link de acesso não está configurado. Contate o suporte.');
+      const response = await fetch('/api/delivery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({
+          parent_payment_id: String(pix.id),
+          session_id: sessionStorage.getItem('wa_session_id') || '',
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.url) {
+        setNotPaidMsg(data?.error || 'A entrega não está disponível. Contate o suporte.');
         setIsRedirecting(false);
         redirectingRef.current = false;
+        return;
       }
-    } catch (error) {
-      console.error('Erro no redirecionamento:', error);
+      window.location.href = appendUTMsToUrl(String(data.url));
+    } catch {
       setIsRedirecting(false);
       redirectingRef.current = false;
-      setNotPaidMsg('Erro ao tentar redirecionar. Atualize a página e clique no botão novamente.');
+      setNotPaidMsg('Não foi possível confirmar a entrega agora. Tente novamente.');
     }
   };
 
@@ -244,17 +223,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         return;
       }
       try {
-        const { data: dbData } = await supabase
-          .from('purchases')
-          .select('status')
-          .eq('mp_payment_id', String(pix.id))
-          .maybeSingle();
-
-        if (isApprovedStatus(dbData?.status)) {
-          finishApprovedPayment();
-          return;
-        }
-
         const sessionId = sessionStorage.getItem('wa_session_id') || '';
         const response = await fetch('/api/generate-pix', {
           method: 'POST',
@@ -303,17 +271,6 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setNotPaidMsg('');
     logTrackedEvent('AlreadyPaid');
     try {
-      const { data: dbData } = await supabase
-        .from('purchases')
-        .select('status')
-        .eq('mp_payment_id', String(pix.id))
-        .maybeSingle();
-
-      if (isApprovedStatus(dbData?.status)) {
-        markApproved();
-        return;
-      }
-
       const sessionId = sessionStorage.getItem('wa_session_id') || '';
       const response = await fetch('/api/generate-pix', {
         method: 'POST',
