@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T14:46:09.121717+00:00",
+  "generated_at": "2026-10-09T14:47:58.036880+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -83,7 +83,7 @@
     },
     {
       "path": "api/funnel-metrics.ts",
-      "bytes": 2783
+      "bytes": 3547
     },
     {
       "path": "api/nexuspag-webhook.ts",
