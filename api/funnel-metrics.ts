@@ -13,11 +13,25 @@ function getPeriodRange(period: string): { start: Date | null; end: Date | null 
 }
 
 export default async function handler(req: any, res: any) {
+  res.setHeader('Cache-Control', 'no-store, private');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Método não permitido' });
 
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return res.status(500).json({ error: 'Banco não configurado' });
+
+  // Este endpoint é administrativo e consulta vendas com a service_role.
+  const token = String(req.headers?.authorization || '').match(/^Bearer\\s+(.+)$/i)?.[1] || '';
+  if (!token) return res.status(401).json({ error: 'Autenticação obrigatória.' });
+  const userResponse = await fetch(`${url}/auth/v1/user`, {
+    headers: { apikey: key, Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!userResponse.ok) return res.status(401).json({ error: 'Sessão inválida.' });
+  const user = await userResponse.json().catch(() => null);
+  if (!user || String(user.email || '').toLowerCase() !== 'admin@meusistema.com') {
+    return res.status(403).json({ error: 'Acesso restrito.' });
+  }
 
   const period = ALLOWED_PERIODS.has(String(req.query?.period)) ? String(req.query.period) : 'today';
   const { start, end } = getPeriodRange(period);
