@@ -82,13 +82,13 @@ export const ChatDashboard: React.FC = () => {
   const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
   const funnelPeriodMeta = FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
-  const [redirectLink, setRedirectLink] = useState(localStorage.getItem('payment_redirect_link') || '');
-  const [pixSuccessUrl, setPixSuccessUrl] = useState(localStorage.getItem('pix_success_url') || '');
+  const [redirectLink, setRedirectLink] = useState('');
+  const [pixSuccessUrl, setPixSuccessUrl] = useState('');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('chat_profile_photo') || '');
   const [locationImage, setLocationImage] = useState(localStorage.getItem('chat_location_image') || '');
   const [metaPixelId, setMetaPixelId] = useState(localStorage.getItem('meta_pixel_id') || '');
-  const [metaCapiToken, setMetaCapiToken] = useState(localStorage.getItem('meta_capi_token') || '');
+  const [metaCapiToken, setMetaCapiToken] = useState('');
   const [metaTestEventCode, setMetaTestEventCode] = useState('');
   const [testingMetaPurchase, setTestingMetaPurchase] = useState(false);
 
@@ -508,13 +508,14 @@ export const ChatDashboard: React.FC = () => {
         setSetting('redirect_desktop_url', redirectDesktopUrl),
       ]);
       // Cache local para uso imediato pelos componentes do chat
-      localStorage.setItem('payment_redirect_link', redirectLink);
-      localStorage.setItem('pix_success_url', pixSuccessUrl);
+      // Links de entrega não devem permanecer em cache no navegador.
+      localStorage.removeItem('payment_redirect_link');
+      localStorage.removeItem('pix_success_url');
       localStorage.setItem('chat_profile_name', profileName);
       localStorage.setItem('chat_profile_photo', profilePhoto);
       localStorage.setItem('chat_location_image', locationImage);
       localStorage.setItem('meta_pixel_id', metaPixelId);
-      localStorage.setItem('meta_capi_token', metaCapiToken);
+      localStorage.removeItem('meta_capi_token');
       localStorage.setItem('pix_tutorial_video_url', pixTutorialVideoUrl);
       localStorage.setItem('redirect_mobile_url', redirectMobileUrl);
       localStorage.setItem('redirect_desktop_url', redirectDesktopUrl);
