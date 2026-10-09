@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T14:45:09.968071+00:00",
+  "generated_at": "2026-10-09T14:46:09.121717+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -107,7 +107,7 @@
     },
     {
       "path": "api/generate-pix.ts",
-      "bytes": 11878
+      "bytes": 12652
     },
     {
       "path": "src/constants.ts",
