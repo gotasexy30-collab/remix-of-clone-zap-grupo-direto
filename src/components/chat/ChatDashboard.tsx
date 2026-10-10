@@ -92,7 +92,7 @@ export const ChatDashboard: React.FC = () => {
   const [metaTestEventCode, setMetaTestEventCode] = useState('');
   const [testingMetaPurchase, setTestingMetaPurchase] = useState(false);
 
-  const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState('https://pub-94312f87220e4ebb91acd81b002be102.r2.dev/VIDEO%20DE%20COMO%20FAZER%20O%20PAGAMNETO%20GRUPO%20IA%20.mp4');
+  const [pixTutorialVideoUrl, setPixTutorialVideoUrl] = useState('https://pub-94312f87220e4ebb91acd81b002be102.r2.dev/download%20%282%29.mp4');
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
   const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
   const [redirectCopied, setRedirectCopied] = useState(false);
