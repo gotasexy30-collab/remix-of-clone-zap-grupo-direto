@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T14:48:18.376969+00:00",
+  "generated_at": "2026-10-10T13:24:21.688659+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -263,7 +263,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 22070
+      "bytes": 22124
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
@@ -287,7 +287,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 63370
+      "bytes": 63420
     },
     {
       "path": "src/components/auth/AdminLogin.tsx",
