@@ -56,7 +56,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [videoMuted, setVideoMuted] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>(localStorage.getItem('pix_tutorial_video_url') || '/pix-tutorial.mp4');
+  const [tutorialVideoUrl, setTutorialVideoUrl] = useState<string>('https://pub-94312f87220e4ebb91acd81b002be102.r2.dev/VIDEO%20DE%20COMO%20FAZER%20O%20PAGAMNETO%20GRUPO%20IA%20.mp4');
   const paymentHandledRef = useRef(false);
   const redirectingRef = useRef(false);
 
@@ -73,7 +73,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     if (!tutorialVideoUrl) return;
     const v = document.createElement('video');
     v.src = tutorialVideoUrl;
-    v.preload = 'auto';
+    v.preload = 'metadata';
     v.muted = true;
     v.style.display = 'none';
     document.body.appendChild(v);
@@ -416,7 +416,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
           <div className="relative w-full sm:max-w-[480px]" onClick={event => event.stopPropagation()}>
             <div className="w-full rounded-xl overflow-hidden bg-black relative">
               <button onClick={() => setShowVideoModal(false)} aria-label="Fechar" className="absolute top-2 right-2 z-10 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition active:scale-95"><X size={18} /></button>
-              <video ref={videoRef} src={tutorialVideoUrl} autoPlay loop playsInline preload="auto" className="w-full h-auto" onLoadedMetadata={event => { event.currentTarget.muted = false; }} />
+              <video ref={videoRef} src={tutorialVideoUrl} autoPlay loop playsInline preload="metadata" className="w-full h-auto" onLoadedMetadata={event => { event.currentTarget.muted = false; }} />
               <div className="absolute bottom-2 right-2 flex gap-2">
                 <button onClick={toggleVideoPlay} aria-label={videoPlaying ? 'Pausar' : 'Reproduzir'} className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition">{videoPlaying ? <Pause size={18} /> : <Play size={18} />}</button>
                 <button onClick={toggleVideoMute} aria-label={videoMuted ? 'Ativar som' : 'Mutar'} className="bg-black/60 hover:bg-black/80 text-white rounded-full p-2 backdrop-blur-sm transition">{videoMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
