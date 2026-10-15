@@ -196,205 +196,65 @@ export const ChatDashboard: React.FC = () => {
 
   const loadFunnel = async (period: FunnelPeriod) => {
     try {
-      const { start, end } = getFunnelPeriodRange(period);
-      let eventsQuery = supabase
-        .from('tracked_events')
-        .select('event_name, session_id, created_at');
-      let salesQuery = supabase
-        .from('purchases')
-        .select('amount, status, created_at')
-        .eq('status', 'approved');
-
-      if (start) {
-        eventsQuery = eventsQuery.gte('created_at', start.toISOString());
-        salesQuery = salesQuery.gte('created_at', start.toISOString());
-      }
-      if (end) {
-        eventsQuery = eventsQuery.lt('created_at', end.toISOString());
-        salesQuery = salesQuery.lt('created_at', end.toISOString());
-      }
-
-      const [eventsResult, salesResult] = await Promise.all([eventsQuery, salesQuery]);
-      if (eventsResult.error) throw eventsResult.error;
-      if (salesResult.error) throw salesResult.error;
-
-      const events = eventsResult.data || [];
-      const sales = salesResult.data || [];
-      const countEvents = (...names: string[]) => events.filter(event => names.includes(event.event_name)).length;
-      const visitEvents = events.filter(event => event.event_name === 'page_view' || event.event_name === 'Visited');
-      const uniqueVisitors = new Set(visitEvents.map(event => event.session_id).filter(Boolean)).size;
-      const chatEvents = events.filter(event => event.event_name === 'chat_start' || event.event_name === 'ChatStarted');
-      const uniqueClickers = new Set(chatEvents.map(event => event.session_id).filter(Boolean)).size;
-      const totalVisits = visitEvents.length;
-      const totalClicks = chatEvents.length;
-      const totalSales = sales.length;
-      const revenue = sales.reduce((sum, sale) => sum + Number(sale.amount || 0), 0);
-
-      // Funil do checkout pós-compra Proteção do Grupo.
-      // Consulta separada e filtrada no banco para não depender do lote geral de eventos.
-      try {
-        const protectionEventNames = [
-          'ProtectionOfferViewed',
-          'ProtectionPayClicked',
-          'ProtectionSkipped',
-          'ProtectionPixGenerated',
-          'ProtectionPurchaseApproved',
-        ];
-        let protectionQuery = supabase
-          .from('tracked_events')
-          .select('event_name, session_id, created_at')
-          .in('event_name', protectionEventNames);
-
-        if (start) protectionQuery = protectionQuery.gte('created_at', start.toISOString());
-        if (end) protectionQuery = protectionQuery.lt('created_at', end.toISOString());
-
-        const protectionResult = await protectionQuery;
-        if (protectionResult.error) throw protectionResult.error;
-        const protectionEvents = protectionResult.data || [];
-        const sessionsFor = (eventName: string) =>
-          new Set(protectionEvents.filter(event => event.event_name === eventName).map(event => String(event.session_id || '')).filter(Boolean));
-
-        const viewed = sessionsFor('ProtectionOfferViewed');
-        const clicked = sessionsFor('ProtectionPayClicked');
-        const skipped = sessionsFor('ProtectionSkipped');
-        const pixGenerated = sessionsFor('ProtectionPixGenerated');
-        const approved = sessionsFor('ProtectionPurchaseApproved');
-        const acted = new Set<string>([...clicked, ...skipped]);
-        const noAction = new Set([...viewed].filter(sessionId => !acted.has(sessionId)));
-
-        const approvedCount = approved.size;
-        setProtectionFunnel({
-          viewed: viewed.size,
-          clicked: clicked.size,
-          skipped: skipped.size,
-          noAction: noAction.size,
-          pixGenerated: pixGenerated.size,
-          approved: approvedCount,
-          revenue: approvedCount * 7.90,
-          offerConversion: viewed.size > 0 ? (approvedCount / viewed.size) * 100 : 0,
-          pixConversion: pixGenerated.size > 0 ? (approvedCount / pixGenerated.size) * 100 : 0,
-        });
-      } catch (error) {
-        console.warn('[Proteção] Métricas do checkout indisponíveis:', error);
-        setProtectionFunnel({
-          viewed: 0, clicked: 0, skipped: 0, noAction: 0, pixGenerated: 0,
-          approved: 0, revenue: 0, offerConversion: 0, pixConversion: 0,
-        });
-      }
-
-      // Atributação é complementar ao funil principal. Qualquer erro nesta
-      // consulta nova não pode derrubar as métricas que já funcionavam.
-      try {
-        // Filtrar no banco pelo período selecionado. Antes esta consulta buscava
-        // todo o histórico e o PostgREST podia devolver apenas o primeiro lote,
-        // deixando eventos recentes do TikTok de fora do painel.
-        let trafficQuery = supabase
-          .from('tracked_events')
-          .select('event_name, session_id, created_at')
-          .like('event_name', 'TrafficSource:%');
-        let attributionSalesQuery = supabase
-          .from('purchases')
-          .select('amount, session_id, created_at')
-          .eq('status', 'approved');
-
-        if (start) {
-          trafficQuery = trafficQuery.gte('created_at', start.toISOString());
-          attributionSalesQuery = attributionSalesQuery.gte('created_at', start.toISOString());
-        }
-        if (end) {
-          trafficQuery = trafficQuery.lt('created_at', end.toISOString());
-          attributionSalesQuery = attributionSalesQuery.lt('created_at', end.toISOString());
-        }
-
-        const [trafficResult, attributionSalesResult] = await Promise.all([
-          trafficQuery,
-          attributionSalesQuery,
-        ]);
-
-        if (trafficResult.error) throw trafficResult.error;
-        if (attributionSalesResult.error) throw attributionSalesResult.error;
-
-        const trafficEvents = trafficResult.data || [];
-        const attributionSales = attributionSalesResult.data || [];
-
-        const trafficVisitors = {
-          meta: new Set<string>(),
-          tiktok: new Set<string>(),
-          other: new Set<string>(),
-        };
-
-        const sourceBySession = new Map<string, string>();
-
-        for (const event of trafficEvents) {
-          const sessionId = String(event.session_id || '');
-          if (!sessionId) continue;
-          if (!isInFunnelPeriod(String(event.created_at), period)) continue;
-
-          const source = String(event.event_name || '')
-            .replace(/^TrafficSource:/, '')
-            .toLowerCase() || 'direct';
-
-          if (source === 'meta') trafficVisitors.meta.add(sessionId);
-          else if (source === 'tiktok') trafficVisitors.tiktok.add(sessionId);
-          else trafficVisitors.other.add(sessionId);
-
-          if (!sourceBySession.has(sessionId)) {
-            sourceBySession.set(sessionId, source);
-          }
-        }
-
-        const trafficBreakdown = {
-          meta: { visitors: trafficVisitors.meta.size, sales: 0, revenue: 0 },
-          tiktok: { visitors: trafficVisitors.tiktok.size, sales: 0, revenue: 0 },
-          other: { visitors: trafficVisitors.other.size, sales: 0, revenue: 0 },
-        };
-
-        for (const sale of attributionSales) {
-          if (!isInFunnelPeriod(String(sale.created_at), period)) continue;
-
-          const source = sourceBySession.get(String(sale.session_id || '')) || 'other';
-          const amount = Number(sale.amount || 0);
-
-          if (source === 'meta') {
-            trafficBreakdown.meta.sales += 1;
-            trafficBreakdown.meta.revenue += amount;
-          } else if (source === 'tiktok') {
-            trafficBreakdown.tiktok.sales += 1;
-            trafficBreakdown.tiktok.revenue += amount;
-          } else {
-            trafficBreakdown.other.sales += 1;
-            trafficBreakdown.other.revenue += amount;
-          }
-        }
-
-        setTrafficSales(trafficBreakdown);
-      } catch (error) {
-        console.warn('[Traffic] Atribuição indisponível; mantendo funil principal:', error);
-        setTrafficSales({
-          meta: { visitors: 0, sales: 0, revenue: 0 },
-          tiktok: { visitors: 0, sales: 0, revenue: 0 },
-          other: { visitors: 0, sales: 0, revenue: 0 },
-        });
-      }
+      // API administrativa agregada: conta todas as linhas, sem o limite
+      // de 1.000 eventos do PostgREST e sem somar eventos duplicados.
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session?.access_token) throw new Error('Sessão administrativa indisponível');
+      const response = await fetch(`/api/funnel-metrics?period=${encodeURIComponent(period)}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        cache: 'no-store',
+      });
+      if (!response.ok) throw new Error('Erro ao obter métricas completas');
+      const data = await response.json();
+      const totalVisits = Number(data.total_visits || 0);
+      const uniqueVisitors = Number(data.unique_visitors || 0);
+      const chatStarts = Number(data.total_clicks || 0);
+      const totalSales = Number(data.total_sales || 0);
+      const pixGenerated = Number(data.lead || 0);
+      const revenue = Number(data.revenue || 0);
 
       setFunnel({
         total_visits: totalVisits,
-        unique_visitors: uniqueVisitors || totalVisits,
-        total_clicks: totalClicks,
-        unique_clickers: uniqueClickers || totalClicks,
-        conversion_pct: Number(calcPct(totalClicks, totalVisits)),
+        unique_visitors: uniqueVisitors,
+        total_clicks: chatStarts,
+        unique_clickers: chatStarts,
+        conversion_pct: uniqueVisitors > 0 ? Number((chatStarts * 100 / uniqueVisitors).toFixed(1)) : 0,
         total_sales: totalSales,
         revenue,
-        sales_conversion_pct: Number(calcPct(totalSales, totalVisits)),
-        initiate_checkout: countEvents('checkout', 'InitiateCheckout'),
-        lead: countEvents('checkout_button_click', 'Lead', 'PixGenerated'),
+        sales_conversion_pct: uniqueVisitors > 0 ? Number((totalSales * 100 / uniqueVisitors).toFixed(1)) : 0,
+        initiate_checkout: Number(data.initiate_checkout || 0),
+        lead: pixGenerated,
         purchase: totalSales,
-        pressel_passed: countEvents('PresselPassed'),
+        pressel_passed: Number(data.pressel_passed || 0),
+      });
+      const protection = data.protection || {};
+      setProtectionFunnel({
+        viewed: Number(protection.viewed || 0),
+        clicked: Number(protection.clicked || 0),
+        skipped: Number(protection.skipped || 0),
+        noAction: Number(protection.noAction || 0),
+        pixGenerated: Number(protection.pixGenerated || 0),
+        approved: Number(protection.approved || 0),
+        revenue: Number(protection.revenue || 0),
+        offerConversion: Number(protection.offerConversion || 0),
+        pixConversion: Number(protection.pixConversion || 0),
+      });
+      const sources = data.trafficSales || {};
+      const asTraffic = (source: any) => ({
+        visitors: Number(source?.visitors || 0),
+        sales: Number(source?.sales || 0),
+        revenue: Number(source?.revenue || 0),
+      });
+      setTrafficSales({
+        meta: asTraffic(sources.meta),
+        tiktok: asTraffic(sources.tiktok),
+        other: asTraffic(sources.other),
       });
       setFunnelError('');
     } catch (err) {
-      console.error('Erro ao carregar dados do funil:', err);
-      setFunnelError('Não foi possível ler os dados deste banco. Verifique as permissões do usuário administrador.');
+      console.error('Erro ao carregar dados completos do funil:', err);
+      setFunnelError('Não foi possível atualizar o funil completo. Tente novamente.');
     }
   };
 
@@ -654,14 +514,14 @@ export const ChatDashboard: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center">
-                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Visitas</div>
+                  <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Sessões de visita</div>
                   <div className="text-2xl font-black text-white">{funnel.unique_visitors}</div>
                   <div className="text-[9px] text-[#8696a0]">{funnel.total_visits} acessos</div>
                 </div>
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#8696a0] font-bold uppercase mb-1">Passou Pressel</div>
                   <div className="text-2xl font-black text-[#00a884]">{presselPassed}</div>
-                  <div className="text-[9px] text-[#8696a0]">cliques no CTA (mobile)</div>
+                  <div className="text-[9px] text-[#8696a0]">sessões que clicaram no CTA da pressel</div>
                 </div>
                 <div className="bg-gradient-to-br from-[#16A349]/30 to-[#16A349]/10 border border-[#16A349]/30 rounded-xl p-3 text-center">
                   <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">💰 Pagou (PIX)</div>
@@ -676,17 +536,17 @@ export const ChatDashboard: React.FC = () => {
               </div>
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#FFA500]/20">
-                  <div className="text-[9px] text-[#FFA500] font-bold uppercase mb-1">Initiate Checkout</div>
+                  <div className="text-[9px] text-[#FFA500] font-bold uppercase mb-1">Abriu modal de pagamento</div>
                   <div className="text-xl font-black text-[#FFA500]">{funnel.initiate_checkout}</div>
-                  <div className="text-[9px] text-[#8696a0]">modais abertos</div>
+                  <div className="text-[9px] text-[#8696a0]">sessões únicas</div>
                 </div>
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
-                  <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">Lead</div>
+                  <div className="text-[9px] text-[#1877F2] font-bold uppercase mb-1">PIX principal gerado</div>
                   <div className="text-xl font-black text-[#1877F2]">{funnel.lead}</div>
-                  <div className="text-[9px] text-[#8696a0]">PIX gerados</div>
+                  <div className="text-[9px] text-[#8696a0]">sessões que geraram PIX</div>
                 </div>
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
-                  <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">Purchase</div>
+                  <div className="text-[9px] text-[#16A349] font-bold uppercase mb-1">Vendas aprovadas</div>
                   <div className="text-xl font-black text-[#16A349]">{funnel.purchase}</div>
                   <div className="text-[9px] text-[#8696a0]">aprovados</div>
                 </div>
@@ -697,14 +557,14 @@ export const ChatDashboard: React.FC = () => {
                   : 0;
                 return (
                   <div className="bg-gradient-to-br from-[#00a884]/20 to-[#16A349]/10 border border-[#00a884]/30 rounded-xl p-3 text-center mb-3">
-                    <div className="text-[9px] text-[#00a884] font-bold uppercase mb-1 tracking-widest">🎯 Taxa de Conversão (PIX gerado → Venda)</div>
+                    <div className="text-[9px] text-[#00a884] font-bold uppercase mb-1 tracking-widest">🎯 Vendas aprovadas ÷ sessões com PIX gerado</div>
                     <div className="text-3xl font-black text-[#00a884]">{rate.toFixed(1).replace('.', ',')}%</div>
-                    <div className="text-[10px] text-[#8696a0] mt-1">{funnel.purchase} vendas de {funnel.lead} PIX gerados</div>
+                    <div className="text-[10px] text-[#8696a0] mt-1">{funnel.purchase} vendas de {funnel.lead} sessões com PIX gerado</div>
                   </div>
                 );
               })()}
               <p className="text-[10px] text-[#8696a0] italic leading-relaxed">
-                <strong className="text-white/80">Pagou</strong> = PIX confirmados {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma de todas as vendas aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ PIX gerados.
+                <strong className="text-white/80">Pagou</strong> = compras principais aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Faturamento</strong> = soma das vendas principais aprovadas {funnelPeriodMeta.short}. <strong className="text-white/80">Taxa de conversão</strong> = vendas aprovadas ÷ sessões que geraram PIX; a proteção adicional é contabilizada separadamente.
               </p>
 
               <div className="mt-4 border-t border-white/5 pt-4">
@@ -714,11 +574,11 @@ export const ChatDashboard: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
-                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Viram o checkout</div>
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Abriram tela da proteção</div>
                     <div className="text-2xl font-black text-white mt-1">{protectionFunnel.viewed}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#ff91c1]/20">
-                    <div className="text-[9px] text-[#ffb7d4] uppercase font-bold">Clicaram pagar</div>
+                    <div className="text-[9px] text-[#ffb7d4] uppercase font-bold">Clicaram gerar PIX</div>
                     <div className="text-2xl font-black text-[#ffb7d4] mt-1">{protectionFunnel.clicked}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
@@ -726,7 +586,7 @@ export const ChatDashboard: React.FC = () => {
                     <div className="text-2xl font-black text-white mt-1">{protectionFunnel.skipped}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-amber-400/20">
-                    <div className="text-[9px] text-amber-300 uppercase font-bold">Sem ação</div>
+                    <div className="text-[9px] text-amber-300 uppercase font-bold">Sem clique registrado</div>
                     <div className="text-2xl font-black text-amber-300 mt-1">{protectionFunnel.noAction}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-blue-400/20">
@@ -734,14 +594,14 @@ export const ChatDashboard: React.FC = () => {
                     <div className="text-2xl font-black text-blue-300 mt-1">{protectionFunnel.pixGenerated}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
-                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Proteções pagas</div>
+                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Proteções confirmadas na tela</div>
                     <div className="text-2xl font-black text-[#16A349] mt-1">{protectionFunnel.approved}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
-                    <div className="text-[9px] text-[#1877F2] uppercase font-bold">Faturamento proteção</div>
+                    <div className="text-[9px] text-[#1877F2] uppercase font-bold">Receita de proteção estimada</div>
                     <div className="text-xl font-black text-[#1877F2] mt-1">R$ {protectionFunnel.revenue.toFixed(2).replace('.', ',')}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#00a884]/20">
@@ -755,7 +615,7 @@ export const ChatDashboard: React.FC = () => {
                 </div>
 
                 <p className="text-[9px] text-[#8696a0] italic leading-relaxed">
-                  <strong className="text-white/80">Sem ação</strong> = abriu o checkout de proteção e ainda não clicou em pagar nem em recusar. Todos os números seguem o mesmo período selecionado acima.
+                  <strong className="text-white/80">Sem clique registrado</strong> = viu a oferta de proteção, mas não há registro de clique para gerar PIX nem de recusa. Os pagamentos de proteção são contados pela confirmação registrada na tela; a receita é uma estimativa (confirmações × R$ 7,90). Todos os números seguem o período selecionado acima.
                 </p>
               </div>
 

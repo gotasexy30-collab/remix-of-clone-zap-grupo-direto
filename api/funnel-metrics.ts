@@ -35,35 +35,23 @@ export default async function handler(req: any, res: any) {
 
   const period = ALLOWED_PERIODS.has(String(req.query?.period)) ? String(req.query.period) : 'today';
   const { start, end } = getPeriodRange(period);
-  const dateFilter = `${start ? `&created_at=gte.${encodeURIComponent(start.toISOString())}` : ''}${end ? `&created_at=lt.${encodeURIComponent(end.toISOString())}` : ''}`;
-  const headers = { apikey: key, Authorization: `Bearer ${key}` };
 
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
   try {
-    const [eventsResponse, salesResponse] = await Promise.all([
-      fetch(`${url}/rest/v1/tracked_events?select=event_name${dateFilter}`, { headers }),
-      fetch(`${url}/rest/v1/purchases?select=amount,status,created_at&status=eq.approved${dateFilter}`, { headers }),
-    ]);
-    if (!eventsResponse.ok || !salesResponse.ok) throw new Error('Falha ao consultar métricas');
-
-    const events = await eventsResponse.json();
-    const sales = await salesResponse.json();
-    const counts = events.reduce((acc: Record<string, number>, event: { event_name: string }) => {
-      acc[event.event_name] = (acc[event.event_name] || 0) + 1;
-      return acc;
-    }, {});
-    const revenue = sales.reduce((sum: number, sale: { amount: number }) => sum + Number(sale.amount || 0), 0);
-
-    return res.status(200).json({
-      total_visits: counts.page_view || 0,
-      total_clicks: counts.chat_start || 0,
-      total_sales: sales.length,
-      revenue,
-      initiate_checkout: counts.checkout || 0,
-      lead: counts.checkout_button_click || 0,
-      purchase: sales.length,
-      pressel_passed: counts.PresselPassed || 0,
+    const result = await fetch(`${url}/rest/v1/rpc/admin_funnel_metrics`, {
+      method: 'POST',
+      headers,
+      cache: 'no-store',
+      body: JSON.stringify({
+        p_start: start?.toISOString() || null,
+        p_end: end?.toISOString() || null,
+      }),
     });
+    if (!result.ok) throw new Error('Não foi possível consultar as métricas completas');
+    const metrics = await result.json();
+    return res.status(200).json(metrics);
   } catch (error: any) {
-    return res.status(500).json({ error: error?.message || 'Erro ao consultar métricas' });
+    console.error('[Funil]', error);
+    return res.status(500).json({ error: 'Não foi possível consultar as métricas do período.' });
   }
 }
