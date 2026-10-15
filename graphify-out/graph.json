@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T14:20:27.277194+00:00",
+  "generated_at": "2026-10-15T14:58:57.861025+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -91,7 +91,7 @@
     },
     {
       "path": "api/lead-step.ts",
-      "bytes": 5744
+      "bytes": 10212
     },
     {
       "path": "api/nexuspag-webhook.ts",
@@ -570,10 +570,6 @@
     {
       "source": "api/lead-step.ts",
       "target": "node:crypto"
-    },
-    {
-      "source": "api/lead-step.ts",
-      "target": "../server/lead-dialogue"
     },
     {
       "source": "api/meta-capi.ts",
