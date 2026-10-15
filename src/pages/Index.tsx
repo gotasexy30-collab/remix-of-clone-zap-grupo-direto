@@ -48,6 +48,32 @@ const Index = () => {
   const processedSteps = useRef(new Set<string>());
   const visitTracked = useRef(false);
 
+  // Restrito à conversa: não interfere nos campos de texto nem no checkout PIX.
+  // Atalhos do navegador podem continuar acessíveis pelo menu do próprio navegador.
+  useEffect(() => {
+    if (showPayment) return;
+
+    const protectChatShortcuts = (event: KeyboardEvent) => {
+      const target = event.target;
+      const editing = target instanceof HTMLElement &&
+        Boolean(target.closest('input, textarea, [contenteditable="true"]'));
+      const key = event.key.toLowerCase();
+      const modifier = event.ctrlKey || event.metaKey;
+      const inspectorShortcut = event.key === 'F12' ||
+        (modifier && event.shiftKey && ['i', 'j', 'c'].includes(key)) ||
+        (modifier && key === 'u');
+      const copyOrSelectShortcut = !editing && modifier && !event.altKey &&
+        !event.shiftKey && ['a', 'c'].includes(key);
+
+      if (inspectorShortcut || copyOrSelectShortcut) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener('keydown', protectChatShortcuts, true);
+    return () => document.removeEventListener('keydown', protectChatShortcuts, true);
+  }, [showPayment]);
+
   const requestStep = useCallback(async (action: RequestedAction, choice?: string) => {
     if (requestingRef.current) return;
     requestingRef.current = true;
@@ -267,7 +293,22 @@ const Index = () => {
   const isInputVisible = inputType !== 'none';
 
   return (
-    <div className="flex justify-center items-center h-[100dvh] bg-[#111b21] overflow-hidden fixed inset-0">
+    <div
+      className="flex justify-center items-center h-[100dvh] bg-[#111b21] overflow-hidden fixed inset-0 select-none"
+      onContextMenu={(event) => {
+        const target = event.target;
+        if (target instanceof HTMLElement && target.closest('input, textarea, [contenteditable="true"]')) return;
+        event.preventDefault();
+      }}
+      onCopy={(event) => {
+        const target = event.target;
+        if (target instanceof HTMLElement && target.closest('input, textarea, [contenteditable="true"]')) return;
+        event.preventDefault();
+      }}
+      onDragStartCapture={(event) => {
+        if (event.target instanceof HTMLImageElement) event.preventDefault();
+      }}
+    >
       <div className="w-full sm:max-w-[480px] h-[100dvh] sm:h-[90vh] bg-[#0b141a] relative flex flex-col shadow-2xl sm:rounded-xl overflow-hidden">
         <ChatHeader status={typingStatus || "online"} />
         <div
@@ -276,6 +317,7 @@ const Index = () => {
             backgroundImage: `url("${BACKGROUND_IMAGE}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            WebkitTouchCallout: 'none',
           }}
         >
           <div className="flex justify-center mb-6 shrink-0">
@@ -332,7 +374,7 @@ const Index = () => {
                 ref={inputRef}
                 type="text"
                 placeholder="Mensagem"
-                className="w-full bg-transparent outline-none text-[#d1d7db]"
+                className="w-full bg-transparent outline-none text-[#d1d7db] select-text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
