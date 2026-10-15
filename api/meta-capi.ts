@@ -42,6 +42,7 @@ function getClientIp(req: any): string {
 // enviado pelo navegador, que pode ter um localStorage antigo ou ser adulterado.
 let configuredPixelCache: { id: string; expiresAt: number } | null = null;
 const reportedMismatches = new Set<string>();
+let successfulDeliverySamples = 0;
 
 async function getConfiguredPixelId(): Promise<string | null> {
   if (configuredPixelCache && configuredPixelCache.expiresAt > Date.now()) {
@@ -181,6 +182,16 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+    // Amostra limitada por instância para validar o aceite pela própria Meta
+    // sem registrar IP, cookies, tokens ou detalhes do cliente.
+    if (successfulDeliverySamples < 3) {
+      successfulDeliverySamples++;
+      console.info('[Meta CAPI] Evento aceito pela Meta', {
+        pixel_id: pixelId,
+        event_name: String(body.event_name || ''),
+        events_received: fbData.events_received ?? null,
+      });
+    }
     return res.status(200).json({ success: true, ...fbData });
   } catch (error: any) {
     console.error('[Meta CAPI] Erro interno:', error);
