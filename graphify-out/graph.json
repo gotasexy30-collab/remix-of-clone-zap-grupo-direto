@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T16:16:15.569825+00:00",
+  "generated_at": "2026-10-15T18:22:03.122080+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -95,7 +95,7 @@
     },
     {
       "path": "api/meta-capi.ts",
-      "bytes": 5200
+      "bytes": 7432
     },
     {
       "path": "api/delivery.ts",
@@ -187,7 +187,7 @@
     },
     {
       "path": "src/services/pixel.ts",
-      "bytes": 6707
+      "bytes": 6983
     },
     {
       "path": "src/services/location.ts",
