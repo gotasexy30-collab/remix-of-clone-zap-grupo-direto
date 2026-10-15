@@ -574,7 +574,7 @@ export const ChatDashboard: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-white/10">
-                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Viram a oferta de proteção</div>
+                    <div className="text-[9px] text-[#8696a0] uppercase font-bold">Abriram tela da proteção</div>
                     <div className="text-2xl font-black text-white mt-1">{protectionFunnel.viewed}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#ff91c1]/20">
@@ -594,14 +594,14 @@ export const ChatDashboard: React.FC = () => {
                     <div className="text-2xl font-black text-blue-300 mt-1">{protectionFunnel.pixGenerated}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#16A349]/20">
-                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Proteções pagas</div>
+                    <div className="text-[9px] text-[#16A349] uppercase font-bold">Proteções confirmadas na tela</div>
                     <div className="text-2xl font-black text-[#16A349] mt-1">{protectionFunnel.approved}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#1877F2]/20">
-                    <div className="text-[9px] text-[#1877F2] uppercase font-bold">Faturamento proteção</div>
+                    <div className="text-[9px] text-[#1877F2] uppercase font-bold">Receita de proteção estimada</div>
                     <div className="text-xl font-black text-[#1877F2] mt-1">R$ {protectionFunnel.revenue.toFixed(2).replace('.', ',')}</div>
                   </div>
                   <div className="bg-[#2a3942] rounded-xl p-3 text-center border border-[#00a884]/20">
@@ -615,7 +615,7 @@ export const ChatDashboard: React.FC = () => {
                 </div>
 
                 <p className="text-[9px] text-[#8696a0] italic leading-relaxed">
-                  <strong className="text-white/80">Sem clique registrado</strong> = viu a oferta de proteção, mas não há registro de clique para gerar PIX nem de recusa. Todos os números seguem o mesmo período selecionado acima.
+                  <strong className="text-white/80">Sem clique registrado</strong> = viu a oferta de proteção, mas não há registro de clique para gerar PIX nem de recusa. Os pagamentos de proteção são contados pela confirmação registrada na tela; a receita é uma estimativa (confirmações × R$ 7,90). Todos os números seguem o período selecionado acima.
                 </p>
               </div>
 
