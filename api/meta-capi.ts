@@ -38,6 +38,43 @@ function getClientIp(req: any): string {
   return '';
 }
 
+// Confere no servidor o Pixel configurado no painel. Nunca confia no ID
+// enviado pelo navegador, que pode ter um localStorage antigo ou ser adulterado.
+let configuredPixelCache: { id: string; expiresAt: number } | null = null;
+const reportedMismatches = new Set<string>();
+let successfulDeliverySamples = 0;
+
+async function getConfiguredPixelId(): Promise<string | null> {
+  if (configuredPixelCache && configuredPixelCache.expiresAt > Date.now()) {
+    return configuredPixelCache.id;
+  }
+
+  const admin = createSupabaseAdmin();
+  if (!admin) {
+    console.error('[Meta CAPI] Acesso ao banco indisponível para resolver o Pixel atual.');
+    return null;
+  }
+  try {
+    const { data, error } = await admin
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'meta_pixel_id')
+      .maybeSingle();
+    if (error) throw error;
+    const id = String(data?.value || '').trim();
+    if (!/^\d{10,25}$/.test(id)) {
+      console.error('[Meta CAPI] Pixel atual ausente ou inválido no banco.');
+      return null;
+    }
+    // TTL curto evita uma consulta extra ao Supabase em todo evento.
+    configuredPixelCache = { id, expiresAt: Date.now() + 30_000 };
+    return id;
+  } catch (error) {
+    console.error('[Meta CAPI] Falha ao consultar Pixel configurado:', error);
+    return null;
+  }
+}
+
 async function getCapiTokenFromDb(): Promise<string | null> {
   const admin = createSupabaseAdmin();
   if (!admin) return null;
@@ -62,9 +99,15 @@ export default async function handler(req: any, res: any) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const pixelId = body.pixelId || body.pixel_id;
+    const pixelId = await getConfiguredPixelId();
     if (!pixelId) {
-      return res.status(400).json({ error: 'pixelId é obrigatório' });
+      // Falha fechada: é preferível não enviar o evento a escolher um Pixel incorreto.
+      return res.status(503).json({ error: 'Pixel não disponível nas configurações do servidor.' });
+    }
+    const submittedPixelId = String(body?.pixelId || body?.pixel_id || '').trim();
+    if (submittedPixelId && submittedPixelId !== pixelId && !reportedMismatches.has(submittedPixelId)) {
+      console.warn('[Meta CAPI] ID de Pixel antigo/divergente ignorado:', submittedPixelId);
+      if (reportedMismatches.size < 32) reportedMismatches.add(submittedPixelId);
     }
 
     const testEventCode = String(body.test_event_code || '').trim();
@@ -139,6 +182,16 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+    // Amostra limitada por instância para validar o aceite pela própria Meta
+    // sem registrar IP, cookies, tokens ou detalhes do cliente.
+    if (successfulDeliverySamples < 3) {
+      successfulDeliverySamples++;
+      console.info('[Meta CAPI] Evento aceito pela Meta', {
+        pixel_id: pixelId,
+        event_name: String(body.event_name || ''),
+        events_received: fbData.events_received ?? null,
+      });
+    }
     return res.status(200).json({ success: true, ...fbData });
   } catch (error: any) {
     console.error('[Meta CAPI] Erro interno:', error);

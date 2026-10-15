@@ -26,13 +26,15 @@ export function initMetaPixel(): Promise<void> {
     (window.fbq as any).queue = [];
   }
 
-  let pixelId = localStorage.getItem('meta_pixel_id') || '';
-  if (!pixelId) {
-    pixelId = (await getSetting('meta_pixel_id')) || '';
-    if (pixelId) localStorage.setItem('meta_pixel_id', pixelId);
+  // O Supabase é a fonte de verdade; o localStorage pode guardar IDs antigos
+  // de versões anteriores e nunca deve decidir para qual Pixel enviar eventos.
+  const pixelId = ((await getSetting('meta_pixel_id')) || '').trim();
+  if (!/^\d{10,25}$/.test(pixelId)) {
+    localStorage.removeItem('meta_pixel_id');
+    console.warn('[Meta Pixel] ID não disponível nas configurações atuais.');
+    return;
   }
-  if (!pixelId) return;
-
+  localStorage.setItem('meta_pixel_id', pixelId); // atualiza cache legado sem usá-lo como fonte
   currentPixelId = pixelId;
 
   (function (f: any, b, e, v, n?: any, t?: any, s?: any) {
@@ -61,7 +63,11 @@ export function initMetaPixel(): Promise<void> {
     const ev = eventQueue.shift();
     if (ev && window.fbq) window.fbq(ev.method, ...ev.args);
   }
-  })();
+  })().finally(() => {
+    // Uma leitura temporariamente malsucedida do banco pode ser repetida
+    // pelo próximo evento, sem confiar num cache antigo.
+    if (!pixelLoaded) pixelInitPromise = null;
+  });
 
   return pixelInitPromise;
 }
@@ -127,11 +133,7 @@ export function trackEventDual(event: string, params?: Record<string, any>, even
     try {
       await initMetaPixel();
 
-      let pixelId = currentPixelId || localStorage.getItem('meta_pixel_id') || '';
-      if (!pixelId) {
-        pixelId = (await getSetting('meta_pixel_id')) || '';
-        if (pixelId) localStorage.setItem('meta_pixel_id', pixelId);
-      }
+      const pixelId = currentPixelId;
       if (!pixelId) {
         console.warn('[Meta CAPI] Pixel ID não configurado; evento não enviado.');
         return;
