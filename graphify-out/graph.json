@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T18:22:03.122080+00:00",
+  "generated_at": "2026-10-15T20:30:23.531689+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -83,7 +83,7 @@
     },
     {
       "path": "api/funnel-metrics.ts",
-      "bytes": 3546
+      "bytes": 2777
     },
     {
       "path": "api/lead-step.ts",
