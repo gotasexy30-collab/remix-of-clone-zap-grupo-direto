@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T14:17:20.583202+00:00",
+  "generated_at": "2026-10-15T14:18:33.381173+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -88,6 +88,10 @@
     {
       "path": "api/funnel-metrics.ts",
       "bytes": 3546
+    },
+    {
+      "path": "api/lead-step.ts",
+      "bytes": 5744
     },
     {
       "path": "api/nexuspag-webhook.ts",
@@ -562,6 +566,14 @@
     {
       "source": "server/lead-dialogue.ts",
       "target": "../src/types"
+    },
+    {
+      "source": "api/lead-step.ts",
+      "target": "node:crypto"
+    },
+    {
+      "source": "api/lead-step.ts",
+      "target": "../server/lead-dialogue"
     },
     {
       "source": "api/meta-capi.ts",
