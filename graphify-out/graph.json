@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T13:42:38.432688+00:00",
+  "generated_at": "2026-10-15T15:52:17.997267+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -86,6 +86,10 @@
       "bytes": 3546
     },
     {
+      "path": "api/lead-step.ts",
+      "bytes": 10212
+    },
+    {
       "path": "api/nexuspag-webhook.ts",
       "bytes": 11381
     },
@@ -111,7 +115,7 @@
     },
     {
       "path": "src/constants.ts",
-      "bytes": 4573
+      "bytes": 314
     },
     {
       "path": "src/vite-env.d.ts",
@@ -227,7 +231,7 @@
     },
     {
       "path": "src/pages/Index.tsx",
-      "bytes": 11149
+      "bytes": 13995
     },
     {
       "path": "src/pages/Dashboard.tsx",
@@ -556,12 +560,12 @@
       "target": "typescript-eslint"
     },
     {
-      "source": "api/meta-capi.ts",
-      "target": "@supabase/supabase-js"
+      "source": "api/lead-step.ts",
+      "target": "node:crypto"
     },
     {
-      "source": "src/constants.ts",
-      "target": "./types"
+      "source": "api/meta-capi.ts",
+      "target": "@supabase/supabase-js"
     },
     {
       "source": "src/App.tsx",
