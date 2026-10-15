@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send } from 'lucide-react';
-import { DIALOGUE, BASE_URL, AUDIO_BASE_URL } from '../constants';
-import { ChatMessage, ButtonOption } from '../types';
+import { BASE_URL, AUDIO_BASE_URL } from '../constants';
+import { ChatMessage, DialogueMessage } from '../types';
 import { getUserLocation, getCurrentTime } from '../services/location';
 import { ChatBubble } from '../components/chat/ChatBubble';
 import { ChatHeader } from '../components/chat/ChatHeader';
@@ -17,12 +17,26 @@ const BACKGROUND_IMAGE = 'https://i.pinimg.com/736x/56/ea/b7/56eab7512f1021bdd4c
 
 const getSlug = () => window.location.pathname.replace('/painel', '').split('/').filter(p => p).pop() || 'home';
 
+// O roteiro não é empacotado no JavaScript público: a API fornece uma etapa por vez.
+type VisibleOption = { text: string; payload: string };
+type RemoteStep = {
+  messages?: DialogueMessage[];
+  response?: { type: 'text' | 'buttons' | 'continue'; options?: VisibleOption[] };
+  action?: { type: 'open_payment' };
+};
+type RequestedAction = 'start' | 'text' | 'choice' | 'continue';
+
 const Index = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string>('START');
+  const [serverStep, setServerStep] = useState<RemoteStep | null>(null);
+  const [stepError, setStepError] = useState(false);
+  const stepTokenRef = useRef('');
+  const requestingRef = useRef(false);
+  const lastRequestRef = useRef<{ action: RequestedAction; choice?: string }>({ action: 'start' });
   const [locationData, setLocationData] = useState<{ city: string; ddd: string }>({ city: '', ddd: '11' });
   const [typingStatus, setTypingStatus] = useState<string | null>(null);
-  const [activeOptions, setActiveOptions] = useState<ButtonOption[] | null>(null);
+  const [activeOptions, setActiveOptions] = useState<VisibleOption[] | null>(null);
   const [inputText, setInputText] = useState<string>('');
   const [inputType, setInputType] = useState<'text' | 'buttons' | 'none'>('none');
   
@@ -33,6 +47,56 @@ const Index = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const processedSteps = useRef(new Set<string>());
   const visitTracked = useRef(false);
+
+  const requestStep = useCallback(async (action: RequestedAction, choice?: string) => {
+    if (requestingRef.current) return;
+    requestingRef.current = true;
+    lastRequestRef.current = { action, choice };
+    setStepError(false);
+    try {
+      let sid = sessionStorage.getItem('wa_session_id');
+      if (!sid) {
+        sid = crypto.randomUUID();
+        sessionStorage.setItem('wa_session_id', sid);
+      }
+      const body = JSON.stringify({
+        session_id: sid,
+        action,
+        ...(action !== 'start' ? { token: stepTokenRef.current } : {}),
+        ...(action === 'choice' ? { choice } : {}),
+      });
+
+      // Apenas para uma eventual diferença de milissegundos entre a animação
+      // das mensagens e a liberação da etapa pelo servidor.
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const response = await fetch('/api/lead-step', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body,
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (response.status === 425 && attempt < 2) {
+          const wait = Math.max(200, Math.min(10000, Number(payload.retryAfterMs) || 800));
+          await new Promise(resolve => setTimeout(resolve, wait));
+          continue;
+        }
+        if (!response.ok || !payload?.token || !payload?.stepId || !payload?.step) {
+          throw new Error('Etapa indisponível');
+        }
+        stepTokenRef.current = String(payload.token);
+        setServerStep(payload.step as RemoteStep);
+        setCurrentStepId(String(payload.stepId));
+        lastRequestRef.current = { action: 'start' };
+        return;
+      }
+    } catch (error) {
+      console.error('Não foi possível carregar a etapa da conversa:', error);
+      setStepError(true);
+    } finally {
+      requestingRef.current = false;
+    }
+  }, []);
 
   useEffect(() => {
     if (!visitTracked.current) {
@@ -63,7 +127,8 @@ const Index = () => {
       }
     }
     getUserLocation().then(data => setLocationData(data));
-  }, []);
+    void requestStep('start');
+  }, [requestStep]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -80,7 +145,7 @@ const Index = () => {
   }, [inputType]);
 
   useEffect(() => {
-    if (!currentStepId || !DIALOGUE[currentStepId]) return;
+    if (!serverStep || !currentStepId) return;
     if (processedSteps.current.has(currentStepId)) return;
     processedSteps.current.add(currentStepId);
 
@@ -90,16 +155,13 @@ const Index = () => {
       import('../services/pixel').then(({ logTrackedEvent }) => logTrackedEvent('ChatStarted'));
     }
 
-    const step = DIALOGUE[currentStepId];
-
-    if (step.action) {
-      if (step.action.type === 'open_payment') {
-        setTimeout(() => {
-          setShowPayment(true);
-          trackEvent('checkout');
-        }, 500);
-        return;
-      }
+    const step = serverStep;
+    if (step.action?.type === 'open_payment') {
+      setTimeout(() => {
+        setShowPayment(true);
+        trackEvent('checkout');
+      }, 500);
+      return;
     }
 
     const processMessages = async () => {
@@ -109,7 +171,6 @@ const Index = () => {
 
       for (let i = 0; i < step.messages.length; i++) {
         const msg = step.messages[i];
-
         let status = 'digitando...';
         if (msg.type === 'audio') status = 'gravando áudio...';
         else if (['image', 'image_with_location', 'gif'].includes(msg.type)) status = 'enviando foto...';
@@ -129,9 +190,7 @@ const Index = () => {
         if (type === 'image_with_location') {
           const city = locationData.city || 'Sua Cidade';
           let baseImage = localStorage.getItem('chat_location_image');
-          if (!baseImage) {
-            baseImage = await getSetting('chat_location_image');
-          }
+          if (!baseImage) baseImage = await getSetting('chat_location_image');
           if (baseImage) {
             content = await generateImageWithCity(baseImage, city);
           } else {
@@ -143,7 +202,7 @@ const Index = () => {
         const newMsg: ChatMessage = {
           id: Math.random().toString(36).substr(2, 9),
           isUser: false,
-          type: type,
+          type,
           content: content as string,
           timestamp: getCurrentTime()
         };
@@ -155,8 +214,6 @@ const Index = () => {
         } catch { /* silent */ }
 
         setMessages(prev => [...prev, newMsg]);
-
-
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
@@ -166,17 +223,16 @@ const Index = () => {
           setInputType('buttons');
         } else if (step.response.type === 'text') {
           setInputType('text');
-        } else if (step.response.type === 'continue' && step.response.next) {
-          setCurrentStepId(step.response.next);
+        } else if (step.response.type === 'continue') {
+          void requestStep('continue');
         }
       }
     };
-    processMessages();
-  }, [currentStepId, locationData.city]);
+    void processMessages();
+  }, [serverStep, currentStepId, locationData.city, requestStep]);
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
-    const currentStep = DIALOGUE[currentStepId];
     const userMsg: ChatMessage = {
       id: Math.random().toString(36).substr(2, 9),
       isUser: true,
@@ -187,10 +243,10 @@ const Index = () => {
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
     setInputType('none');
-    if (currentStep.response?.next) setCurrentStepId(currentStep.response.next);
+    void requestStep('text');
   };
 
-  const handleOptionClick = (option: ButtonOption) => {
+  const handleOptionClick = (option: VisibleOption) => {
     const userMsg: ChatMessage = {
       id: Math.random().toString(36).substr(2, 9),
       isUser: true,
@@ -201,7 +257,7 @@ const Index = () => {
     setMessages(prev => [...prev, userMsg]);
     setActiveOptions(null);
     setInputType('none');
-    setCurrentStepId(option.next);
+    void requestStep('choice', option.payload);
   };
 
   if (showPayment) {
@@ -257,6 +313,15 @@ const Index = () => {
                 </button>
               ))}
             </div>
+          )}
+          {stepError && (
+            <button
+              type="button"
+              onClick={() => void requestStep(lastRequestRef.current.action, lastRequestRef.current.choice)}
+              className="mx-auto my-4 rounded-lg bg-[#005c4b] text-white px-4 py-2 text-sm"
+            >
+              Conexão instável. Toque para continuar a conversa.
+            </button>
           )}
           <div ref={messagesEndRef} />
         </div>
