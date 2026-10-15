@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T13:42:38.432688+00:00",
+  "generated_at": "2026-10-15T14:17:20.583202+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -72,6 +72,10 @@
     {
       "path": "components.json",
       "bytes": 414
+    },
+    {
+      "path": "server/lead-dialogue.ts",
+      "bytes": 4572
     },
     {
       "path": "public/preview-sorteio.html",
@@ -554,6 +558,10 @@
     {
       "source": "eslint.config.js",
       "target": "typescript-eslint"
+    },
+    {
+      "source": "server/lead-dialogue.ts",
+      "target": "../src/types"
     },
     {
       "source": "api/meta-capi.ts",
