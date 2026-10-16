@@ -10,7 +10,7 @@
     },
     {
       "source": "/j",
-      "destination": "/redirecionar.html"
+      "destination": "/j.html"
     },
     {
       "source": "/(.*)",
