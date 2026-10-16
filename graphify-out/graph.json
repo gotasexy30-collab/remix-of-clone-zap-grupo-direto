@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T03:48:12.322899+00:00",
+  "generated_at": "2026-10-16T23:26:12.042932+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -19,7 +19,7 @@
     },
     {
       "path": "vercel.json",
-      "bytes": 136
+      "bytes": 257
     },
     {
       "path": "package-lock.json",
@@ -72,6 +72,10 @@
     {
       "path": "components.json",
       "bytes": 414
+    },
+    {
+      "path": "public/redirecionar.html",
+      "bytes": 1005
     },
     {
       "path": "public/preview-sorteio.html",
