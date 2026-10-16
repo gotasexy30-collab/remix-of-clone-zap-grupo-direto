@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T20:33:34.342490+00:00",
+  "generated_at": "2026-10-16T03:46:07.346661+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -192,6 +192,10 @@
     {
       "path": "src/services/location.ts",
       "bytes": 2847
+    },
+    {
+      "path": "src/services/landingAttribution.ts",
+      "bytes": 1763
     },
     {
       "path": "src/services/trafficAttribution.ts",
@@ -673,6 +677,10 @@
     },
     {
       "source": "src/services/pixel.ts",
+      "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/services/landingAttribution.ts",
       "target": "@/integrations/supabase/client"
     },
     {
