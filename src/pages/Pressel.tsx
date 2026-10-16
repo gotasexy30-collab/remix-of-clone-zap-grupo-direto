@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
 import { getSetting } from '../services/settings';
 import { supabase } from '@/integrations/supabase/client';
+import { captureLandingParameters } from '../services/landingAttribution';
 
 const getOrCreateSessionId = () => {
   try {
@@ -43,6 +44,7 @@ const Pressel = () => {
   const [target, setTarget] = useState<string | null>(null);
 
   useEffect(() => {
+    void captureLandingParameters('pressel');
     (async () => {
       const mobileUrl = await getSetting('redirect_mobile_url');
       const desktopUrl = await getSetting('redirect_desktop_url');
