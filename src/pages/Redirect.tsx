@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSetting } from '../services/settings';
 import { supabase } from '@/integrations/supabase/client';
+import { captureLandingParameters } from '../services/landingAttribution';
 
 const isMobileOrTablet = () => {
   const ua = navigator.userAgent || '';
@@ -30,6 +31,8 @@ const Redirect = () => {
   useEffect(() => {
     (async () => {
       try {
+        // Aguarda no máximo a tentativa de registrar os parâmetros antes de sair.
+        await captureLandingParameters('redirect');
         const isMobile = isMobileOrTablet();
 
         // Mobile: envia para a pressel (preserva query string para UTMs)
