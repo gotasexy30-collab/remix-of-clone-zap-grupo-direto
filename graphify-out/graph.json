@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T20:33:34.342490+00:00",
+  "generated_at": "2026-10-16T03:48:12.322899+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -194,6 +194,10 @@
       "bytes": 2847
     },
     {
+      "path": "src/services/landingAttribution.ts",
+      "bytes": 1759
+    },
+    {
       "path": "src/services/trafficAttribution.ts",
       "bytes": 2896
     },
@@ -215,7 +219,7 @@
     },
     {
       "path": "src/pages/Redirect.tsx",
-      "bytes": 2843
+      "bytes": 3055
     },
     {
       "path": "src/pages/ProtectionCheckout.tsx",
@@ -227,11 +231,11 @@
     },
     {
       "path": "src/pages/Pressel.tsx",
-      "bytes": 6962
+      "bytes": 7083
     },
     {
       "path": "src/pages/Index.tsx",
-      "bytes": 15762
+      "bytes": 15882
     },
     {
       "path": "src/pages/Dashboard.tsx",
@@ -676,6 +680,10 @@
       "target": "@/integrations/supabase/client"
     },
     {
+      "source": "src/services/landingAttribution.ts",
+      "target": "@/integrations/supabase/client"
+    },
+    {
       "source": "src/services/trafficAttribution.ts",
       "target": "@/integrations/supabase/client"
     },
@@ -724,6 +732,10 @@
       "target": "@/integrations/supabase/client"
     },
     {
+      "source": "src/pages/Redirect.tsx",
+      "target": "../services/landingAttribution"
+    },
+    {
       "source": "src/pages/ProtectionCheckout.tsx",
       "target": "react"
     },
@@ -758,6 +770,10 @@
     {
       "source": "src/pages/Pressel.tsx",
       "target": "@/integrations/supabase/client"
+    },
+    {
+      "source": "src/pages/Pressel.tsx",
+      "target": "../services/landingAttribution"
     },
     {
       "source": "src/pages/Index.tsx",
@@ -810,6 +826,10 @@
     {
       "source": "src/pages/Index.tsx",
       "target": "../services/trafficAttribution"
+    },
+    {
+      "source": "src/pages/Index.tsx",
+      "target": "../services/landingAttribution"
     },
     {
       "source": "src/pages/Index.tsx",
