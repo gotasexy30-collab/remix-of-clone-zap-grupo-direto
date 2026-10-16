@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T23:37:18.779521+00:00",
+  "generated_at": "2026-10-16T23:55:14.235208+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -72,6 +72,10 @@
     {
       "path": "components.json",
       "bytes": 414
+    },
+    {
+      "path": "public/j.html",
+      "bytes": 5596
     },
     {
       "path": "public/redirecionar.html",
