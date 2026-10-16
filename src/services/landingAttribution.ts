@@ -16,7 +16,7 @@ export async function captureLandingParameters(entryPoint: EntryPoint): Promise<
     const details: Record<string, string> = {};
     for (const key of KEYS) {
       const value = (params.get(key) || '').trim().slice(0, 512);
-      if (value && !/\\{\\{.*?\\}\\}/.test(value)) details[key] = value;
+      if (value && !/\{\{.*?\}\}/.test(value)) details[key] = value;
     }
     const key = 'wa_session_id';
     let sessionId = sessionStorage.getItem(key);
