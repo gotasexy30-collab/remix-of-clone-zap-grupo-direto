@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T03:46:45.456561+00:00",
+  "generated_at": "2026-10-16T03:47:00.395018+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -195,7 +195,7 @@
     },
     {
       "path": "src/services/landingAttribution.ts",
-      "bytes": 1763
+      "bytes": 1759
     },
     {
       "path": "src/services/trafficAttribution.ts",
