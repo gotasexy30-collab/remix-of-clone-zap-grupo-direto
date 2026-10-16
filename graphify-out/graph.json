@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T23:26:12.042932+00:00",
+  "generated_at": "2026-10-16T23:37:18.779521+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -19,7 +19,7 @@
     },
     {
       "path": "vercel.json",
-      "bytes": 257
+      "bytes": 334
     },
     {
       "path": "package-lock.json",
