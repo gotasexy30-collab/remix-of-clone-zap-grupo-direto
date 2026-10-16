@@ -9,6 +9,10 @@
       "destination": "/redirecionar.html"
     },
     {
+      "source": "/j",
+      "destination": "/redirecionar.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
