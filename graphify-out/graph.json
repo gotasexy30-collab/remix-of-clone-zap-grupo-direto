@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T23:55:39.325087+00:00",
+  "generated_at": "2026-10-20T04:06:12.828056+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -103,7 +103,7 @@
     },
     {
       "path": "api/meta-capi.ts",
-      "bytes": 7432
+      "bytes": 8122
     },
     {
       "path": "api/delivery.ts",
