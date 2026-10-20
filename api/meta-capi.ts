@@ -131,11 +131,25 @@ export default async function handler(req: any, res: any) {
 
     const clientIp = getClientIp(req);
     const userAgent = String(req.headers?.['user-agent'] || '');
-    const userData = { ...(body.user_data || {}) };
 
-    // O IP é obtido no servidor para não depender do navegador.
+    // Restrição explícita: nunca encaminhar e-mail, telefone ou outros dados
+    // pessoais enviados pelo navegador, mesmo que adicionados por engano.
+    const supplied = body?.user_data && typeof body.user_data === 'object' && !Array.isArray(body.user_data)
+      ? body.user_data : {};
+    const userData: Record<string, string> = {};
+    for (const key of ['fbp', 'fbc'] as const) {
+      const value = supplied[key];
+      if (typeof value === 'string' && value.trim()) userData[key] = value.trim().slice(0, 512);
+    }
+
+    // IP real vem do servidor; não aceitar IP arbitrário no JSON do navegador.
     if (clientIp) userData.client_ip_address = clientIp;
-    if (!userData.client_user_agent && userAgent) userData.client_user_agent = userAgent;
+    const browserAgent = supplied.client_user_agent;
+    if (typeof browserAgent === 'string' && browserAgent.trim()) {
+      userData.client_user_agent = browserAgent.trim().slice(0, 2048);
+    } else if (userAgent) {
+      userData.client_user_agent = userAgent.slice(0, 2048);
+    }
 
     if (!userData.client_ip_address) {
       console.warn('[Meta CAPI] client_ip_address não encontrado nos cabeçalhos da requisição.');
