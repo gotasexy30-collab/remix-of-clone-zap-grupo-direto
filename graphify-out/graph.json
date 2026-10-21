@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T03:28:36.818159+00:00",
+  "generated_at": "2026-10-21T17:54:01.190414+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -91,7 +91,7 @@
     },
     {
       "path": "api/funnel-metrics.ts",
-      "bytes": 2777
+      "bytes": 3662
     },
     {
       "path": "api/lead-step.ts",
@@ -303,7 +303,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 57750
+      "bytes": 59412
     },
     {
       "path": "src/components/auth/AdminLogin.tsx",
