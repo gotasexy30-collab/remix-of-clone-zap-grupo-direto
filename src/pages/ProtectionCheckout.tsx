@@ -147,7 +147,7 @@ export default function ProtectionCheckout() {
           </div>
           <div className="mt-4 text-center text-sm sm:text-[15px] leading-relaxed text-gray-500 font-bold">
             <p>Seu acesso já foi reservado.</p>
-            <p className="mt-1">É só essa taxa de proteção, amor. Paga uma vez e já entra no grupo, sem mais nenhuma cobrança.</p>
+            <p className="mt-1">É só essa taxa de proteção, amor. Paga uma vez e já entra no grupo, <span className="underline underline-offset-2">sem mais nenhuma cobrança</span>. 💚</p>
           </div>
         </div>
 
