@@ -10,7 +10,7 @@ import { PresselTest } from './PresselTest';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
-type FunnelPeriod = 'today' | 'yesterday' | '7d' | '30d' | 'all';
+type FunnelPeriod = 'today' | 'yesterday' | '7d' | '30d' | 'all' | 'custom';
 
 const FUNNEL_PERIODS: { key: FunnelPeriod; label: string; short: string }[] = [
   { key: 'today',     label: 'Hoje',           short: 'hoje' },
@@ -18,12 +18,19 @@ const FUNNEL_PERIODS: { key: FunnelPeriod; label: string; short: string }[] = [
   { key: '7d',        label: 'Últimos 7 dias',  short: 'nos últimos 7 dias' },
   { key: '30d',       label: 'Últimos 30 dias', short: 'nos últimos 30 dias' },
   { key: 'all',       label: 'Todo o período',  short: 'em todo o período' },
+  { key: 'custom',    label: 'Dia específico',   short: 'no dia escolhido' },
 ];
+
+// Dia local de Brasília, sem depender do fuso configurado no navegador.
+const getBrazilToday = () => new Date(Date.now() - 3 * 3600000).toISOString().slice(0, 10);
+const formatBrazilDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date)
+  ? `${date.slice(8, 10)}/${date.slice(5, 7)}/${date.slice(0, 4)}`
+  : 'selecionado';
 
 // Retorna o intervalo [start, end) em instantes absolutos, usando fuso BRT (UTC-3)
 const getFunnelPeriodRange = (period: FunnelPeriod): { start: Date | null; end: Date | null } => {
   const now = new Date();
-  if (period === 'all') return { start: null, end: null };
+  if (period === 'all' || period === 'custom') return { start: null, end: null };
   if (period === '7d') return { start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), end: null };
   if (period === '30d') return { start: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), end: null };
   // 00:00 BRT = 03:00 UTC
@@ -81,7 +88,10 @@ export const ChatDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
-  const funnelPeriodMeta = FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
+  const [customDate, setCustomDate] = useState(getBrazilToday);
+  const funnelPeriodMeta = funnelPeriod === 'custom'
+    ? { key: 'custom' as FunnelPeriod, label: `Dia ${formatBrazilDate(customDate)}`, short: `em ${formatBrazilDate(customDate)}` }
+    : FUNNEL_PERIODS.find(p => p.key === funnelPeriod) || FUNNEL_PERIODS[0];
   const [redirectLink, setRedirectLink] = useState('');
   const [pixSuccessUrl, setPixSuccessUrl] = useState('');
   const [profileName, setProfileName] = useState(localStorage.getItem('chat_profile_name') || 'Thaisinha');
@@ -196,11 +206,19 @@ export const ChatDashboard: React.FC = () => {
 
   const loadFunnel = async (period: FunnelPeriod) => {
     try {
+      const params = new URLSearchParams({ period });
+      if (period === 'custom') {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(customDate)) {
+          setFunnelError('Escolha um dia válido para consultar.');
+          return;
+        }
+        params.set('date', customDate);
+      }
       // API administrativa agregada: conta todas as linhas, sem o limite
       // de 1.000 eventos do PostgREST e sem somar eventos duplicados.
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       if (authError || !session?.access_token) throw new Error('Sessão administrativa indisponível');
-      const response = await fetch(`/api/funnel-metrics?period=${encodeURIComponent(period)}`, {
+      const response = await fetch(`/api/funnel-metrics?${params.toString()}`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${session.access_token}` },
         cache: 'no-store',
@@ -295,7 +313,7 @@ export const ChatDashboard: React.FC = () => {
     loadFunnel(funnelPeriod);
     const interval = setInterval(() => loadFunnel(funnelPeriod), 30000);
     return () => clearInterval(interval);
-  }, [funnelPeriod]);
+  }, [funnelPeriod, customDate]);
 
   const handleImageUpload = async (
     file: File | undefined,
@@ -490,15 +508,28 @@ export const ChatDashboard: React.FC = () => {
               <h2 className="text-sm font-black text-white/50 uppercase flex items-center gap-2 tracking-widest">
                 <Target size={16} /> Etapas do Funil
               </h2>
-              <select
-                value={funnelPeriod}
-                onChange={(e) => setFunnelPeriod(e.target.value as FunnelPeriod)}
-                className="bg-[#2a3942] text-[#e9edef] text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl outline-none border border-white/5 focus:border-[#00a884] transition-colors cursor-pointer"
-              >
-                {FUNNEL_PERIODS.map(p => (
-                  <option key={p.key} value={p.key}>{p.label}</option>
-                ))}
-              </select>
+              <div className="flex items-center flex-wrap gap-2">
+                <select
+                  aria-label="Período das métricas"
+                  value={funnelPeriod}
+                  onChange={(e) => setFunnelPeriod(e.target.value as FunnelPeriod)}
+                  className="bg-[#2a3942] text-[#e9edef] text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl outline-none border border-white/5 focus:border-[#00a884] transition-colors cursor-pointer"
+                >
+                  {FUNNEL_PERIODS.map(p => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </select>
+                {funnelPeriod === 'custom' && (
+                  <input
+                    type="date"
+                    aria-label="Escolher dia específico"
+                    value={customDate}
+                    max={getBrazilToday()}
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    className="bg-[#2a3942] text-[#e9edef] text-[11px] font-bold px-3 py-2 rounded-xl outline-none border border-white/5 focus:border-[#00a884] transition-colors [color-scheme:dark]"
+                  />
+                )}
+              </div>
             </div>
             {funnelError && (
               <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs font-semibold text-red-300">
