@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T03:22:49.379379+00:00",
+  "generated_at": "2026-10-21T03:28:36.818159+00:00",
   "files": [
     {
       "path": "tsconfig.app.json",
@@ -231,7 +231,7 @@
     },
     {
       "path": "src/pages/ProtectionCheckout.tsx",
-      "bytes": 9246
+      "bytes": 9305
     },
     {
       "path": "src/pages/NotFound.tsx",
