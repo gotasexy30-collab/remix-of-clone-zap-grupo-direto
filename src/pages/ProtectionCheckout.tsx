@@ -167,7 +167,6 @@ export default function ProtectionCheckout() {
           <div>
             <div className="font-black text-lg">Proteção do Grupo</div>
             <div className="text-4xl font-black mt-1">R$ 7,90</div>
-            <div className="text-sm text-gray-500 mt-1">Oferta pós-compra para reforçar sua experiência no grupo.</div>
           </div>
         </div>
 
