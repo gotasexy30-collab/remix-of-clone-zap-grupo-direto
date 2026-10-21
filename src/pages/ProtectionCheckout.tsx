@@ -219,7 +219,7 @@ export default function ProtectionCheckout() {
             disabled={isRedirecting || !parentPaymentId || !sessionId}
             className="block mx-auto mt-4 text-xs text-gray-500 underline underline-offset-4 disabled:opacity-50"
           >
-            Não, obrigado. Continuar para meu acesso.
+            
           </button>
         )}
 
