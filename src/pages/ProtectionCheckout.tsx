@@ -145,9 +145,10 @@ export default function ProtectionCheckout() {
             <LockKeyhole className="text-amber-500" size={28} />
             Proteção do Grupo
           </div>
-          <p className="mt-4 text-sm sm:text-[15px] leading-relaxed text-gray-500">
-            Seu acesso já foi reservado. Conheça a Proteção do Grupo para reforçar a segurança e organização da comunidade.
-          </p>
+          <div className="mt-4 text-center text-sm sm:text-[15px] leading-relaxed text-gray-500 font-bold">
+            <p>Seu acesso já foi reservado.</p>
+            <p className="mt-1">É só essa taxa de proteção, amor. Paga uma vez e já entra no grupo, sem mais nenhuma cobrança.</p>
+          </div>
         </div>
 
         <div className="mt-5 rounded-2xl border border-green-200 bg-green-50 p-4 flex items-center gap-3">
