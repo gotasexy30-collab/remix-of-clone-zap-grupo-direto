@@ -24,6 +24,8 @@ export default function ProtectionCheckout() {
   const [error, setError] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
   const pollRef = useRef<number | null>(null);
+  const pollInFlightRef = useRef(false);
+  const pollConfirmedRef = useRef(false);
 
   const sessionId = sessionStorage.getItem('wa_session_id') || '';
   const parentPaymentId = sessionStorage.getItem('protection_parent_payment_id') || '';
@@ -60,6 +62,8 @@ export default function ProtectionCheckout() {
   };
 
   const checkStatus = async (id: string) => {
+    if (pollInFlightRef.current || pollConfirmedRef.current) return;
+    pollInFlightRef.current = true;
     try {
       const response = await fetch('/api/protection-pix', {
         method: 'POST',
@@ -72,7 +76,8 @@ export default function ProtectionCheckout() {
         }),
       });
       const data = await response.json();
-      if (response.ok && isApprovedStatus(data?.status)) {
+      if (response.ok && isApprovedStatus(data?.status) && !pollConfirmedRef.current) {
+        pollConfirmedRef.current = true;
         if (pollRef.current) window.clearInterval(pollRef.current);
         setApproved(true);
         setError('');
@@ -81,15 +86,23 @@ export default function ProtectionCheckout() {
       }
     } catch {
       // O polling continua tentando; não bloqueia a tela por falha transitória.
+    } finally {
+      pollInFlightRef.current = false;
     }
   };
 
   useEffect(() => {
     if (!pix?.id || approved) return;
-    void checkStatus(pix.id);
-    pollRef.current = window.setInterval(() => void checkStatus(pix.id), 3500);
+    // O navegador volta a consultar imediatamente quando o cliente retorna do app do banco.
+    const checkWhenVisible = () => {
+      if (!document.hidden) void checkStatus(pix.id);
+    };
+    checkWhenVisible();
+    pollRef.current = window.setInterval(checkWhenVisible, 3500);
+    document.addEventListener('visibilitychange', checkWhenVisible);
     return () => {
       if (pollRef.current) window.clearInterval(pollRef.current);
+      document.removeEventListener('visibilitychange', checkWhenVisible);
     };
   }, [pix?.id, approved]);
 
