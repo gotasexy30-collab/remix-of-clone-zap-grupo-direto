@@ -217,11 +217,14 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       window.location.href = '/checkout-protecao';
     };
 
+    let checkingStatus = false;
     const checkPayment = async () => {
+      if (checkingStatus || paymentHandledRef.current) return;
       if (Date.now() - startedAt > MAX_POLL_MS) {
         if (pollRef.current) clearInterval(pollRef.current);
         return;
       }
+      checkingStatus = true;
       try {
         const sessionId = sessionStorage.getItem('wa_session_id') || '';
         const response = await fetch('/api/generate-pix', {
@@ -233,6 +236,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
         if (isApprovedStatus(data?.status)) finishApprovedPayment();
       } catch (error) {
         console.error('Erro ao verificar pagamento:', error);
+      } finally {
+        checkingStatus = false;
       }
     };
 
