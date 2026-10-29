@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 
 // Servidor apenas: não importar este módulo no frontend.
-const AUDIO_BASE_URL = 'https://whatsapp-backend-vott.onrender.com';
+const AUDIO_BASE_URL = 'https://pub-94312f87220e4ebb91acd81b002be102.r2.dev/AUDIOS%20FRONT%20GRUPO%20ZAP';
 
 const SERVER_DIALOGUE: Record<string, any> = {
   START: {
