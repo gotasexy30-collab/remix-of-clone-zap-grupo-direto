@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-27T19:34:19.863353+00:00",
+  "generated_at": "2026-10-29T18:06:55.097375+00:00",
   "files": [
     {
       "path": "roadmap.md",
@@ -75,7 +75,7 @@
     },
     {
       "path": "api/lead-step.ts",
-      "bytes": 10212
+      "bytes": 10250
     },
     {
       "path": "api/meta-capi.ts",
@@ -100,6 +100,10 @@
     {
       "path": "api/protection-pix.ts",
       "bytes": 6143
+    },
+    {
+      "path": "api/r2-audio-health.ts",
+      "bytes": 1364
     },
     {
       "path": "api/sorteio-pix.ts",
@@ -131,7 +135,7 @@
     },
     {
       "path": "src/constants.ts",
-      "bytes": 314
+      "bytes": 352
     },
     {
       "path": "src/App.tsx",
