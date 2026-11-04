@@ -106,6 +106,8 @@ export const ChatDashboard: React.FC = () => {
   const [redirectMobileUrl, setRedirectMobileUrl] = useState(localStorage.getItem('redirect_mobile_url') || '');
   const [redirectDesktopUrl, setRedirectDesktopUrl] = useState(localStorage.getItem('redirect_desktop_url') || '');
   const [redirectCopied, setRedirectCopied] = useState(false);
+  const [tiktokRedirectCopied, setTiktokRedirectCopied] = useState(false);
+  const tiktokRedirectUrl = `${window.location.origin}/r?utm_source=tiktok&utm_medium=paid`;
   const [desktopRedirects, setDesktopRedirects] = useState<number | null>(null);
   const [allSaved, setAllSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1035,6 +1037,41 @@ export const ChatDashboard: React.FC = () => {
                 {redirectCopied ? <Check size={14} /> : <Copy size={14} />}
                 {redirectCopied ? 'Copiado!' : 'Copiar'}
               </button>
+            </div>
+
+            {/* Atalho TikTok: usa a mesma rota /r e mantém as UTMs até a conversa. */}
+            <div className="bg-[#2a3942]/50 border border-white/5 rounded-xl p-3 mb-4">
+              <p className="text-[11px] font-bold text-[#e9edef] mb-1">Link específico do TikTok</p>
+              <p className="text-[10px] text-[#8696a0] mb-2">
+                Use nos anúncios do TikTok para identificar as pessoas e vendas dessa origem no funil.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={tiktokRedirectUrl}
+                  aria-label="Link de redirecionamento do TikTok"
+                  className="flex-1 min-w-0 bg-[#0b141a] text-[#e9edef] px-3 py-2 rounded-lg text-xs outline-none font-mono border border-white/5"
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(tiktokRedirectUrl);
+                      setTiktokRedirectCopied(true);
+                      setTimeout(() => setTiktokRedirectCopied(false), 1500);
+                    } catch {
+                      toast.error('Não foi possível copiar. Selecione o link e copie manualmente.');
+                    }
+                  }}
+                  className="shrink-0 flex items-center gap-1 text-[11px] font-bold text-[#00a884] hover:text-[#00c896] px-2 py-2"
+                  aria-label="Copiar link do TikTok"
+                >
+                  {tiktokRedirectCopied ? <Check size={14} /> : <Copy size={14} />}
+                  {tiktokRedirectCopied ? 'Copiado!' : 'Copiar'}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3">

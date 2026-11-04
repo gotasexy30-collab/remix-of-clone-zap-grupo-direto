@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T18:10:04.630268+00:00",
+  "generated_at": "2026-11-04T22:47:15.309066+00:00",
   "files": [
     {
       "path": "roadmap.md",
@@ -279,7 +279,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 59412
+      "bytes": 61436
     },
     {
       "path": "src/components/chat/FunnelLiveFeed.tsx",
