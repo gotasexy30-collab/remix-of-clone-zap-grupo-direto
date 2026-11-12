@@ -25,7 +25,7 @@ type FeedItem = { id: string; event: string; session: string; time: Date };
 
 const fmtTime = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-export const FunnelLiveFeed: React.FC = () => {
+export const FunnelLiveFeed: React.FC<{ refreshToken?: number }> = ({ refreshToken = 0 }) => {
   const [range, setRange] = useState<typeof RANGES[number]['key']>('today');
   const [counts, setCounts] = useState<Record<StageKey, number>>({
     Visited: 0, ChatStarted: 0, InitiateCheckout: 0, PixGenerated: 0,
@@ -95,11 +95,10 @@ export const FunnelLiveFeed: React.FC = () => {
     setLoading(false);
   };
 
+  // Reconsulta apenas na abertura, na troca de período ou ao clicar em atualizar no painel.
   useEffect(() => {
-    load();
-    const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
-  }, [range]);
+    void load();
+  }, [range, refreshToken]);
 
   const max = Math.max(1, ...STAGES.map(s => counts[s.key]));
 
@@ -171,15 +170,15 @@ export const FunnelLiveFeed: React.FC = () => {
         </p>
       </div>
 
-      {/* Feed (atualiza a cada 15s) */}
+      {/* Feed sob demanda: não consulta o banco automaticamente. */}
       <div className="bg-[#202c33] rounded-2xl p-4 border border-white/5">
         <div className="flex items-center gap-2 mb-3">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            <span className="absolute inline-flex h-full w-full rounded-full bg-[#00a884]/30"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00a884]"></span>
           </span>
-          <Radio size={14} className="text-red-400" />
-          <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Movimentação recente</span>
+          <Radio size={14} className="text-[#00a884]" />
+          <span className="text-[10px] font-black uppercase text-[#8696a0] tracking-widest">Movimentação recente (manual)</span>
         </div>
         <div ref={feedRef} className="max-h-[320px] overflow-y-auto space-y-1.5">
           {feed.length === 0 && (
