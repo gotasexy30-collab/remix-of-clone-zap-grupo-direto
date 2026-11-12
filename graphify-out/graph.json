@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T22:44:58.691627+00:00",
+  "generated_at": "2026-11-12T23:53:05.233310+00:00",
   "files": [
     {
       "path": "playwright.config.ts",
@@ -190,8 +190,16 @@
       "bytes": 143
     },
     {
+      "path": "src/services/pixPolling.ts",
+      "bytes": 308
+    },
+    {
       "path": "src/services/location.ts",
       "bytes": 2847
+    },
+    {
+      "path": "src/services/pixPolling.test.ts",
+      "bytes": 668
     },
     {
       "path": "src/services/pixel.ts",
@@ -255,7 +263,7 @@
     },
     {
       "path": "src/pages/ProtectionCheckout.tsx",
-      "bytes": 9932
+      "bytes": 11007
     },
     {
       "path": "src/components/ui/avatar.tsx",
@@ -467,7 +475,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 22259
+      "bytes": 23896
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
@@ -668,6 +676,14 @@
       "target": "vitest"
     },
     {
+      "source": "src/services/pixPolling.test.ts",
+      "target": "vitest"
+    },
+    {
+      "source": "src/services/pixPolling.test.ts",
+      "target": "./pixPolling"
+    },
+    {
       "source": "src/services/pixel.ts",
       "target": "./settings"
     },
@@ -866,6 +882,10 @@
     {
       "source": "src/pages/ProtectionCheckout.tsx",
       "target": "../services/pixel"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "../services/pixPolling"
     },
     {
       "source": "src/components/ui/avatar.tsx",
@@ -1630,6 +1650,10 @@
     {
       "source": "src/components/chat/PaymentPanel.tsx",
       "target": "../../services/trafficAttribution"
+    },
+    {
+      "source": "src/components/chat/PaymentPanel.tsx",
+      "target": "../../services/pixPolling"
     },
     {
       "source": "src/components/chat/PaymentPanel.tsx",

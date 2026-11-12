@@ -5,6 +5,7 @@ import { trackEvent } from '../../services/tracking';
 import { getSetting } from '../../services/settings';
 import { fbqTrack, trackEventDual, appendUTMsToUrl, logTrackedEvent, getMetaTrackingContext } from '../../services/pixel';
 import { getTrafficAttribution } from '../../services/trafficAttribution';
+import { getPixPollingDelay } from '../../services/pixPolling';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentPanelProps {
@@ -50,7 +51,8 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
   const [checkingManual, setCheckingManual] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [notPaidMsg, setNotPaidMsg] = useState('');
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusRequestRef = useRef<Promise<{ status?: string }> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const notPaidRef = useRef<HTMLDivElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(true);
@@ -201,49 +203,102 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     }
   };
 
+  // A checagem automática e o botão "Já paguei" compartilham uma requisição em andamento.
+  // Isso evita duas consultas simultâneas ao mesmo PIX.
+  const requestPaymentStatus = async (): Promise<{ status?: string }> => {
+    if (!pix?.id) throw new Error('PIX não gerado.');
+    if (statusRequestRef.current) return statusRequestRef.current;
+
+    const request = (async () => {
+      const sessionId = sessionStorage.getItem('wa_session_id') || '';
+      const response = await fetch('/api/generate-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
+      });
+      if (!response.ok) throw new Error('Não foi possível consultar o status do PIX.');
+      return response.json() as Promise<{ status?: string }>;
+    })();
+
+    statusRequestRef.current = request;
+    try {
+      return await request;
+    } finally {
+      if (statusRequestRef.current === request) statusRequestRef.current = null;
+    }
+  };
+
   useEffect(() => {
     if (!pix?.id || paymentStatus === 'approved') return;
 
     const startedAt = Date.now();
     const MAX_POLL_MS = 12 * 60 * 1000;
+    let active = true;
+    let checkingStatus = false;
+
+    const clearScheduledPoll = () => {
+      if (pollRef.current !== null) {
+        clearTimeout(pollRef.current);
+        pollRef.current = null;
+      }
+    };
 
     const finishApprovedPayment = () => {
       if (paymentHandledRef.current) return;
       paymentHandledRef.current = true;
+      clearScheduledPoll();
       setPaymentStatus('approved');
-      if (pollRef.current) clearInterval(pollRef.current);
       trackEventDual('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, `np_${pix.id}`);
       sessionStorage.setItem('protection_parent_payment_id', String(pix.id));
       window.location.href = '/checkout-protecao';
     };
 
-    let checkingStatus = false;
-    const checkPayment = async () => {
-      if (checkingStatus || paymentHandledRef.current) return;
-      if (Date.now() - startedAt > MAX_POLL_MS) {
-        if (pollRef.current) clearInterval(pollRef.current);
-        return;
-      }
+    const scheduleNext = () => {
+      if (!active || document.hidden || paymentHandledRef.current) return;
+      const elapsed = Date.now() - startedAt;
+      if (elapsed >= MAX_POLL_MS) return;
+      const delay = Math.min(getPixPollingDelay(elapsed), MAX_POLL_MS - elapsed);
+      clearScheduledPoll();
+      pollRef.current = setTimeout(() => {
+        pollRef.current = null;
+        void checkPayment();
+      }, delay);
+    };
+
+    const checkPayment = async (force = false) => {
+      if (!active || document.hidden || checkingStatus || paymentHandledRef.current) return;
+      if (!force && Date.now() - startedAt >= MAX_POLL_MS) return;
       checkingStatus = true;
+      clearScheduledPoll();
       try {
-        const sessionId = sessionStorage.getItem('wa_session_id') || '';
-        const response = await fetch('/api/generate-pix', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
-        });
-        const data = await response.json();
-        if (isApprovedStatus(data?.status)) finishApprovedPayment();
+        const data = await requestPaymentStatus();
+        if (active && isApprovedStatus(data?.status)) finishApprovedPayment();
       } catch (error) {
         console.error('Erro ao verificar pagamento:', error);
       } finally {
         checkingStatus = false;
+        scheduleNext();
       }
     };
 
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearScheduledPoll();
+      } else {
+        // O cliente voltou do banco: faz uma verificação imediata,
+        // mesmo após os 12 minutos, sem reiniciar as consultas automáticas.
+        clearScheduledPoll();
+        void checkPayment(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
     void checkPayment();
-    pollRef.current = setInterval(() => { void checkPayment(); }, 3000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    return () => {
+      active = false;
+      clearScheduledPoll();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [pix?.id, paymentStatus]);
 
   const handleCopy = async () => {
@@ -262,7 +317,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     if (paymentHandledRef.current) return;
     paymentHandledRef.current = true;
     setPaymentStatus('approved');
-    if (pollRef.current) clearInterval(pollRef.current);
+    if (pollRef.current !== null) {
+      clearTimeout(pollRef.current);
+      pollRef.current = null;
+    }
     trackEventDual('Purchase', { value: PLAN_PRICE, currency: 'BRL' }, `np_${pix?.id || 'manual'}`);
     if (pix?.id) {
       sessionStorage.setItem('protection_parent_payment_id', String(pix.id));
@@ -276,13 +334,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
     setNotPaidMsg('');
     logTrackedEvent('AlreadyPaid');
     try {
-      const sessionId = sessionStorage.getItem('wa_session_id') || '';
-      const response = await fetch('/api/generate-pix', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_status', id: pix.id, session_id: sessionId, amount: PLAN_PRICE }),
-      });
-      const data = await response.json();
+      const data = await requestPaymentStatus();
 
       if (isApprovedStatus(data?.status)) {
         markApproved();
