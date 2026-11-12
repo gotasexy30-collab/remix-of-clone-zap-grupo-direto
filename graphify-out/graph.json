@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T22:42:22.265558+00:00",
+  "generated_at": "2026-11-12T22:43:20.287868+00:00",
   "files": [
     {
       "path": "playwright.config.ts",
@@ -475,7 +475,7 @@
     },
     {
       "path": "src/components/chat/ChatDashboard.tsx",
-      "bytes": 62835
+      "bytes": 62843
     },
     {
       "path": "src/components/chat/AudioBubble.tsx",
