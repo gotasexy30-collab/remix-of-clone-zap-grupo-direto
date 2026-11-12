@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T23:52:03.829001+00:00",
+  "generated_at": "2026-11-12T23:53:05.233310+00:00",
   "files": [
     {
       "path": "playwright.config.ts",
@@ -475,7 +475,7 @@
     },
     {
       "path": "src/components/chat/PaymentPanel.tsx",
-      "bytes": 23811
+      "bytes": 23896
     },
     {
       "path": "src/components/chat/WhatsAppRouterPanel.tsx",
