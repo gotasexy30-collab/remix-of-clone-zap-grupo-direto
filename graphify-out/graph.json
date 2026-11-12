@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T23:50:44.674018+00:00",
+  "generated_at": "2026-11-12T23:51:30.333649+00:00",
   "files": [
     {
       "path": "playwright.config.ts",
@@ -259,7 +259,7 @@
     },
     {
       "path": "src/pages/ProtectionCheckout.tsx",
-      "bytes": 9932
+      "bytes": 11007
     },
     {
       "path": "src/components/ui/avatar.tsx",
@@ -870,6 +870,10 @@
     {
       "source": "src/pages/ProtectionCheckout.tsx",
       "target": "../services/pixel"
+    },
+    {
+      "source": "src/pages/ProtectionCheckout.tsx",
+      "target": "../services/pixPolling"
     },
     {
       "source": "src/components/ui/avatar.tsx",
