@@ -86,6 +86,9 @@ export const ChatDashboard: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [refreshingMetrics, setRefreshingMetrics] = useState(false);
+  const [manualFeedRefresh, setManualFeedRefresh] = useState(0);
+  const refreshingMetricsRef = useRef(false);
   const [funnelError, setFunnelError] = useState('');
   const [funnelPeriod, setFunnelPeriod] = useState<FunnelPeriod>('today');
   const [customDate, setCustomDate] = useState(getBrazilToday);
@@ -286,7 +289,7 @@ export const ChatDashboard: React.FC = () => {
     ]);
     setStats(data);
     
-    await loadFunnel(funnelPeriod);
+    // O funil é carregado pelo efeito do período; evita consulta dupla ao entrar no painel.
     if (settings.payment_redirect_link) setRedirectLink(settings.payment_redirect_link);
     if (settings.pix_success_url) setPixSuccessUrl(settings.pix_success_url);
     if (settings.chat_profile_name) setProfileName(settings.chat_profile_name);
@@ -302,20 +305,34 @@ export const ChatDashboard: React.FC = () => {
 
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(async () => {
-      const data = await getStats();
-      setStats(data);
-    }, 30000);
-    return () => clearInterval(interval);
+    void loadData();
   }, []);
 
-  // Recarrega as métricas do funil sempre que o período selecionado mudar
+  // Atualiza ao entrar e quando o administrador muda o período, sem consulta periódica.
   useEffect(() => {
-    loadFunnel(funnelPeriod);
-    const interval = setInterval(() => loadFunnel(funnelPeriod), 30000);
-    return () => clearInterval(interval);
+    void loadFunnel(funnelPeriod);
   }, [funnelPeriod, customDate]);
+
+  const handleManualRefresh = async () => {
+    if (refreshingMetricsRef.current) return;
+    refreshingMetricsRef.current = true;
+    setRefreshingMetrics(true);
+    try {
+      const [data] = await Promise.all([
+        getStats(),
+        loadFunnel(funnelPeriod),
+        ...(activeTab === 'redirect' ? [loadDesktopRedirects()] : []),
+      ]);
+      setStats(data);
+      if (activeTab === 'funil') setManualFeedRefresh(value => value + 1);
+    } catch (error) {
+      console.error('Erro na atualização manual do painel:', error);
+      toast.error('Não foi possível atualizar. Tente novamente.');
+    } finally {
+      refreshingMetricsRef.current = false;
+      setRefreshingMetrics(false);
+    }
+  };
 
   const handleImageUpload = async (
     file: File | undefined,
@@ -466,9 +483,20 @@ export const ChatDashboard: React.FC = () => {
             <h1 className="text-2xl font-black text-white flex items-center gap-2">
               <TrendingUp className="text-[#00a884]" /> DASHBOARD
             </h1>
-            <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de Vendas em Tempo Real</p>
+            <p className="text-[#8696a0] text-xs font-medium uppercase tracking-wider">Métricas de vendas · atualização manual</p>
           </div>
-          <button
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void handleManualRefresh()}
+              disabled={refreshingMetrics}
+              aria-label="Atualizar métricas do painel"
+              title="Atualizar métricas do painel"
+              className="h-10 w-10 shrink-0 rounded-full bg-[#202c33] border border-white/10 flex items-center justify-center text-[#00a884] hover:bg-[#2a3942] disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={18} className={refreshingMetrics ? 'animate-spin' : ''} />
+            </button>
+            <button
             onClick={async () => { 
               await supabase.auth.signOut();
               window.location.href = '/'; 
@@ -476,7 +504,8 @@ export const ChatDashboard: React.FC = () => {
             className="flex items-center gap-2 text-[#8696a0] hover:text-red-400 transition-colors text-xs font-bold"
           >
             <LogOut size={16} /> Sair do Painel
-          </button>
+            </button>
+          </div>
         </div>
 
         {/* Tabs de navegação rápida */}
@@ -543,7 +572,7 @@ export const ChatDashboard: React.FC = () => {
                 <span className="text-[10px] font-black uppercase text-[#00a884] tracking-widest">
                   {funnelPeriod === 'today' ? 'Hoje (00:00 – 23:59 BRT)' : funnelPeriodMeta.label}
                 </span>
-                <span className="text-[10px] text-[#8696a0]">atualiza a cada 30s</span>
+                <span className="text-[10px] text-[#8696a0]">Atualização manual</span>
               </div>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div className="bg-[#2a3942] rounded-xl p-3 text-center">
@@ -674,7 +703,7 @@ export const ChatDashboard: React.FC = () => {
             </div>
 
             {/* Funil completo + feed ao vivo */}
-            <FunnelLiveFeed />
+            <FunnelLiveFeed refreshToken={manualFeedRefresh} />
           </div>
         )}
 
