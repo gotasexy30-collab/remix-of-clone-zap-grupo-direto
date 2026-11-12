@@ -265,9 +265,9 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       }, delay);
     };
 
-    const checkPayment = async () => {
+    const checkPayment = async (force = false) => {
       if (!active || document.hidden || checkingStatus || paymentHandledRef.current) return;
-      if (Date.now() - startedAt >= MAX_POLL_MS) return;
+      if (!force && Date.now() - startedAt >= MAX_POLL_MS) return;
       checkingStatus = true;
       clearScheduledPoll();
       try {
@@ -285,9 +285,10 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({ userCity, userDDD })
       if (document.hidden) {
         clearScheduledPoll();
       } else {
-        // O cliente voltou do banco: verifica na hora, sem aguardar o próximo intervalo.
+        // O cliente voltou do banco: faz uma verificação imediata,
+        // mesmo após os 12 minutos, sem reiniciar as consultas automáticas.
         clearScheduledPoll();
-        void checkPayment();
+        void checkPayment(true);
       }
     };
 
