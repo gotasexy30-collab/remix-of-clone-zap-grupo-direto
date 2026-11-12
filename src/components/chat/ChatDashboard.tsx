@@ -321,7 +321,7 @@ export const ChatDashboard: React.FC = () => {
       const [data] = await Promise.all([
         getStats(),
         loadFunnel(funnelPeriod),
-        ...(activeTab === 'redirect' ? [loadDesktopRedirects()] : []),
+        activeTab === 'redirect' ? loadDesktopRedirects() : Promise.resolve(),
       ]);
       setStats(data);
       if (activeTab === 'funil') setManualFeedRefresh(value => value + 1);
