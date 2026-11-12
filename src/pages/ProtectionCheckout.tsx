@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { appendUTMsToUrl, logTrackedEvent } from '../services/pixel';
+import { getPixPollingDelay } from '../services/pixPolling';
 
 
 const PROTECTION_PRICE = 7.90;
@@ -78,7 +79,10 @@ export default function ProtectionCheckout() {
       const data = await response.json();
       if (response.ok && isApprovedStatus(data?.status) && !pollConfirmedRef.current) {
         pollConfirmedRef.current = true;
-        if (pollRef.current) window.clearInterval(pollRef.current);
+        if (pollRef.current !== null) {
+          window.clearTimeout(pollRef.current);
+          pollRef.current = null;
+        }
         setApproved(true);
         setError('');
         logTrackedEvent('ProtectionPurchaseApproved');
@@ -93,16 +97,53 @@ export default function ProtectionCheckout() {
 
   useEffect(() => {
     if (!pix?.id || approved) return;
-    // O navegador volta a consultar imediatamente quando o cliente retorna do app do banco.
-    const checkWhenVisible = () => {
-      if (!document.hidden) void checkStatus(pix.id);
+
+    const startedAt = Date.now();
+    let active = true;
+    let checkingStatus = false;
+
+    const clearScheduledPoll = () => {
+      if (pollRef.current !== null) {
+        window.clearTimeout(pollRef.current);
+        pollRef.current = null;
+      }
     };
-    checkWhenVisible();
-    pollRef.current = window.setInterval(checkWhenVisible, 3500);
-    document.addEventListener('visibilitychange', checkWhenVisible);
+
+    const checkWhenVisible = async () => {
+      if (!active || document.hidden || checkingStatus || pollConfirmedRef.current) return;
+      checkingStatus = true;
+      clearScheduledPoll();
+      try {
+        await checkStatus(pix.id);
+      } finally {
+        checkingStatus = false;
+        // Mantém a consulta após 12 minutos, como antes; sem limitar o acesso à proteção.
+        if (active && !document.hidden && !pollConfirmedRef.current) {
+          const delay = getPixPollingDelay(Date.now() - startedAt);
+          pollRef.current = window.setTimeout(() => {
+            pollRef.current = null;
+            void checkWhenVisible();
+          }, delay);
+        }
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearScheduledPoll();
+      } else {
+        // Retornou do aplicativo do banco: confirma imediatamente.
+        clearScheduledPoll();
+        void checkWhenVisible();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    void checkWhenVisible();
     return () => {
-      if (pollRef.current) window.clearInterval(pollRef.current);
-      document.removeEventListener('visibilitychange', checkWhenVisible);
+      active = false;
+      clearScheduledPoll();
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [pix?.id, approved]);
 
