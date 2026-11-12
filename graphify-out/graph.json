@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T23:51:30.333649+00:00",
+  "generated_at": "2026-11-12T23:52:03.829001+00:00",
   "files": [
     {
       "path": "playwright.config.ts",
@@ -196,6 +196,10 @@
     {
       "path": "src/services/location.ts",
       "bytes": 2847
+    },
+    {
+      "path": "src/services/pixPolling.test.ts",
+      "bytes": 668
     },
     {
       "path": "src/services/pixel.ts",
@@ -670,6 +674,14 @@
     {
       "source": "src/test/example.test.ts",
       "target": "vitest"
+    },
+    {
+      "source": "src/services/pixPolling.test.ts",
+      "target": "vitest"
+    },
+    {
+      "source": "src/services/pixPolling.test.ts",
+      "target": "./pixPolling"
     },
     {
       "source": "src/services/pixel.ts",
